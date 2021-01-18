@@ -330,21 +330,7 @@ class PauseUtil {
         if (options.pop) {
             document.body.insertBefore(popup, document.body.firstElementChild);
             popup.appendChild(text);
-            popup.style.cssText = `
-                position: fixed;
-                top: 50%;
-                right: 3%;
-                transform: translateY(-50%);
-                z-index: 2147483646;
-                background: hsla(0, 0%, 8%, 0.7);
-                color: hsla(0, 0%, 97%, 0.95);
-                max-width: -moz-fit-content;
-                padding: 17px 19px;
-                border-radius: 5px;
-                pointer-events: none;
-                letter-spacing: 1px;
-                transition: opacity 0.2s ease-in-out;
-                opacity: 0;`;
+            popup.style.cssText = `position:fixed;top:50%;right:3%;transform:translateY(-50%);z-index:2147483646;background:hsla(0, 0%, 8%, 0.7);color:hsla(0, 0%, 97%, 0.95);max-width:-moz-fit-content;padding:17px 19px;border-radius:5px;pointer-events:none;letter-spacing:1px;transition:opacity 0.2s ease-in-out;opacity:0;`;
             popup.style.fontFamily = options.font;
             popup.style.fontSize = options.fontSize;
             popup.style.fontWeight = options.fontWeight;
