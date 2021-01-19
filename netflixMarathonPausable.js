@@ -12,10 +12,12 @@
 // @include      https://*.amazon.com/*
 // @include      https://*.primevideo.com/*
 // @require      http://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js
+// @grant        GM_setValue
+// @grant        GM_getValue
 // ==/UserScript==
 
-// customize the websites, hotkey, interval rate, and popup settings
-const options = {
+// You can customize the websites, hotkey, interval rate, and popup settings. ***don't change the values below*** these are only the default settings. open netflix or amazon once so they'll initialize, and then in your userscript extension, go to the script's page and change the settings in the values/storage page. (e.g. in violentmonkey, at the top there's a code tab, settings, and values. click the values tab) this ensures that you keep your settings even if the script is updated.
+const defaultOptions = {
     rate: 300, // integer: interval rate in milliseconds. (how often to check for the elements we want to click) increase if you're running this on a mega-potato?
     amazon: true, // boolean: whether to bother checking for amazon elements
     netflix: true, // boolean: whether to check for netflix elements
@@ -30,8 +32,8 @@ const options = {
     pop: true, // boolean: whether to show pause/resume popups at all
     popDur: 3000, // integer: how long to leave the popup open for
     font: "Source Sans Pro", // string: font to use for the popup. if it's not locally installed on your PC, then it must be available on https://fonts.google.com/ and webfont must be true (see below)
-    fontSize: "24px", // string: font size in pixels
-    fontWeight: "300", // string: font weight, in multiples of 100 between 100 and 900, surrounded by quotes. (or a range of two integers separated by two periods, e.g. "300..900")
+    fontSize: "24px", // string: font size in pixels, followed by px, in quotes.
+    fontWeight: "300", // string: font weight, in multiples of 100 between 100 and 900, surrounded by quotes. OR a range of two integers separated by two periods, e.g. "300..900"
     italic: false, // boolean: whether the font should be italic or not
     webfont: true, // boolean: whether to grab the font from google fonts
 };
@@ -222,6 +224,8 @@ let marathon = {
     },
 };
 
+WebFontConfig = {};
+
 // an interval constructor that you can pause and resume, and which opens a brief popup when you do so.
 class PauseUtil {
     /**
@@ -385,6 +389,16 @@ function marathonSetUp() {
         window.removeEventListener("keydown", onKeyDown, true);
     }
 
+    let ital = options.italic ? "ital," : "";
+    WebFontConfig = {
+        classes: false,
+        events: false,
+        google: {
+            families: [`${options.font}:${ital}wght@1,${options.fontWeight}`],
+            display: "swap",
+        },
+    };
+
     // load web font if enabled
     if (options.webfont) {
         wf.src = "https://cdn.jsdelivr.net/npm/webfontloader@latest/webfontloader.js";
@@ -404,14 +418,28 @@ function marathonSetUp() {
     };
 }
 
-// just letting it hoist to keep this font stuff together
-let ital = options.italic ? "ital," : "";
-WebFontConfig = {
-    classes: false,
-    events: false,
-    google: {
-        families: [`${options.font}:${ital}wght@1,${options.fontWeight}`],
-    },
-};
+let options = {};
+async function settings() {
+    for (const key in defaultOptions) {
+        try {
+            let stored = await GM_getValue(`${key}`);
+            console.log(`${key}: ${stored}`);
+            if (stored != undefined) {
+                options[key] = stored;
+            } else {
+                await GM_setValue(`${key}`, defaultOptions[key]);
+                options[key] = defaultOptions[key];
+            }
+        } catch (e) {
+            await GM_setValue(`${key}`, defaultOptions[key]);
+            options[key] = defaultOptions[key];
+        }
+    }
+}
 
-marathonSetUp();
+async function start() {
+    await settings();
+    marathonSetUp();
+}
+
+start();
