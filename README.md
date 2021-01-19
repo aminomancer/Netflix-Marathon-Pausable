@@ -1,5 +1,5 @@
 # Netflix Marathon (Pausable)
-A userscript that automatically skip recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix and Amazon. Use [Violentmonkey](https://violentmonkey.github.io/) or [Tampermonkey](https://www.tampermonkey.net/), or wrap it in a webextension.
+A configurable userscript that automatically skip recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix and Amazon. Use [Violentmonkey](https://violentmonkey.github.io/) or [Tampermonkey](https://www.tampermonkey.net/). If I get any requests I'll consider turning it into a webextension addon.
 
 This script works by querying the document for elements that skip through the video. Normally it does this constantly, even when you might want to watch the credits or something. So I thought it'd be nice to add a toggle to disable/enable the searching, on the fly, without needing to reload the website. By default, the hotkey is Ctrl+F7. It pauses the interval, meaning it won't skip anything while paused. Hitting the hotkey again resumes the interval.
 
