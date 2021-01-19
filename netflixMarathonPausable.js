@@ -29,9 +29,11 @@ const options = {
 
     pop: true, // boolean: whether to show pause/resume popups at all
     popDur: 3000, // integer: how long to leave the popup open for
-    font: "Source Sans Pro", // string: font to use for the popup
+    font: "Source Sans Pro", // string: font to use for the popup. if it's not locally installed on your PC, then it must be available on https://fonts.google.com/ and webfont must be true (see below)
     fontSize: "24px", // string: font size in pixels
-    fontWeight: "300", // string: font weight, in multiples of 100 between 100 and 900; or lighter, normal, bold, bolder
+    fontWeight: "300", // string: font weight, in multiples of 100 between 100 and 900, surrounded by quotes. (or a range of two integers separated by two periods, e.g. "300..900")
+    italic: false, // boolean: whether the font should be italic or not
+    webfont: true, // boolean: whether to grab the font from google fonts
 };
 
 let marathon = {
@@ -334,6 +336,7 @@ class PauseUtil {
             popup.style.fontFamily = options.font;
             popup.style.fontSize = options.fontSize;
             popup.style.fontWeight = options.fontWeight;
+            popup.style.fontStyle = options.italic ? "italic" : "";
         }
         time = new Date();
         timer = window.setInterval(callback, int);
@@ -344,7 +347,9 @@ class PauseUtil {
 // initial setup
 function marathonSetUp() {
     let search = marathon.find.bind(marathon), // bind marathon to its functions
-        searchInterval = new PauseUtil(search, options.rate); // create the interval with our rate setting
+        searchInterval = new PauseUtil(search, options.rate), // create the interval with our rate setting
+        wf = options.webfont ? document.createElement("script") : null,
+        first = document.scripts[0];
 
     /**
      * what to do when you press ctrl + F7. you can change the keys here if you prefer some other hotkey.
@@ -380,6 +385,13 @@ function marathonSetUp() {
         window.removeEventListener("keydown", onKeyDown, true);
     }
 
+    // load web font if enabled
+    if (options.webfont) {
+        wf.src = "https://cdn.jsdelivr.net/npm/webfontloader@latest/webfontloader.js";
+        wf.async = true;
+        first.parentNode.insertBefore(wf, first);
+    }
+
     // if hotkey is enabled in options, start listening to keyboard events
     if (options.hotkey) {
         startCapturing();
@@ -391,5 +403,15 @@ function marathonSetUp() {
         stopCapturing,
     };
 }
+
+// just letting it hoist to keep this font stuff together
+let ital = options.italic ? "ital," : "";
+WebFontConfig = {
+    classes: false,
+    events: false,
+    google: {
+        families: [`${options.font}:${ital}wght@1,${options.fontWeight}`],
+    },
+};
 
 marathonSetUp();
