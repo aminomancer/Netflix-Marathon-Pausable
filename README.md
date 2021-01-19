@@ -1,5 +1,5 @@
 # Netflix Marathon (Pausable)
-[Click to install](https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/netflixMarathonPausable.user.js)
+[Click to install](https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/marathon.user.js)
 
 A configurable userscript that automatically skip recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix and Amazon. Use [Violentmonkey](https://violentmonkey.github.io/) or [Tampermonkey](https://www.tampermonkey.net/). If I get any requests I'll consider turning it into a webextension addon.
 
