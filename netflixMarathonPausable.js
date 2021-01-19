@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Netflix Marathon (Pausable)
 // @namespace    https://github.com/aminomancer
-// @version      3.6
+// @version      3.7
 // @description  Automatically skip recaps, intros and click nexts on Netflix and Amazon video for you. Customizable hotkey to pause/resume the auto-skipping functionality. (Ctrl+F7 by default)
 // @author       aminomancer
 // @homepageURL  https://github.com/aminomancer/Netflix-Marathon-Pausable
