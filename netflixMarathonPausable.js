@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Netflix Marathon (Pausable)
 // @namespace    https://github.com/aminomancer
-// @version      3.5
+// @version      3.6
 // @description  Automatically skip recaps, intros and click nexts on Netflix and Amazon video for you. Customizable hotkey to pause/resume the auto-skipping functionality. (Ctrl+F7 by default)
 // @author       aminomancer
 // @homepageURL  https://github.com/aminomancer/Netflix-Marathon-Pausable
@@ -33,7 +33,7 @@ const defaultOptions = {
     popDur: 3000, // integer: how long to leave the popup open for
     font: "Source Sans Pro", // string: font to use for the popup. if it's not locally installed on your PC, then it must be available on https://fonts.google.com/ and webfont must be true (see below)
     fontSize: "24px", // string: font size in pixels, followed by px, in quotes.
-    fontWeight: "300", // string: font weight, in multiples of 100 between 100 and 900, surrounded by quotes. OR a range of two integers separated by two periods, e.g. "300..900"
+    fontWeight: "300", // string: font weight, in multiples of 100 between 100 and 900, surrounded by quotes.
     italic: false, // boolean: whether the font should be italic or not
     webfont: true, // boolean: whether to grab the font from google fonts
 };
