@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Netflix Marathon (Pausable)
 // @namespace    https://github.com/aminomancer
-// @version      3.9.5
+// @version      4.0
 // @description  Automatically skip recaps, intros and click nexts on Netflix and Amazon video for you. Customizable hotkey to pause/resume the auto-skipping functionality. (Ctrl+F7 by default)
 // @author       aminomancer
 // @homepageURL  https://github.com/aminomancer/Netflix-Marathon-Pausable
@@ -41,10 +41,10 @@ const defaultOptions = {
     italic: false, // boolean: whether the font should be italic or not
     webfont: true, // boolean: whether to grab the font from google fonts
 };
-const options = {}; // don't edit this. the script fills it with your stored settings.
-
-let GMObj = typeof GM === "object" && GM !== null && typeof GM.getValue === "function", // ensure the GM object exists so we can use the right GM API functions
-    GM4 = GMObj && GM.info.scriptHandler === "Greasemonkey" && version >= 4; // check if the script handler is GM4, since if it is, we can't add a menu command
+const options = {}, // don't edit this. the script fills it with your stored settings.
+    GMObj = typeof GM === "object" && GM !== null && typeof GM.getValue === "function", // ensure the GM object exists so we can use the right GM API functions
+    GM4 = GMObj && GM.info.scriptHandler === "Greasemonkey" && version >= 4, // check if the script handler is GM4, since if it is, we can't add a menu command
+    site = test("netflix") ? "netflix" : "amazon";
 
 let marathon = {
     count: 0,
@@ -149,19 +149,12 @@ let marathon = {
     isVis(s) {
         return this.$i(s)?.offsetParent ? true : false;
     },
-    /**
-     * pause execution for ms milliseconds
-     * @param {int} ms (milliseconds)
-     */
-    sleep(ms) {
-        return new Promise((resolve) => setTimeout(resolve, ms));
-    },
 
-    // searches for elements that skip stuff. repeated every 300ms. edit searchInterval if you want to change the find interval.
-    async find() {
+    // searches for elements that skip stuff. repeated every 300ms. change "rate" in the options if you want to make this more or less frequent.
+    async amazon() {
         if (this.count === 0) {
             // console.log(this.count);
-            if (options.amazon && this.isVis("dv-web-player")) {
+            if (this.isVis("dv-web-player")) {
                 if (this.$c("atvwebplayersdk-nextupcard-button").length) {
                     // console.log('Found Amazon video next.');
                     setTimeout(() => {
@@ -195,36 +188,42 @@ let marathon = {
                 } else {
                     // console.log('404 keep looking.');
                 }
-            } else if (options.netflix) {
-                if (this.$c("skip-credits").length && this.$c("skip-credits-hidden").length == 0) {
-                    // console.log('Found credits.');
-                    await this.sleep(200);
-                    this.$c("skip-credits")[0].firstElementChild.click();
-                    await this.sleep(200);
-                    this.$q(".button-nfplayerPlay").click();
-                    this.count = 80;
-                    // console.log('Found credits. +4s');
-                } else if (this.$q(this.nDrain)) {
-                    // console.log('Netflix next episode draining button skipped');
-                    this.getReact(this.nDrain)._owner.memoizedProps.handlePress();
-                    this.count = 5;
-                } else if (this.$q(this.nReady)) {
-                    // console.log('Netflix next episode button skipped');
-                    this.getReact(
-                        this.nReady
-                    ).props.children._owner.memoizedProps.onClickWatchNextEpisode();
-                    this.count = 5;
-                } else if (this.$c("postplay-still-container").length) {
-                    // console.log('Found autoplay.');
-                    this.$c("postplay-still-container")[0].click();
-                    this.count = 5;
-                } else if (this.$c("WatchNext-still-container").length) {
-                    // console.log('Found autoplay.');
-                    this.$c("WatchNext-still-container")[0].click();
-                    this.count = 5;
-                } else {
-                    // console.log('404 keep looking.');
-                }
+            }
+        } else {
+            this.count--;
+        }
+    },
+
+    async netflix() {
+        if (this.count === 0) {
+            if (this.$c("skip-credits").length && this.$c("skip-credits-hidden").length == 0) {
+                // console.log('Found credits.');
+                await sleep(200);
+                this.$c("skip-credits")[0].firstElementChild.click();
+                await sleep(200);
+                this.$q(".button-nfplayerPlay").click();
+                this.count = 80;
+                // console.log('Found credits. +4s');
+            } else if (this.$q(this.nDrain)) {
+                // console.log('Netflix next episode draining button skipped');
+                this.getReact(this.nDrain)._owner.memoizedProps.handlePress();
+                this.count = 5;
+            } else if (this.$q(this.nReady)) {
+                // console.log('Netflix next episode button skipped');
+                this.getReact(
+                    this.nReady
+                ).props.children._owner.memoizedProps.onClickWatchNextEpisode();
+                this.count = 5;
+            } else if (this.$c("postplay-still-container").length) {
+                // console.log('Found autoplay.');
+                this.$c("postplay-still-container")[0].click();
+                this.count = 5;
+            } else if (this.$c("WatchNext-still-container").length) {
+                // console.log('Found autoplay.');
+                this.$c("WatchNext-still-container")[0].click();
+                this.count = 5;
+            } else {
+                // console.log('404 keep looking.');
             }
         } else {
             this.count--;
@@ -232,160 +231,166 @@ let marathon = {
     },
 };
 
-WebFontConfig = {};
+/**
+ * pause execution for ms milliseconds
+ * @param {int} ms (milliseconds)
+ */
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * @param {string} u (a string to test the URL against)
+ */
+function test(u) {
+    return window.location.href.includes(u);
+}
 
 // an interval constructor that you can pause and resume, and which opens a brief popup when you do so.
 class PauseUtil {
     /**
      * pausable interval utility
-     * @param {func} callback (the stuff you want to execute periodically, in this case marathon.find)
+     * @param {func} callback (the stuff you want to execute periodically, in this case marathon.netflix or marathon.amazon)
      * @param {int} int (how often to repeat the callback)
      */
     constructor(callback, int) {
-        /**
-         * @param {string} u (a string to test the URL against)
-         */
-        let test = (u) => {
-                return window.location.href.includes(u);
-            },
-            notPlaying = () => {
-                // returns true if we're on amazon or netflix but not actually in the video player (e.g. we're only browsing videos). i'll update this for disney plus the next time i subscribe. or open an issue on one of my github repos if you want to contribute some code to that end.
-                return (
-                    (test("amazon.com") && !marathon.isVis("dv-web-player")) ||
-                    (test("netflix.com") && !test("netflix.com/watch/"))
-                );
-            },
-            popup = options.pop ? document.createElement("div") : null, // if popup is disabled, create nothing
-            text = options.pop ? document.createTextNode("Marathon: Paused") : null, // if popup is disabled, create nothing
-            timer,
-            time,
-            remainder = 0, // how much time is remaining on the interval when we pause it
-            fading, // 3 second timeout (by default), after which the popup fades
-            pauseState = 0; //  0 = idle, 1 = running, 2 = paused, 3= resumed
-
-        // pause the interval
-        this.pause = function () {
-            if (pauseState != 1) {
-                return;
-            }
-
-            remainder = int - (new Date() - time);
-            window.clearInterval(timer);
-            pauseState = 2;
-
-            this.register("Resume Marathon"); // update the menu command label
-            this.openPopup(false);
-            // console.log("pausing");
-        };
-
-        // resume the interval
-        this.resume = function () {
-            if (pauseState != 2) {
-                return;
-            }
-
-            pauseState = 3;
-            window.setTimeout(this.run, remainder);
-
-            this.register("Pause Marathon");
-            this.openPopup(true);
-            // console.log("resuming");
-        };
-
-        // toggle the interval on/off.
-        this.toggle = function () {
-            // console.log("toggling");
-            switch (pauseState) {
-                case 1:
-                    return this.pause();
-                case 2:
-                    return this.resume();
-                default:
-                    return;
-            }
-        };
-
-        // when we pause, there's usually still time left on the interval. resume() calls this after waiting for the remaining duration. so this is what actually resumes the interval.
-        this.run = function () {
-            if (pauseState != 3) {
-                return;
-            }
-
-            callback();
-
-            time = new Date();
-            timer = window.setInterval(callback, int);
-            pauseState = 1;
-        };
-
-        // opens the popup and schedules it to close
-        this.openPopup = function (state) {
-            // if popup is disabled in options, do nothing
-            if (!options.pop) {
-                return;
-            }
-            // if window is netflix or amazon but there's no video player, (e.g. we're browsing titles) do nothing but ensure the popup is hidden.
-            if (notPlaying()) {
-                popup.style.transitionDuration = "1s";
-                return (popup.style.opacity = "0");
-            }
-
-            let string = state ? "Resumed" : "Paused";
-            popup.textContent = `Marathon: ${string}`;
-            popup.style.transitionDuration = "0.2s";
-            popup.style.opacity = "1";
-            window.clearTimeout(fading); // clear any existing timeout since we're about to set a new one
-
-            // schedule the popup to fade into oblivion
-            fading = window.setTimeout(() => {
-                popup.style.transitionDuration = "1s";
-                popup.style.opacity = "0";
-            }, options.popDur);
-        };
-
-        /**
-         * register or change the label of the menu command
-         * @param {string} cap intended caption to display on the menu command
-         * @param {bool} firstRun we call this function at startup and every time we pause/unpause. we don't need to register a menu command if this is the startup call, since none exists yet
-         */
-        this.register = function (cap, firstRun = false) {
-            if (GM4) {
-                return;
-            }
-            if (!firstRun) {
-                GM_unregisterMenuCommand(this.caption);
-            }
-            GM_registerMenuCommand(cap, this.toggle.bind(this));
-            this.caption = cap;
-        };
+        this.callback = callback;
+        this.int = int;
+        this.popup = options.pop ? document.createElement("div") : null; // if popup is disabled, create nothing
+        this.text = options.pop ? document.createTextNode("Marathon: Paused") : null; // if popup is disabled, create nothing
+        this.remainder = 0; // how much time is remaining on the interval when we pause it
+        this.fading; // 3 second timeout (by default), after which the popup fades
+        this.pauseState = 0; //  0 = idle, 1 = running, 2 = paused, 3= resumed
 
         this.register("Pause Marathon", true); // initial creation of the menu command
-        // if popup is enabled in options, create it
+        // if popup is enabled in options, style it
         if (options.pop) {
-            document.body.insertBefore(popup, document.body.firstElementChild);
-            popup.appendChild(text);
-            popup.style.cssText = `position:fixed;top:50%;right:3%;transform:translateY(-50%);z-index:2147483646;background:hsla(0, 0%, 8%, 0.7);color:hsla(0, 0%, 97%, 0.95);max-width:-moz-fit-content;padding:17px 19px;border-radius:5px;pointer-events:none;letter-spacing:1px;transition:opacity 0.2s ease-in-out;opacity:0;`;
-            popup.style.fontFamily = options.font;
-            popup.style.fontSize = options.fontSize;
-            popup.style.fontWeight = options.fontWeight;
-            popup.style.fontStyle = options.italic ? "italic" : "";
+            document.body.insertBefore(this.popup, document.body.firstElementChild);
+            this.popup.appendChild(this.text);
+            this.popup.style.cssText = `position:fixed;top:50%;right:3%;transform:translateY(-50%);z-index:2147483646;background:hsla(0, 0%, 8%, 0.7);color:hsla(0, 0%, 97%, 0.95);max-width:-moz-fit-content;padding:17px 19px;border-radius:5px;pointer-events:none;letter-spacing:1px;transition:opacity 0.2s ease-in-out;opacity:0;`;
+            this.popup.style.fontFamily = options.font;
+            this.popup.style.fontSize = options.fontSize;
+            this.popup.style.fontWeight = options.fontWeight;
+            this.popup.style.fontStyle = options.italic ? "italic" : "";
         }
-        time = new Date();
-        timer = window.setInterval(callback, int);
-        pauseState = 1;
+        this.time = new Date();
+        this.timer = window.setInterval(this.callback, this.int);
+        this.pauseState = 1;
+    }
+
+    // returns false if we're on a valid site but not actually in the video player (e.g. we're only browsing videos).
+    get playing() {
+        return site === "netflix" ? test("netflix.com/watch/") : marathon.isVis("dv-web-player");
+    }
+
+    // pause the interval
+    pause() {
+        if (this.pauseState !== 1) {
+            return;
+        }
+
+        this.remainder = this.int - (new Date() - this.time);
+        window.clearInterval(this.timer);
+        this.pauseState = 2;
+
+        this.register("Resume Marathon"); // update the menu command label
+        this.openPopup(false);
+    }
+
+    // resume the interval
+    async resume() {
+        if (this.pauseState !== 2) {
+            return;
+        }
+
+        this.pauseState = 3;
+
+        this.register("Pause Marathon");
+        this.openPopup(true);
+        await sleep(this.remainder);
+        this.run();
+    }
+
+    // when we pause, there's usually still time left on the interval. resume() calls this after waiting for the remaining duration. so this is what actually resumes the interval.
+    run() {
+        if (this.pauseState !== 3) {
+            return;
+        }
+
+        this.callback();
+
+        this.time = new Date();
+        this.timer = window.setInterval(this.callback, this.int);
+        this.pauseState = 1;
+    }
+
+    // toggle the interval on/off.
+    toggle() {
+        switch (this.pauseState) {
+            case 1:
+                return this.pause();
+            case 2:
+                return this.resume();
+            default:
+                return;
+        }
+    }
+
+    // opens the popup and schedules it to close
+    openPopup(state) {
+        // if popup is disabled in options, do nothing
+        if (!options.pop) {
+            return;
+        }
+        // if window is netflix or amazon but there's no video player, (e.g. we're browsing titles) do nothing but ensure the popup is hidden.
+        if (!this.playing) {
+            this.popup.style.transitionDuration = "1s";
+            return (this.popup.style.opacity = "0");
+        }
+
+        let string = state ? "Resumed" : "Paused";
+        this.popup.textContent = `Marathon: ${string}`;
+        this.popup.style.transitionDuration = "0.2s";
+        this.popup.style.opacity = "1";
+        window.clearTimeout(this.fading); // clear any existing timeout since we're about to set a new one
+
+        // schedule the popup to fade into oblivion
+        this.fading = window.setTimeout(() => {
+            this.popup.style.transitionDuration = "1s";
+            this.popup.style.opacity = "0";
+        }, options.popDur);
+    }
+
+    /**
+     * register or change the label of the menu command
+     * @param {string} cap intended caption to display on the menu command
+     * @param {bool} firstRun we call this function at startup and every time we pause/unpause. we don't need to register a menu command if this is the startup call, since none exists yet
+     */
+    register(cap, firstRun = false) {
+        if (GM4) {
+            return; // don't register a menu command if the script manager is greasemonkey 4.0+ since the function doesn't exist
+        }
+        if (!firstRun) {
+            GM_unregisterMenuCommand(this.caption);
+        }
+        GM_registerMenuCommand(cap, this.toggle.bind(this));
+        this.caption = cap;
     }
 }
 
 // initial setup
 function marathonSetUp() {
-    let search = marathon.find.bind(marathon), // bind marathon to its functions
+    if (!options[site]) {
+        return; // if the site we're on is disabled in options, then don't bother setting up
+    }
+    let search = marathon[site].bind(marathon), // use the correct callback
         searchInterval = new PauseUtil(search, options.rate), // create the interval with our rate setting
         wf = options.webfont ? document.createElement("script") : null,
         first = document.scripts[0],
         ital = options.italic ? "ital," : "";
 
     /**
-     * what to do when you press ctrl + F7. you can change the keys here if you prefer some other hotkey.
+     * what to do when you press the hotkey.
      * @param {object} e (event)
      */
     function onKeyDown(e) {
@@ -397,7 +402,7 @@ function marathonSetUp() {
     }
 
     /**
-     * check that the modifier keys match those defined in options at the top
+     * check that the modifier keys match those defined in user settings
      * @param {object} e (event)
      */
     function modTest(e) {
