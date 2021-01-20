@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Netflix Marathon (Pausable)
 // @namespace    https://github.com/aminomancer
-// @version      3.8
+// @version      3.9
 // @description  Automatically skip recaps, intros and click nexts on Netflix and Amazon video for you. Customizable hotkey to pause/resume the auto-skipping functionality. (Ctrl+F7 by default)
 // @author       aminomancer
 // @homepageURL  https://github.com/aminomancer/Netflix-Marathon-Pausable
@@ -14,9 +14,11 @@
 // @require      http://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js
 // @grant        GM_setValue
 // @grant        GM_getValue
+// @grant        GM.setValue
+// @grant        GM.getValue
 // ==/UserScript==
 
-// You can customize the websites, hotkey, interval rate, and popup settings. ***don't change the values below*** these are only the default settings. open netflix or amazon once so they'll initialize, and then in your userscript extension, go to the script's page and change the settings in the values/storage page. (e.g. in violentmonkey, at the top there's a code tab, settings, and values. click the values tab) this ensures that you keep your settings even if the script is updated.
+// You can customize the websites, hotkey, interval rate, and popup settings. ***Don't change the values below*** These are only the default settings. open netflix or amazon once so they'll initialize, and then in your userscript extension, go to the script's page and change the settings in the values/storage page. (e.g. in violentmonkey, at the top there's a code tab, settings, and values. click the values tab) This ensures that you keep your settings even if the script is updated. I don't recommend greasemonkey but if you need to use it for some reason, there is no UI to change stored settings, and I don't want to add a UI to such a simple script, so your only option is to edit the default options below. They will be reset when the script is updated though, so you will need to turn auto update off.
 const defaultOptions = {
     rate: 300, // integer: interval rate in milliseconds. (how often to check for the elements we want to click) increase if you're running this on a mega-potato?
     amazon: true, // boolean: whether to bother checking for amazon elements
@@ -420,17 +422,15 @@ function marathonSetUp() {
 }
 
 async function settings() {
+    let GM4 = typeof GM === "object" && GM !== null && typeof GM.info === "object",
+        getVal = GM4 ? GM.getValue : GM_getValue,
+        setVal = GM4 ? GM.setValue : GM_setValue;
     for (const key in defaultOptions) {
-        try {
-            let stored = await GM_getValue(`${key}`);
-            if (stored != undefined) {
-                options[key] = stored;
-            } else {
-                await GM_setValue(`${key}`, defaultOptions[key]);
-                options[key] = defaultOptions[key];
-            }
-        } catch (e) {
-            await GM_setValue(`${key}`, defaultOptions[key]);
+        let stored = await getVal(`${key}`);
+        if (stored != undefined) {
+            options[key] = stored;
+        } else {
+            await setVal(`${key}`, defaultOptions[key]);
             options[key] = defaultOptions[key];
         }
     }
