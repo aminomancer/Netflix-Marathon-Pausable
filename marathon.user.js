@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Netflix Marathon (Pausable)
 // @namespace    https://github.com/aminomancer
-// @version      3.9
+// @version      3.9.5
 // @description  Automatically skip recaps, intros and click nexts on Netflix and Amazon video for you. Customizable hotkey to pause/resume the auto-skipping functionality. (Ctrl+F7 by default)
 // @author       aminomancer
 // @homepageURL  https://github.com/aminomancer/Netflix-Marathon-Pausable
@@ -12,6 +12,8 @@
 // @include      https://*.amazon.com/*
 // @include      https://*.primevideo.com/*
 // @require      http://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js
+// @grant        GM_registerMenuCommand
+// @grant        GM_unregisterMenuCommand
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM.setValue
@@ -40,6 +42,9 @@ const defaultOptions = {
     webfont: true, // boolean: whether to grab the font from google fonts
 };
 const options = {}; // don't edit this. the script fills it with your stored settings.
+
+let GMObj = typeof GM === "object" && GM !== null && typeof GM.getValue === "function", // ensure the GM object exists so we can use the right GM API functions
+    GM4 = GMObj && GM.info.scriptHandler === "Greasemonkey" && version >= 4; // check if the script handler is GM4, since if it is, we can't add a menu command
 
 let marathon = {
     count: 0,
@@ -146,7 +151,7 @@ let marathon = {
     },
     /**
      * pause execution for ms milliseconds
-     * @param {int} ms (integer: milliseconds)
+     * @param {int} ms (milliseconds)
      */
     sleep(ms) {
         return new Promise((resolve) => setTimeout(resolve, ms));
@@ -233,8 +238,8 @@ WebFontConfig = {};
 class PauseUtil {
     /**
      * pausable interval utility
-     * @param {func} callback (function: the stuff you want to execute periodically, in this case marathon.find)
-     * @param {int} int (integer: how often to repeat the callback)
+     * @param {func} callback (the stuff you want to execute periodically, in this case marathon.find)
+     * @param {int} int (how often to repeat the callback)
      */
     constructor(callback, int) {
         /**
@@ -268,6 +273,7 @@ class PauseUtil {
             window.clearInterval(timer);
             pauseState = 2;
 
+            this.register("Resume Marathon"); // update the menu command label
             this.openPopup(false);
             // console.log("pausing");
         };
@@ -281,6 +287,7 @@ class PauseUtil {
             pauseState = 3;
             window.setTimeout(this.run, remainder);
 
+            this.register("Pause Marathon");
             this.openPopup(true);
             // console.log("resuming");
         };
@@ -327,14 +334,32 @@ class PauseUtil {
             popup.textContent = `Marathon: ${string}`;
             popup.style.transitionDuration = "0.2s";
             popup.style.opacity = "1";
-            window.clearTimeout(fading);
+            window.clearTimeout(fading); // clear any existing timeout since we're about to set a new one
 
+            // schedule the popup to fade into oblivion
             fading = window.setTimeout(() => {
                 popup.style.transitionDuration = "1s";
                 popup.style.opacity = "0";
             }, options.popDur);
         };
 
+        /**
+         * register or change the label of the menu command
+         * @param {string} cap intended caption to display on the menu command
+         * @param {bool} firstRun we call this function at startup and every time we pause/unpause. we don't need to register a menu command if this is the startup call, since none exists yet
+         */
+        this.register = function (cap, firstRun = false) {
+            if (GM4) {
+                return;
+            }
+            if (!firstRun) {
+                GM_unregisterMenuCommand(this.caption);
+            }
+            GM_registerMenuCommand(cap, this.toggle.bind(this));
+            this.caption = cap;
+        };
+
+        this.register("Pause Marathon", true); // initial creation of the menu command
         // if popup is enabled in options, create it
         if (options.pop) {
             document.body.insertBefore(popup, document.body.firstElementChild);
@@ -394,11 +419,11 @@ function marathonSetUp() {
     }
 
     WebFontConfig = {
-        classes: false,
-        events: false,
+        classes: false, // don't bother changing the DOM at all, we aren't listening for it
+        events: false, // no need for events, not worth the execution
         google: {
-            families: [`${options.font}:${ital}wght@1,${options.fontWeight}`],
-            display: "swap",
+            families: [`${options.font}:${ital}wght@1,${options.fontWeight}`], // e.g. "Source Sans Pro:wght@1,300" or "Lobster Two:ital,wght@1,700"
+            display: "swap", // not really necessary since the popup doesn't appear until you press a button. but whatever
         },
     };
 
@@ -422,9 +447,10 @@ function marathonSetUp() {
 }
 
 async function settings() {
-    let GM4 = typeof GM === "object" && GM !== null && typeof GM.info === "object",
-        getVal = GM4 ? GM.getValue : GM_getValue,
-        setVal = GM4 ? GM.setValue : GM_setValue;
+    // use the correct get/set functions for user's script handler
+    let getVal = GMObj ? GM.getValue : GM_getValue,
+        setVal = GMObj ? GM.setValue : GM_setValue;
+    // for each key, either get or set
     for (const key in defaultOptions) {
         let stored = await getVal(`${key}`);
         if (stored != undefined) {
