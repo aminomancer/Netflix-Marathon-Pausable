@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Netflix Marathon (Pausable)
 // @namespace    https://github.com/aminomancer
-// @version      4.0
+// @version      4.1
 // @description  A configurable userscript that automatically skip recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix and Amazon Prime Video. Customizable hotkey to pause/resume the auto-skipping functionality. Greasemonkey is supported too, but not recommended if you intend to customize any settings. This script works by querying the document for elements that skip through the video. Normally it does this constantly, even when you might want to watch the credits or something. So I thought it'd be nice to add a toggle to disable/enable the searching, on the fly, without needing to reload the website. By default, the hotkey is Ctrl+F7. It pauses the interval, meaning it won't skip anything while paused. Hitting the hotkey again resumes the interval. It also adds a button to your addon's popup menu or context menu, depending on the addon. The hotkey also displays a brief popup showing whether the interval is paused or resumed, so you won't lose track of whether it's on or off. The script uses configuration variables, so you can change them on your script addon's "Values" page if you want to change the hotkey, disable one of the websites, change the interval rate, change various aspects of the pause/resume popup, or disable the popup altogether.
 // @author       aminomancer
 // @homepageURL  https://github.com/aminomancer/Netflix-Marathon-Pausable
@@ -43,7 +43,7 @@ const defaultOptions = {
 };
 const options = {}, // don't edit this. the script fills it with your stored settings.
     GMObj = typeof GM === "object" && GM !== null && typeof GM.getValue === "function", // ensure the GM object exists so we can use the right GM API functions
-    GM4 = GMObj && GM.info.scriptHandler === "Greasemonkey" && version >= 4, // check if the script handler is GM4, since if it is, we can't add a menu command
+    GM4 = GMObj && GM.info.scriptHandler === "Greasemonkey" && GM.info.version >= 4, // check if the script handler is GM4, since if it is, we can't add a menu command
     site = test("netflix") ? "netflix" : "amazon";
 
 let marathon = {
