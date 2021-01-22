@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Netflix Marathon (Pausable)
 // @namespace    https://github.com/aminomancer
-// @version      4.1
+// @version      4.2
 // @description  A configurable userscript that automatically skip recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix and Amazon Prime Video. Customizable hotkey to pause/resume the auto-skipping functionality. Greasemonkey is supported too, but not recommended if you intend to customize any settings. This script works by querying the document for elements that skip through the video. Normally it does this constantly, even when you might want to watch the credits or something. So I thought it'd be nice to add a toggle to disable/enable the searching, on the fly, without needing to reload the website. By default, the hotkey is Ctrl+F7. It pauses the interval, meaning it won't skip anything while paused. Hitting the hotkey again resumes the interval. It also adds a button to your addon's popup menu or context menu, depending on the addon. The hotkey also displays a brief popup showing whether the interval is paused or resumed, so you won't lose track of whether it's on or off. The script uses configuration variables, so you can change them on your script addon's "Values" page if you want to change the hotkey, disable one of the websites, change the interval rate, change various aspects of the pause/resume popup, or disable the popup altogether.
 // @author       aminomancer
 // @homepageURL  https://github.com/aminomancer/Netflix-Marathon-Pausable
@@ -179,12 +179,15 @@ let marathon = {
                 } else if (this.$cnt("Skip").length) {
                     // amazon trailers
                     this.$click("Skip");
+                    this.count = 5;
                 } else if (this.$cnt("Skip Intro").length) {
                     // amazon intro
                     this.$click("Skip Intro");
+                    this.count = 5;
                 } else if (this.$cnt("Skip Recap").length) {
                     // amazon recap
                     this.$click("Skip Recap");
+                    this.count = 5;
                 } else {
                     // console.log('404 keep looking.');
                 }
@@ -260,7 +263,7 @@ class PauseUtil {
         this.text = options.pop ? document.createTextNode("Marathon: Paused") : null; // if popup is disabled, create nothing
         this.remainder = 0; // how much time is remaining on the interval when we pause it
         this.fading; // 3 second timeout (by default), after which the popup fades
-        this.pauseState = 0; //  0 = idle, 1 = running, 2 = paused, 3= resumed
+        this.pauseState = 0; //  0: idle, 1: running, 2: paused, 3: resumed
 
         this.register("Pause Marathon", true); // initial creation of the menu command
         // if popup is enabled in options, style it
