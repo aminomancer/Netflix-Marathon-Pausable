@@ -339,7 +339,10 @@ class PauseUtil {
         }
     }
 
-    // opens the popup and schedules it to close
+    /**
+     * opens the popup and schedules it to close
+     * @param {bool} state (whether the popup should say "Resumed" or "Paused")
+     */
     openPopup(state) {
         // if popup is disabled in options, do nothing
         if (!options.pop) {
@@ -366,8 +369,8 @@ class PauseUtil {
 
     /**
      * register or change the label of the menu command
-     * @param {string} cap intended caption to display on the menu command
-     * @param {bool} firstRun we call this function at startup and every time we pause/unpause. we don't need to register a menu command if this is the startup call, since none exists yet
+     * @param {string} cap (intended caption to display on the menu command)
+     * @param {bool} firstRun (we call this function at startup and every time we pause/unpause. we don't need to register a menu command if this is the startup call, since none exists yet)
      */
     register(cap, firstRun = false) {
         if (GM4) {
@@ -454,6 +457,7 @@ function marathonSetUp() {
     };
 }
 
+// get settings from *monkey storage, and if any are missing, set them to defaults. then create properties in options (the js object) based on the stored settings.
 async function settings() {
     // use the correct get/set functions for user's script handler
     let getVal = GMObj ? GM.getValue : GM_getValue,
