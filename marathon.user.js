@@ -1,23 +1,39 @@
 // ==UserScript==
-// @name         Netflix Marathon (Pausable)
-// @namespace    https://github.com/aminomancer
-// @version      4.2
-// @description  A configurable userscript that automatically skip recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix and Amazon Prime Video. Customizable hotkey to pause/resume the auto-skipping functionality. Greasemonkey is supported too, but not recommended if you intend to customize any settings. This script works by querying the document for elements that skip through the video. Normally it does this constantly, even when you might want to watch the credits or something. So I thought it'd be nice to add a toggle to disable/enable the searching, on the fly, without needing to reload the website. By default, the hotkey is Ctrl+F7. It pauses the interval, meaning it won't skip anything while paused. Hitting the hotkey again resumes the interval. It also adds a button to your addon's popup menu or context menu, depending on the addon. The hotkey also displays a brief popup showing whether the interval is paused or resumed, so you won't lose track of whether it's on or off. The script uses configuration variables, so you can change them on your script addon's "Values" page if you want to change the hotkey, disable one of the websites, change the interval rate, change various aspects of the pause/resume popup, or disable the popup altogether.
-// @author       aminomancer
-// @homepageURL  https://github.com/aminomancer/Netflix-Marathon-Pausable
-// @supportURL   https://github.com/aminomancer/Netflix-Marathon-Pausable/issues
-// @downloadURL  https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/marathon.user.js
-// @icon         data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 157.1 158.4"><path d="M156.3 79.6c0-42.8-34.9-77.7-77.7-77.7C35.7 1.9.9 36.7.9 79.6c0 39.5 29.5 72.6 68.7 77.2v-47.4c-25-3.8-43.8-25.5-43.8-50.7C25.8 30.4 49 7.4 77.6 7.4c28.5 0 51.8 23 51.8 51.3 0 26.1-19.6 47.9-45.6 51v47.6c40.6-2.8 72.5-36.8 72.5-77.7z"/><path d="M77.4 16c-23.2 0-42.1 18.9-42.1 42.1s18.9 42.1 42.1 42.1 42.1-18.9 42.1-42.1S100.7 16 77.4 16zm18.8 75.8c0 .1 0 .1 0 0v.1h-.9c-.2 0-.3 0-.5-.1-3.1-.4-7.1-.7-10.4-.9-1.1-.1-2-.1-2-.1l-.2-.4c-.1-.3-.2-.7-.4-1.2-.1-.2-.2-.5-.3-.8 0-.1 0-.1-.1-.1-.4-1.1-.9-2.5-1.5-4.2-1.5-4.3-3.8-10.6-6.7-18.8l-1.1-3v14.3c0 13.6 0 14.3-.2 14.3-.5 0-4.9.3-6.3.4-1 .1-2.9.3-4.3.4-1.2.2-2.3.3-2.4.3V24.2h13.4l.1.2.2.6c.2.6.5 1.4.9 2.5.1.2.1.4.2.6.1.4.3.8.4 1.2.2.6.5 1.3.7 2 0 .1.1.3.1.4.2.6.1.4.4 1.2.5 1.5 1 2.9 1.4 4.1.8 2.3 1.5 4.1 2 5.6.4 1.1.7 2 1 2.8.8 2.4 1.3 3.7 1.9 5.3l1.2 3.5v-30H96V58c.2 17.8.2 32.5.2 33.8z"/></svg>
-// @include      https://www.netflix.com/*
-// @include      https://*.amazon.com/*
-// @include      https://*.primevideo.com/*
-// @require      http://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js
-// @grant        GM_registerMenuCommand
-// @grant        GM_unregisterMenuCommand
-// @grant        GM_setValue
-// @grant        GM_getValue
-// @grant        GM.setValue
-// @grant        GM.getValue
+// @name               Netflix Marathon (Pausable)
+// @name:zh-CN         网飞马拉松赛（可暫停）
+// @name:zh-TW         网飞马拉松赛（可暫停）
+// @name:ja            Netflix Marathon（一時停止できます）
+// @name:ko            Netflix Marathon (일시 중지 가능)
+// @name:ar            ماراثون Netflix (يمكن إيقافه مؤقتًا)
+// @name:he            מרתון נטפליקס (ניתן להשהות)
+// @name:hi            नेटफ्लिक्स मैराथन (पॉज़ेबल)
+// @name:ru            Netflix Марафон (можно приостановить)
+// @namespace          https://github.com/aminomancer
+// @version            4.2
+// @description        A configurable userscript that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix and Amazon Prime Video. Customizable hotkey to pause/resume the auto-skipping functionality.
+// @description:zh-CN  一种可配置的用户脚本，该脚本会自动跳过介绍，字幕和广告，并单击网飞和亚马孙Prime Video上的“下一集”按钮。包括一个可自定义的热键，以暂停/恢复自动跳过功能。
+// @description:zh-TW  一种可配置的用户脚本，该脚本会自动跳过介绍，字幕和广告，并单击网飞和亚马孙Prime Video上的“下一集”按钮。包括一个可自定义的热键，以暂停/恢复自动跳过功能。
+// @description:ja     イントロ、クレジット、広告を自動的にスキップし、NetflixとAmazon PrimeVideoの「次のエピソード」ボタンをクリックする構成可能なユーザースクリプト。自動スキップ機能を一時停止/再開するためのカスタマイズ可能なホットキーが含まれています。
+// @description:ko     인트로, 크레딧 및 광고를 자동으로 건너 뛰고 Netflix 및 Amazon Prime Video에서 "다음 에피소드"버튼을 클릭하는 구성 가능한 사용자 스크립트입니다.자동 건너 뛰기 기능을 일시 중지 / 재개하기위한 사용자 지정 가능한 핫키가 포함되어 있습니다.
+// @description:ar     جافا سكريبت قابل للتكوين يتخطى تلقائيًا المقدمات والاعتمادات والإعلانات وينقر على أزرار "الحلقة التالية" على Netflix و Amazon Prime Video.يتضمن مفتاح اختصار قابل للتخصيص لإيقاف / استئناف وظيفة التخطي التلقائي.
+// @description:he     סקריפט משתמש הניתן להגדרה שדלג אוטומטית על מבוא, זיכויים ומודעות ולחץ על כפתורי "הפרק הבא" ב- Netflix וב- Amazon Prime Video.כולל מקש קיצור הניתן להתאמה אישית כדי להשהות / לחדש את הפונקציונליות של דילוג אוטומטי.
+// @description:hi     एक कॉन्फ़िगर करने योग्य उपयोगकर्तास्क्रिप्ट जो स्वचालित रूप से इंट्रो, क्रेडिट और विज्ञापनों को बायपास करता है, और नेटफ्लिक्स और अमेज़ॅन प्राइम वीडियो पर "अगले एपिसोड" बटन पर क्लिक करता है। इसमें एक कॉन्फ़िगर करने योग्य हॉटकी शामिल है जो लंघन को रोक देता है या फिर से शुरू करता है।
+// @description:ru     Настраиваемый сценарий, который автоматически пропускает вступления, титры и рекламу, а также нажимает кнопки «следующий выпуск» на Netflix и Amazon Prime Video.Включает настраиваемую горячую клавишу для приостановки / возобновления функции автоматического пропуска.
+// @author             aminomancer
+// @homepageURL        https://github.com/aminomancer/Netflix-Marathon-Pausable
+// @supportURL         https://github.com/aminomancer/Netflix-Marathon-Pausable/issues
+// @downloadURL        https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/marathon.user.js
+// @icon               data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 157.1 158.4"><path d="M156.3 79.6c0-42.8-34.9-77.7-77.7-77.7C35.7 1.9.9 36.7.9 79.6c0 39.5 29.5 72.6 68.7 77.2v-47.4c-25-3.8-43.8-25.5-43.8-50.7C25.8 30.4 49 7.4 77.6 7.4c28.5 0 51.8 23 51.8 51.3 0 26.1-19.6 47.9-45.6 51v47.6c40.6-2.8 72.5-36.8 72.5-77.7z"/><path d="M77.4 16c-23.2 0-42.1 18.9-42.1 42.1s18.9 42.1 42.1 42.1 42.1-18.9 42.1-42.1S100.7 16 77.4 16zm18.8 75.8c0 .1 0 .1 0 0v.1h-.9c-.2 0-.3 0-.5-.1-3.1-.4-7.1-.7-10.4-.9-1.1-.1-2-.1-2-.1l-.2-.4c-.1-.3-.2-.7-.4-1.2-.1-.2-.2-.5-.3-.8 0-.1 0-.1-.1-.1-.4-1.1-.9-2.5-1.5-4.2-1.5-4.3-3.8-10.6-6.7-18.8l-1.1-3v14.3c0 13.6 0 14.3-.2 14.3-.5 0-4.9.3-6.3.4-1 .1-2.9.3-4.3.4-1.2.2-2.3.3-2.4.3V24.2h13.4l.1.2.2.6c.2.6.5 1.4.9 2.5.1.2.1.4.2.6.1.4.3.8.4 1.2.2.6.5 1.3.7 2 0 .1.1.3.1.4.2.6.1.4.4 1.2.5 1.5 1 2.9 1.4 4.1.8 2.3 1.5 4.1 2 5.6.4 1.1.7 2 1 2.8.8 2.4 1.3 3.7 1.9 5.3l1.2 3.5v-30H96V58c.2 17.8.2 32.5.2 33.8z"/></svg>
+// @include            https://www.netflix.com/*
+// @include            https://*.amazon.com/*
+// @include            https://*.primevideo.com/*
+// @require            http://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js
+// @grant              GM_registerMenuCommand
+// @grant              GM_unregisterMenuCommand
+// @grant              GM_setValue
+// @grant              GM_getValue
+// @grant              GM.setValue
+// @grant              GM.getValue
 // ==/UserScript==
 
 // You can customize the websites, hotkey, interval rate, and popup settings. ***Don't change the values below*** These are only the default settings. open netflix or amazon once so they'll initialize, and then in your userscript extension, go to the script's page and change the settings in the values/storage page. (e.g. in violentmonkey, at the top there's a code tab, settings, and values. click the values tab) This ensures that you keep your settings even if the script is updated. I don't recommend greasemonkey but if you need to use it for some reason, there is no UI to change stored settings, and I don't want to add a UI to such a simple script, so your only option is to edit the default options below. They will be reset when the script is updated though, so you will need to turn auto update off.
