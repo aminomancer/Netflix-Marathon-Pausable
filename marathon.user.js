@@ -9,7 +9,7 @@
 // @name:hi            नेटफ्लिक्स मैराथन (पॉज़ेबल)
 // @name:ru            Netflix Марафон (можно приостановить)
 // @namespace          https://github.com/aminomancer
-// @version            4.2
+// @version            4.3
 // @description        A configurable userscript that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix and Amazon Prime Video. Customizable hotkey to pause/resume the auto-skipping functionality.
 // @description:zh-CN  一种可配置的用户脚本，该脚本会自动跳过介绍，字幕和广告，并单击网飞和亚马孙Prime Video上的“下一集”按钮。包括一个可自定义的热键，以暂停/恢复自动跳过功能。
 // @description:zh-TW  一种可配置的用户脚本，该脚本会自动跳过介绍，字幕和广告，并单击网飞和亚马孙Prime Video上的“下一集”按钮。包括一个可自定义的热键，以暂停/恢复自动跳过功能。
