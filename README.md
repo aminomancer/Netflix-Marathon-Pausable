@@ -24,7 +24,7 @@ Forked from [Netflix Marathon](https://greasyfork.org/en/scripts/30029-netflix-m
 | **`amazon`** | true | boolean | Whether to bother checking for amazon elements. |
 | **`netflix`** | true | boolean | Whether to check for netflix elements. |
 | **`hotkey`** | true | boolean | Physical key, e.g. `KeyF` for the F key. This is the `code`, NOT the `keyCode`. [See the list here](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code/code_values). |
-| **`ctrlKey`** | true | boolean | The following are for modifier keys. If you don't want to use a modifier key, set these to `false`. If you want to use multiple, set them to `true`. |
+| **`ctrlKey`** | true | boolean | The following are for modifier keys. If you don't want to use a modifier key, set all of these to `false`. If you want to use multiple, set them to `true`. |
 | **`altKey`** | false | boolean |  |
 | **`shiftKey`** | false | boolean |  |
 | **`metaKey`** | false | boolean | [Depends on browser and OS.](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/metaKey) |
