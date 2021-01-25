@@ -9,7 +9,7 @@
 // @name:hi            नेटफ्लिक्स मैराथन (पॉज़ेबल)
 // @name:ru            Netflix Марафон (можно приостановить)
 // @namespace          https://github.com/aminomancer
-// @version            4.3.7
+// @version            4.3.8
 // @description        A configurable userscript that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix and Amazon Prime Video. Customizable hotkey to pause/resume the auto-skipping functionality.
 // @description:zh-CN  一种可配置的用户脚本，该脚本会自动跳过介绍，字幕和广告，并单击网飞和亚马孙Prime Video上的“下一集”按钮。包括一个可自定义的热键，以暂停/恢复自动跳过功能。
 // @description:zh-TW  一种可配置的用户脚本，该脚本会自动跳过介绍，字幕和广告，并单击网飞和亚马孙Prime Video上的“下一集”按钮。包括一个可自定义的热键，以暂停/恢复自动跳过功能。
@@ -145,7 +145,9 @@ let marathon = {
     findReact(d) {
         for (const k in d) {
             if (k.startsWith("__reactInternalInstance$")) {
-                return d[k]?.child;
+                try {
+                    return d[k].child;
+                } catch (e) {}
             }
         }
         return null;
@@ -156,14 +158,22 @@ let marathon = {
      */
     getReact(s) {
         const el = this.$qa(s);
-        return el.length > 0 ? this.findReact(el[0])?.memoizedProps.children : null;
+        try {
+            return el.length > 0 ? this.findReact(el[0]).memoizedProps.children : null;
+        } catch (e) {
+            return null;
+        }
     },
     /**
      * determine if an element is visible (namely the amazon player)
      * @param {string} s (element id)
      */
     isVis(s) {
-        return this.$i(s)?.offsetParent ? true : false;
+        try {
+            return this.$i(s).offsetParent ? true : false;
+        } catch (e) {
+            return false;
+        }
     },
 
     // searches for elements that skip stuff. repeated every 300ms. change "rate" in the options if you want to make this more or less frequent.
@@ -174,12 +184,16 @@ let marathon = {
                 if (this.$c("atvwebplayersdk-nextupcard-button").length) {
                     // console.log('Found Amazon video next.');
                     setTimeout(() => {
-                        this.$c("atvwebplayersdk-nextupcard-button")[0]?.click();
+                        try {
+                            this.$c("atvwebplayersdk-nextupcard-button")[0].click();
+                            this.count = 5;
+                        } catch (e) {}
                     }, 700);
-                    this.count = 5;
                 } else if (this.$c("atvwebplayersdk-skipelement-button").length) {
-                    this.$c("atvwebplayersdk-skipelement-button")[0]?.click();
-                    this.count = 5;
+                    try {
+                        this.$c("atvwebplayersdk-skipelement-button")[0].click();
+                        this.count = 5;
+                    } catch (e) {}
                 } else if (this.$c("adSkipButton").length) {
                     // console.log('Found Amazon skip ad.');
                     this.$c("adSkipButton")[0].click();
