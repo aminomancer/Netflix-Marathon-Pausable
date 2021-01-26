@@ -5,7 +5,7 @@
 // @name:ja            Netflix Marathon（一時停止できます）
 // @name:ar            ماراثون Netflix (يمكن إيقافه مؤقتًا)
 // @namespace          https://github.com/aminomancer
-// @version            4.4.3
+// @version            4.4.4
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix and Amazon Prime Video. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，该脚本自动跳过介绍，信用和广告，并单击Netflix和Amazon Prime Video上的“下一个节目”提示。包括一个可自定义的热键，以暂停/恢复自动跳过功能。按Alt + N进行配置。
 // @description:zh-TW  一个可配置的脚本，该脚本自动跳过介绍，信用和广告，并单击Netflix和Amazon Prime Video上的“下一个节目”提示。包括一个可自定义的热键，以暂停/恢复自动跳过功能。按Alt + N进行配置。
@@ -543,6 +543,7 @@ async function initConfig() {
             iterations: 1,
             easing: "ease-in-out",
         };
+    frame.style.display = "none";
     document.body.appendChild(frame);
     frame.appendChild(resetti);
     frame.appendChild(supporti);
@@ -763,6 +764,7 @@ async function initConfig() {
         "frame": frame,
         "css": `
                 #Marathon {
+                    display: block !important;
                     position: fixed !important;
                     z-index: 2147483646 !important;
                     inset: unset !important;
