@@ -4,34 +4,35 @@
   <sup><b>インストール：&nbsp;&nbsp;<a href="https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/marathon.user.js">jsDelivr</a>&nbsp;または&nbsp;<a href="https://greasyfork.org/scripts/420475-netflix-marathon-pausable/code/Netflix Marathon (Pausable).user.js">Greasy Fork</a></b></sup>
   </h1>
 
-イントロ、クレジット、広告を自動的にスキップし、NetflixとAmazon PrimeVideoの「次のエピソード」プロンプトをクリックする構成可能なユーザースクリプト。[Violentmonkey](https://violentmonkey.github.io/)やTampermonkeyなどのユーザースクリプトマネージャーが必要です。[Tampermonkey](https://www.tampermonkey.net/)もサポートされていますが、設定設定はサポートされていません。誰かがそれを要求した場合、私はいつかこれをアドオンに変換するかもしれません。
+イントロ、クレジット、広告を自動的にスキップし、NetflixとAmazon PrimeVideoの「次のエピソード」プロンプトをクリックする構成可能なユーザースクリプト。[Violentmonkey](https://violentmonkey.github.io/)や[Tampermonkey](https://www.tampermonkey.net/)などのユーザースクリプトマネージャーが必要です。Greasemonkeyも完全にサポートされていますが、お勧めしません。誰かがそれを要求した場合、私はそれをブラウザ拡張機能に変えることを検討します。
 
-このスクリプトは、ビデオをスキップする要素についてドキュメントにクエリを実行することで機能します。通常、クレジットなどを監視したい場合でも、これは常に実行されます。そのため、ウェブサイトをリロードせずに、その場で検索を無効/有効にするトグルを追加するとよいと思いました。デフォルトでは、ホットキーはCtrl + F7です。間隔を一時停止します。つまり、一時停止中は何もスキップしません。ホットキーをもう一度押すと、間隔が再開されます。また、ユーザースクリプトマネージャーに応じて、アドオンのポップアップメニューまたはコンテキストメニューにボタンを追加します。
+このスクリプトは、ビデオをスキップする要素についてドキュメントにクエリを実行することで機能します。通常、これは常に実行されますが、突然映画のクレジットを見たいと思った場合はイライラする可能性があります。そのため、ウェブサイトをリロードせずに、その場で検索を無効/有効にするトグルを追加するとよいと思いました。デフォルトでは、ホットキーはCtrl + F7です。間隔を一時停止します。つまり、一時停止中は何もスキップしません。ホットキーをもう一度押すと、間隔が再開されます。また、使用するアドオンに応じて、アドオンのポップアップメニューまたはコンテキストメニューに2つのボタンが追加されます。
 
-ホットキーには、間隔が一時停止されているか再開されているかを示す短いポップアップも表示されるため、間隔がオンかオフかを見失うことはありません。このスクリプトは構成変数を使用します。構成変数は、スクリプトアドオンの[値]ページで変更できます。たとえば、ホットキーを変更したり、Webサイトのいずれかを無効にしたり、間隔レートを変更したり、一時停止/再開ポップアップのさまざまな側面を変更したり、ポップアップを完全に無効にしたりする場合です。
+ホットキーには、間隔が一時停止されているか再開されているかを示す短いポップアップも表示されるため、間隔がオンかオフかを見失うことはありません。Alt + Nを押すと、スクリプト設定を構成できます。ユーザースクリプトマネージャーのメニューの[設定を開く]コマンドをクリックして、[設定]ポップアップを開くこともできます。ホットキーを変更したり、Webサイトのいずれかを無効にしたり、間隔レートを変更したり、一時停止/再開ポップアップのさまざまな側面を変更したり、ポップアップを完全に無効にしたりできます。
 
-このスクリプトで処理できないプレーヤーまたはスキップ要素がある場合は、問題のページに詳細を投稿し、可能であれば、考えている要素の有効なCSSセレクターを含めます。（右クリック>ソースの検査）静的クラスまたはIDがない場合は、タグ名、テキストコンテンツ、img src、スクリーンショット、またはDOMでそれを識別するその他のものを含めます。ありがとう！
+このスクリプトで処理できないプレーヤーまたはスキップ要素がある場合は、問題のページに詳細を投稿し、可能であれば、考えている要素の有効な CSS セレクターを含めます。（右クリック>ソースの検査）静的クラスまたは ID がない場合は、タグ名、テキストコンテンツ、img src、スクリーンショット、または DOM でそれを識別するその他のものを含めます。ありがとう！
 
 Forked from [Netflix Marathon](https://greasyfork.org/en/scripts/30029-netflix-marathon)
 
 <h2>構成：</h2>
 
-<small>**設定を構成する前に、スクリプトを少なくとも1回実行する必要があります**。スクリプトをインストールしてから、NetflixまたはAmazonにアクセスして、設定を生成します。次に、userscript拡張機能で、スクリプトのページに移動し、値/ストレージページの設定を変更します。（たとえば、Violentmonkeyでは、上部にコードタブ、設定、および値があります。[値]タブをクリックします）これにより、スクリプトが更新された場合でも設定を保持できます。設定は次のとおりです。
+<small>設定はアドオンのローカルストレージに永続的に保存され、スクリプトの更新を通じて確実に保持されます。NetflixまたはAmazonに移動してAlt + Nを押すか、アドオンのツールバーボタンからメニューコマンドをクリックして、それらを変更できます。これらは設定とその機能の簡単な説明です。
 
 | オプション | デフォルト値 | タイプ | 説明 |
 |-|-|-|-|
-| **`rate`** | 300 | integer | ミリ秒単位の間隔レート—クリックする要素をチェックする頻度。お使いのコンピューターがジャガイモの場合は、この設定を増やすことができます。 |
-| **`amazon`** | true | boolean | スクリプトがAmazonで実行されるかどうか。 |
-| **`netflix`** | true | boolean | スクリプトがNetflixで実行されるかどうか。 |
-| **`hotkey`** | true | boolean | 使用するキー。たとえば、 `KeyF`はFキー用です。これは `code`であり、` keyCode`ではありません。 [こちらのリストをご覧ください](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code/code_values)。 |
-| **`ctrlKey`** | true | boolean | 次の設定は修飾キー用です。修飾キーを使用したくない場合は、これらを`false`に設定します。複数使用する場合は、`true`に設定してください。 |
-| **`altKey`** | false | boolean |  |
-| **`shiftKey`** | false | boolean |  |
-| **`metaKey`** | false | boolean | [ブラウザとオペレーティングシステムによって異なります。](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/metaKey) |
-| **`pop`** | true | boolean | 一時停止/再開ポップアップを表示するかどうか。 |
-| **`popDur`** | 3000 | integer | ポップアップを開いたままにしておく時間（ミリ秒単位）。 |
-| **`font`** | "Source&#160;Sans&#160;Pro" | string | ポップアップに使用するフォント。PCにローカルにインストールされていない場合は、[Google Fonts](https://fonts.google.com/)で利用可能であり、**`webfont`**が` true`である必要があります。 |
-| **`fontSize`** | "24px" | string | ピクセル単位のフォントサイズと、それに続く引用符で囲まれた `px`。 |
-| **`fontWeight`** | "300" | string | 引用符で囲まれた、100〜900の100の倍数のフォントの太さ。 |
-| **`italic`** | false | boolean | フォントを斜体にするかどうか。 |
-| **`webfont`** | true | boolean | GoogleFontsからフォントを取得するかどうか。 |
+| **Interval&#160;Rate** | 300 | integer | ミリ秒単位の間隔レート—クリックする要素をチェックする頻度。お使いのコンピューターがジャガイモの場合は、この設定を増やすことができます。 |
+| **Run&#160;on&#160;Amazon** | true | boolean | スクリプトがAmazonで実行されるかどうか。 |
+| **Run&#160;on&#160;Netflix** | true | boolean | スクリプトがNetflixで実行されるかどうか。 |
+| **Hotkey&#160;code** | F7 | string | 使用するキー。たとえば、 KeyFはFキー用です。これは codeであり、 keyCodeではありません。 [こちらのリストをご覧ください](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code/code_values)。 |
+| **Enable&#160;hotkey** | true | boolean | ホットキーを使用するかどうか。 |
+| **Ctrl&#160;key** | true | boolean | 次の4つの設定は、修飾キー用です。修飾キーを使用したくない場合は、これら4つすべてのチェックを外してください。複数を使用する場合は、使用する各修飾キーを確認してください。 |
+| **Alt&#160;key** | false | boolean | |
+| **Shift&#160;key** | false | boolean | |
+| **Meta&#160;key** | false | boolean | [ブラウザとオペレーティングシステムによって異なります。](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/metaKey) |
+| **Enable&#160;popup** | true | boolean | 一時停止/再開ポップアップを表示するかどうか。 |
+| **Popup&#160;duration** | 3000 | integer | ポップアップを開いたままにしておく時間（ミリ秒単位） |
+| **Use&#160;Google&#160;Fonts** | true | boolean | GoogleFontsからフォントを動的に読み込むかどうか。 |
+| **Popup&#160;font** | Source&#160;Sans&#160;Pro | string | ポップアップに使用するフォント。PCにローカルにインストールされていない場合は、[Google Fonts](https://fonts.google.com/)で利用可能である必要があり、**`Use Google Fonts`** をチェックする必要があります。 |
+| **Font&#160;size**&#160;(px) | 24 | integer | ピクセル単位で測定されたフォントサイズ。 |
+| **Font&#160;weight** | 300 | integer | フォントの太さ。100の倍数（100から900）。（大きいほど厚いことを意味します） |
+| **Italic** | false | boolean | フォントを斜体にするかどうか。 |

@@ -3,22 +3,14 @@
 // @name:zh-CN         网飞马拉松赛（可暫停）
 // @name:zh-TW         网飞马拉松赛（可暫停）
 // @name:ja            Netflix Marathon（一時停止できます）
-// @name:ko            Netflix Marathon (일시 중지 가능)
 // @name:ar            ماراثون Netflix (يمكن إيقافه مؤقتًا)
-// @name:he            מרתון נטפליקס (ניתן להשהות)
-// @name:hi            नेटफ्लिक्स मैराथन (पॉज़ेबल)
-// @name:ru            Netflix Марафон (можно приостановить)
 // @namespace          https://github.com/aminomancer
-// @version            4.3.8
-// @description        A configurable userscript that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix and Amazon Prime Video. Customizable hotkey to pause/resume the auto-skipping functionality.
-// @description:zh-CN  一种可配置的用户脚本，该脚本会自动跳过介绍，字幕和广告，并单击网飞和亚马孙Prime Video上的“下一集”按钮。包括一个可自定义的热键，以暂停/恢复自动跳过功能。
-// @description:zh-TW  一种可配置的用户脚本，该脚本会自动跳过介绍，字幕和广告，并单击网飞和亚马孙Prime Video上的“下一集”按钮。包括一个可自定义的热键，以暂停/恢复自动跳过功能。
-// @description:ja     イントロ、クレジット、広告を自動的にスキップし、NetflixとAmazon PrimeVideoの「次のエピソード」ボタンをクリックする構成可能なユーザースクリプト。自動スキップ機能を一時停止/再開するためのカスタマイズ可能なホットキーが含まれています。
-// @description:ko     인트로, 크레딧 및 광고를 자동으로 건너 뛰고 Netflix 및 Amazon Prime Video에서 "다음 에피소드"버튼을 클릭하는 구성 가능한 사용자 스크립트입니다.자동 건너 뛰기 기능을 일시 중지 / 재개하기위한 사용자 지정 가능한 핫키가 포함되어 있습니다.
-// @description:ar     جافا سكريبت قابل للتكوين يتخطى تلقائيًا المقدمات والاعتمادات والإعلانات وينقر على أزرار "الحلقة التالية" على Netflix و Amazon Prime Video.يتضمن مفتاح اختصار قابل للتخصيص لإيقاف / استئناف وظيفة التخطي التلقائي.
-// @description:he     סקריפט משתמש הניתן להגדרה שדלג אוטומטית על מבוא, זיכויים ומודעות ולחץ על כפתורי "הפרק הבא" ב- Netflix וב- Amazon Prime Video.כולל מקש קיצור הניתן להתאמה אישית כדי להשהות / לחדש את הפונקציונליות של דילוג אוטומטי.
-// @description:hi     एक कॉन्फ़िगर करने योग्य उपयोगकर्तास्क्रिप्ट जो स्वचालित रूप से इंट्रो, क्रेडिट और विज्ञापनों को बायपास करता है, और नेटफ्लिक्स और अमेज़ॅन प्राइम वीडियो पर "अगले एपिसोड" बटन पर क्लिक करता है। इसमें एक कॉन्फ़िगर करने योग्य हॉटकी शामिल है जो लंघन को रोक देता है या फिर से शुरू करता है।
-// @description:ru     Настраиваемый сценарий, который автоматически пропускает вступления, титры и рекламу, а также нажимает кнопки «следующий выпуск» на Netflix и Amazon Prime Video.Включает настраиваемую горячую клавишу для приостановки / возобновления функции автоматического пропуска.
+// @version            4.4.0
+// @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix and Amazon Prime Video. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
+// @description:zh-CN  一个可配置的脚本，该脚本自动跳过介绍，信用和广告，并单击Netflix和Amazon Prime Video上的“下一个节目”提示。包括一个可自定义的热键，以暂停/恢复自动跳过功能。按Alt + N进行配置。
+// @description:zh-TW  一个可配置的脚本，该脚本自动跳过介绍，信用和广告，并单击Netflix和Amazon Prime Video上的“下一个节目”提示。包括一个可自定义的热键，以暂停/恢复自动跳过功能。按Alt + N进行配置。
+// @description:ja     イントロ、クレジット、広告を自動的にスキップし、NetflixとAmazon PrimeVideoの「次のエピソード」プロンプトをクリックする構成可能なスクリプト。自動スキップ機能を一時停止/再開するためのカスタマイズ可能なホットキーが含まれています。Alt + Nを押して構成します。
+// @description:ar     برنامج نصي قابل للتكوين يتخطى تلقائيًا المقدمات والاعتمادات والإعلانات وينقر على "الحلقة التالية" على Netflix و Amazon Prime Video.يتضمن مفتاح اختصار قابل للتخصيص لإيقاف / استئناف وظيفة التخطي التلقائي.اضغط على Alt + N للتكوين.
 // @author             aminomancer
 // @homepageURL        https://github.com/aminomancer/Netflix-Marathon-Pausable
 // @supportURL         https://github.com/aminomancer/Netflix-Marathon-Pausable/issues
@@ -28,39 +20,58 @@
 // @include            https://*.amazon.com/*
 // @include            https://*.primevideo.com/*
 // @require            http://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js
+// @require            https://openuserjs.org/src/libs/sizzle/GM_config.js
 // @grant              GM_registerMenuCommand
 // @grant              GM_unregisterMenuCommand
 // @grant              GM_setValue
 // @grant              GM_getValue
+// @grant              GM_deleteValue
+// @grant              GM_listValues
+// @grant              GM_openInTab
 // @grant              GM.setValue
 // @grant              GM.getValue
+// @grant              GM.deleteValue
+// @grant              GM.listValues
+// @grant              GM.openInTab
 // ==/UserScript==
 
-// You can customize the websites, hotkey, interval rate, and popup settings. ***Don't change the values below*** These are only the default settings. open netflix or amazon once so they'll initialize, and then in your userscript extension, go to the script's page and change the settings in the values/storage page. (e.g. in violentmonkey, at the top there's a code tab, settings, and values. click the values tab) This ensures that you keep your settings even if the script is updated. I don't recommend greasemonkey but if you need to use it for some reason, there is no UI to change stored settings, and I don't want to add a UI to such a simple script, so your only option is to edit the default options below. They will be reset when the script is updated though, so you will need to turn auto update off.
-const defaultOptions = {
-    rate: 300, // integer: interval rate in milliseconds. (how often to check for the elements we want to click) increase if you're running this on a mega-potato?
-    amazon: true, // boolean: whether to bother checking for amazon elements
-    netflix: true, // boolean: whether to check for netflix elements
-
-    hotkey: true, // boolean: whether to use a hotkey at all
-    code: "F7", // string: physical key, e.g. KeyF for the F key. code, NOT keyCode. see the list here: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code/code_values
-    ctrlKey: true, // boolean: modifier keys. if you don't want to use a modifier key, set these to false. if you want to use multiple, set them to true. don't delete these lines though.
-    altKey: false,
-    shiftKey: false,
-    metaKey: false,
-
-    pop: true, // boolean: whether to show pause/resume popups at all
-    popDur: 3000, // integer: how long to leave the popup open for
-    font: "Source Sans Pro", // string: font to use for the popup. if it's not locally installed on your PC, then it must be available on https://fonts.google.com/ and webfont must be true (see below)
-    fontSize: "24px", // string: font size in pixels, followed by px, in quotes.
-    fontWeight: "300", // string: font weight, in multiples of 100 between 100 and 900, surrounded by quotes.
-    italic: false, // boolean: whether the font should be italic or not
-    webfont: true, // boolean: whether to grab the font from google fonts
-};
-const options = {}, // don't edit this. the script fills it with your stored settings.
-    GMObj = typeof GM === "object" && GM !== null && typeof GM.getValue === "function", // ensure the GM object exists so we can use the right GM API functions
-    GM4 = GMObj && GM.info.scriptHandler === "Greasemonkey" && GM.info.version >= 4, // check if the script handler is GM4, since if it is, we can't add a menu command
-    site = test("netflix") ? "netflix" : "amazon";
+const options = {}, // where settings are stored during runtime
+    GMObj = typeof GM === "object" && GM !== null && typeof GM.getValue === "function", // check whether the GM object exists so we can use the right GM API functions
+    GM4 = GMObj && GM.info.scriptHandler === "Greasemonkey" && GM.info.version.split(".")[0] >= 4, // check if the script handler is GM4, since if it is, we can't add a menu command
+    site = test("netflix") ? "netflix" : "amazon",
+    locale = {
+        // some basic localization for the settings menu.
+        get lang() {
+            delete this.lang;
+            return (this.lang = navigator.language.split("-")[0]);
+        },
+        get text() {
+            switch (this.lang) {
+                case "zh":
+                    return "信息";
+                case "ja":
+                    return "助けて";
+                case "ar":
+                    return "تعليمات";
+                case "en":
+                default:
+                    return "Support";
+            }
+        },
+        get title() {
+            switch (this.lang) {
+                case "zh":
+                    return "设置的信息和翻译";
+                case "ja":
+                    return "設定の情報と翻訳";
+                case "ar":
+                    return "معلومات وترجمات للإعدادات";
+                case "en":
+                default:
+                    return "Info and translations for the settings";
+            }
+        },
+    };
 
 let marathon = {
     count: 0,
@@ -300,7 +311,7 @@ class PauseUtil {
         if (options.pop) {
             document.body.insertBefore(this.popup, document.body.firstElementChild);
             this.popup.appendChild(this.text);
-            this.popup.style.cssText = `position:fixed;top:50%;right:3%;transform:translateY(-50%);z-index:2147483646;background:hsla(0, 0%, 8%, 0.7);color:hsla(0, 0%, 97%, 0.95);max-width:-moz-fit-content;padding:17px 19px;border-radius:5px;pointer-events:none;letter-spacing:1px;transition:opacity 0.2s ease-in-out;opacity:0;`;
+            this.popup.style.cssText = `position:fixed;top:50%;right:3%;transform:translateY(-50%);z-index:2147483646;background:hsla(0, 0%, 8%, 0.7);color:hsla(0, 0%, 97%, 0.95);padding:17px 19px;border-radius:5px;pointer-events:none;letter-spacing:1px;transition:opacity 0.2s ease-in-out;opacity:0;`;
             this.popup.style.fontFamily = options.font;
             this.popup.style.fontSize = options.fontSize;
             this.popup.style.fontWeight = options.fontWeight;
@@ -430,7 +441,11 @@ function marathonSetUp() {
      * @param {object} e (event)
      */
     function onKeyDown(e) {
+        if (e.repeat) {
+            return;
+        }
         if (e.code == options.code && modTest(e)) {
+            e.stopImmediatePropagation();
             e.stopPropagation();
             searchInterval.toggle();
             e.preventDefault();
@@ -463,7 +478,10 @@ function marathonSetUp() {
         classes: false, // don't bother changing the DOM at all, we aren't listening for it
         events: false, // no need for events, not worth the execution
         google: {
-            families: [`${options.font}:${ital}wght@1,${options.fontWeight}`], // e.g. "Source Sans Pro:wght@1,300" or "Lobster Two:ital,wght@1,700"
+            families: [
+                `${options.font}:${ital}wght@1,${options.fontWeight}`,
+                "Source Sans Pro:wght@1,300",
+            ], // e.g. "Lobster Two:ital,wght@1,700"
             display: "swap", // not really necessary since the popup doesn't appear until you press a button. but whatever
         },
     };
@@ -487,25 +505,438 @@ function marathonSetUp() {
     };
 }
 
-// get settings from *monkey storage, and if any are missing, set them to defaults. then create properties in options (the js object) based on the stored settings.
-async function settings() {
-    // use the correct get/set functions for user's script handler
-    let getVal = GMObj ? GM.getValue : GM_getValue,
-        setVal = GMObj ? GM.setValue : GM_setValue;
-    // for each key, either get or set
-    for (const key in defaultOptions) {
-        let stored = await getVal(`${key}`);
-        if (stored != undefined) {
-            options[key] = stored;
-        } else {
-            await setVal(`${key}`, defaultOptions[key]);
-            options[key] = defaultOptions[key];
-        }
+/**
+ * if using greasemonkey 4, remap the GM_* functions to GM.*
+ */
+async function checkGM() {
+    if (GM4) {
+        GM_getValue = GM.getValue;
+        GM_setValue = GM.setValue;
+        GM_listValues = GM.listValues;
+        GM_deleteValue = GM.deleteValue;
+        GM_openInTab = GM.openInTab;
     }
 }
 
+/**
+ * set up the GM_config settings GUI
+ */
+async function initConfig() {
+    await checkGM();
+    const frame = document.createElement("div"),
+        resetti = document.createElement("button"),
+        supporti = document.createElement("button"),
+        keyframes = {
+            opacity: [0, 1],
+        },
+        animFwd = {
+            id: "GM_config_fwd",
+            direction: "normal",
+            duration: 200,
+            iterations: 1,
+            easing: "ease-in-out",
+        },
+        animBwd = {
+            id: "GM_config_bwd",
+            direction: "reverse",
+            duration: 500,
+            iterations: 1,
+            easing: "ease-in-out",
+        };
+    document.body.appendChild(frame);
+    frame.appendChild(resetti);
+    frame.appendChild(supporti);
+    resetti.addEventListener("click", () => GM_config.reset());
+    supporti.addEventListener("click", () =>
+        GM_openInTab(`https://greasyfork.org/scripts/420475-netflix-marathon-pausable`)
+    );
+    GM_config.close = function () {
+        window.clearTimeout(this.fading);
+        GM_config.animation = this.frame.animate(keyframes, animBwd);
+        this.onClose(); //  Call the close() callback function
+        this.isOpen = false;
+        this.fading = window.setTimeout(() => {
+            let domSheets = document.getElementsByTagName("head")[0].getElementsByTagName("style"),
+                sheetArr = Array.from(domSheets);
+            for (let i of sheetArr) {
+                i instanceof HTMLStyleElement &&
+                    i.sheet.cssRules[0].selectorText.includes("Marathon") &&
+                    i.remove();
+            }
+            // If frame is an iframe then remove it
+            if (this.frame.contentDocument) {
+                this.remove(this.frame);
+                this.frame = null;
+            } else {
+                // else wipe its content
+                this.frame.innerHTML = "";
+                this.frame.style.display = "none";
+            }
+
+            // Null out all the fields so we don't leak memory
+            var fields = this.fields;
+            for (var id in fields) {
+                var field = fields[id];
+                field.wrapper = null;
+                field.node = null;
+            }
+        }, 500);
+    };
+    GM_config.open = function () {
+        window.clearTimeout(this.fading);
+        if (
+            GM_config.animation &&
+            GM_config.animation.id === "GM_config_bwd" &&
+            GM_config.animation.playState === "running"
+        ) {
+            GM_config.animation.playbackRate = -2.5;
+        } else {
+            GM_config.animation = this.frame.animate(keyframes, animFwd);
+        }
+        this.isOpen = true;
+        GM_config.__proto__.open.call(this);
+    };
+    GM_config.init({
+        "id": "Marathon",
+        "title": "Netflix Marathon Settings",
+        "fields": {
+            "rate": {
+                "label": "Interval Rate",
+                "section": "Main Settings",
+                "type": "int",
+                "size": 8,
+                "min": 50,
+                "max": 5000,
+                "default": 300,
+            },
+            "amazon": {
+                "type": "checkbox",
+                "label": "Run on Amazon",
+                "default": true,
+            },
+            "netflix": {
+                "type": "checkbox",
+                "label": "Run on Netflix",
+                "default": true,
+            },
+            "code": {
+                "label": "Hotkey code",
+                "type": "text",
+                "section": "Hotkey Settings",
+                "size": 8,
+                "default": "F7",
+            },
+            "hotkey": {
+                "type": "checkbox",
+                "label": "Enable hotkey",
+                "default": true,
+            },
+            "ctrlKey": {
+                "type": "checkbox",
+                "label": "Ctrl key",
+                "default": true,
+            },
+            "altKey": {
+                "type": "checkbox",
+                "label": "Alt key",
+                "default": false,
+            },
+            "shiftKey": {
+                "type": "checkbox",
+                "label": "Shift key",
+                "default": false,
+            },
+            "metaKey": {
+                "type": "checkbox",
+                "label": "Meta key",
+                "default": false,
+            },
+            "pop": {
+                "type": "checkbox",
+                "label": "Enable popup",
+                "section": "Popup Settings",
+                "default": true,
+            },
+            "popDur": {
+                "label": "Popup duration",
+                "type": "int",
+                "size": 4,
+                "min": 500,
+                "max": 50000,
+                "default": 3000,
+            },
+            "webfont": {
+                "type": "checkbox",
+                "label": "Use Google Fonts",
+                "default": true,
+            },
+            "font": {
+                "label": "Popup font",
+                "type": "text",
+                "size": 12,
+                "default": "Source Sans Pro",
+            },
+            "fontSizeInt": {
+                "label": "Font size (px)",
+                "type": "int",
+                "size": 1,
+                "min": 6,
+                "max": 560,
+                "default": 24,
+            },
+            "fontWeight": {
+                "label": "Font weight",
+                "type": "select",
+                "options": ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+                "default": 300,
+            },
+            "italic": {
+                "type": "checkbox",
+                "label": "Italic",
+                "default": false,
+            },
+        },
+        "events": {
+            "init": function () {
+                // migrate settings from previous versions, if any exist
+                let migrateKeys = GM_listValues().filter((key) => key !== "Marathon");
+                if (migrateKeys.length) {
+                    for (const key of migrateKeys) {
+                        let oldVal = GM_getValue(key);
+                        if (key === "fontSize" && typeof oldVal === "string") {
+                            let newVal = Number(oldVal.match(/\d+/g)[0]);
+                            GM_config.set("fontSizeInt", newVal);
+                        } else {
+                            GM_config.set(key, oldVal);
+                        }
+                        GM_deleteValue(key);
+                    }
+                }
+                GM_config.save();
+                // for all addons except greasemonkey 4, we can add a menu command
+                if (!GM4) {
+                    GM_registerMenuCommand("Open Settings", () => {
+                        if (!GM_config.isOpen) {
+                            GM_config.open();
+                        }
+                    });
+                }
+                // add an Alt+N hotkey to pull up the settings menu, so greasemonkey 4 users can configure settings.
+                window.addEventListener("keydown", (e) => {
+                    if (e.repeat) {
+                        return;
+                    }
+                    if (e.code == "KeyN" && e.altKey) {
+                        e.stopImmediatePropagation();
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (GM_config.isOpen) {
+                            GM_config.close();
+                        } else {
+                            GM_config.open();
+                        }
+                    }
+                });
+                // memoize the settings
+                settings();
+            },
+            "save": function () {
+                // close the settings menu upon save.
+                if (GM_config.isOpen) {
+                    GM_config.close();
+                }
+            },
+            "open": function () {
+                let resetBtn = document.getElementById("Marathon_resetLink");
+                resetti.title = resetBtn.title;
+                resetti.textContent = resetBtn.textContent;
+                resetti.className = resetBtn.parentElement.className;
+                resetBtn.parentElement.replaceWith(resetti);
+                document.getElementById("Marathon_saveBtn").after(resetti);
+                supporti.title = locale.title;
+                supporti.textContent = locale.text;
+                supporti.className = "saveclose_buttons";
+                supporti.id = "Marathon_supportBtn";
+                document.getElementById("Marathon_closeBtn").after(supporti);
+            },
+        },
+        "frame": frame,
+        "css": `
+                #Marathon {
+                    position: fixed !important;
+                    z-index: 2147483646 !important;
+                    inset: unset !important;
+                    top: 50% !important;
+                    left: 0% !important;
+                    background: hsla(0, 0%, 8%, 0.7);
+                    border: none !important;
+                    color: hsla(0, 0%, 97%, 0.95);
+                    max-width: min-content !important;
+                    height: min-content !important;
+                    border-radius: 5px;
+                    padding: 10px !important;
+                    transform: translate(50%, -60%);
+                }
+                #Marathon * {
+                    font-family: Source Sans Pro;
+                    font-weight: 300;
+                }
+                #Marathon_wrapper {
+                    display: flex;
+                    flex-direction: column;
+                    align-content: center;
+                }
+                #Marathon_header {
+                    font-size: 2em !important;
+                    white-space: nowrap;
+                    padding-inline: 6px;
+                }
+                #Marathon .section_header_holder {
+                    display: flex;
+                    flex-flow: row wrap;
+                    border-top: 1px solid hsla(0, 0%, 100%, 0.1);
+                }
+                #Marathon .section_header {
+                    font-size: 1.25em !important;
+                    background: none !important;
+                    border: none !important;
+                    text-align: left !important;
+                    padding-block: 5px !important;
+                    flex-basis: 100%;
+                    margin-inline: 6px;
+                }
+                #Marathon .config_var {
+                    margin: 0 0 6px 8px;
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+                    line-height: normal;
+                    flex-grow: 1;
+                }
+                input[type="text"] {
+                    appearance: none;
+                    color: inherit;
+                    background: hsla(0, 0%, 25%, 50%) !important;
+                    border: none;
+                    border-radius: 3px;
+                    padding-inline: 4px;
+                    flex-grow: 1;
+                }
+                input[type="text"]:focus {
+                    background-color: hsla(0, 0%, 25%, 70%) !important;
+                    color: white !important;
+                }
+                input[type="checkbox"] {
+                    appearance: none !important;
+                    border: 2px solid hsl(240, 6.7%, 58.8%);
+                    min-width: 14px;
+                    min-height: 14px;
+                    background: hsl(0, 0%, 100%) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><path stroke='transparent' fill='transparent' d='M6 14a1 1 0 01-.707-.293l-3-3a1 1 0 011.414-1.414l2.157 2.157 6.316-9.023a1 1 0 011.639 1.146l-7 10a1 1 0 01-.732.427A.863.863 0 016 14z'/></svg>") center/contain no-repeat;
+                    border-radius: 2.5px;
+                }
+                input[type="checkbox"]:focus {
+                    box-shadow: 0 0 0 .1em hsl(214.3, 58.3%, 81.8%), 0 0 0 .15em hsl(214.2, 60%, 42.7%), 0 0 0 .25em hsl(214.3, 58.3%, 71.8%);
+                }
+                input[type="checkbox"]:hover {
+                    border: 2px solid hsl(240, 6%, 43%);
+                }
+                input[type="checkbox"]:hover:active {
+                    background-color: hsl(240, 8%, 83%);
+                    border: 2px solid hsl(240, 6%, 30%);
+                }
+                input[type="checkbox"]:checked {
+                    border: 2px solid transparent !important;
+                    background: hsl(214.2, 100%, 43.7%) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><path stroke='hsla(0, 0%, 97%, 0.95)' fill='hsla(0, 0%, 97%, 0.95)' d='M6 14a1 1 0 01-.707-.293l-3-3a1 1 0 011.414-1.414l2.157 2.157 6.316-9.023a1 1 0 011.639 1.146l-7 10a1 1 0 01-.732.427A.863.863 0 016 14z'/></svg>") center/contain no-repeat !important;
+                }
+                input[type="checkbox"]:checked:hover {
+                    background-color: hsl(215, 98%, 37%) !important;
+                }
+                input[type="checkbox"]:checked:hover:active {
+                    background-color: hsl(216, 94%, 30%) !important;
+                }
+                #Marathon_section_0 > .config-var,
+                #Marathon_field_rate {
+                    flex-grow: unset;
+                }
+                #Marathon_buttons_holder {
+                    display: flex;
+                    flex-flow: row;
+                    align-items: center;
+                    border-top: 1px solid hsla(0, 0%, 100%, 0.1);
+                    color: inherit !important;
+                }
+                #Marathon .saveclose_buttons,
+                #Marathon .reset_holder {
+                    margin: 6px 6px 0px 0px;
+                    padding: 2px 12px;
+                    color: inherit;
+                    background: hsla(0, 0%, 25%, 50%);
+                    border: none !important;
+                    border-radius: 3px;
+                    padding-inline: 4px;
+                    font-size: 15px;
+                    padding-block: 2px;
+                    flex-grow: 1;
+                }
+                #Marathon .saveclose_buttons:hover,
+                #Marathon .reset_holder:hover {
+                    background-color: hsla(0, 0%, 25%, 70%) !important;
+                    color: white !important;
+                }
+                #Marathon_saveBtn {
+                    padding-inline: 16px 2px !important;
+                    background: hsla(0, 0%, 25%, 50%) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><path fill='hsla(0, 0%, 97%, 0.95)' d='M6 14a1 1 0 01-.707-.293l-3-3a1 1 0 011.414-1.414l2.157 2.157 6.316-9.023a1 1 0 011.639 1.146l-7 10a1 1 0 01-.732.427A.863.863 0 016 14z'/></svg>") 3.8px 48%/12.5px no-repeat !important;
+                }
+                #Marathon .reset_holder {
+                    padding-inline: 16px 2px !important;
+                    background: hsla(0, 0%, 25%, 50%) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='hsla(0, 0%, 97%, 0.95)' height='16' width='16'><path d='M1 1a1 1 0 011 1v2.4A7 7 0 118 15a7 7 0 01-4.9-2 1 1 0 011.4-1.5 5 5 0 10-1-5.5H6a1 1 0 010 2H1a1 1 0 01-1-1V2a1 1 0 011-1z'/></svg>") 4.5px 50%/11px no-repeat !important;
+                }
+                #Marathon .reset {
+                    color: inherit !important;
+                    font-size: inherit !important;
+                }
+                #Marathon .field_label {
+                    font-size: 12px;
+                    font-weight: normal !important;
+                    margin-inline: 6px 0 !important;
+                    white-space: nowrap;
+                }
+                #Marathon .field_label:first-child {
+                    margin-inline: 0 6px !important;
+                }
+                #Marathon select {
+                    appearance: none;
+                    color: inherit;
+                    border: none;
+                    border-radius: 3px;
+                    padding-inline: 2px 13px;
+                    background: hsla(0, 0%, 25%, 50%) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='hsla(0, 0%, 97%, 0.95)' height='24' viewBox='0 0 24 24' width='24'><path d='M8.12 9.29L12 13.17l3.88-3.88c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0L6.7 10.7c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z'/></svg>") 100% 66%/18px no-repeat !important;
+                }
+                #Marathon option {
+                    appearance: none;
+                    color: inherit;
+                    background: hsl(0, 1%, 17%) !important;
+                    border: none;
+                }
+                #Marathon_rate_var,
+                #Marathon_pop_var,
+                #Marathon_font_var {
+                    flex-basis: 100%;
+                }  
+        `,
+    });
+}
+
+// after getting settings from *monkey storage, create properties in options (the js object) based on the stored settings.
+async function settings() {
+    for (const key in GM_config.fields) {
+        options[key] = GM_config.get(`${key}`);
+    }
+    options.fontSize = `${options.fontSizeInt}px`;
+}
+
 async function start() {
-    await settings();
+    await initConfig();
     marathonSetUp();
 }
 
