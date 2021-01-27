@@ -1,8 +1,10 @@
-  <h1 align="center">
-    <a href="https://github.com/aminomancer/Netflix-Marathon-Pausable"><img src="https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/icon.svg" width="80em" /><br>
-      <b>Netflix Marathon（一時停止できます）</b></a><br>
-  <sup><b>インストール：&nbsp;&nbsp;<a href="https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/marathon.user.js">jsDelivr</a>&nbsp;または&nbsp;<a href="https://greasyfork.org/scripts/420475-netflix-marathon-pausable/code/Netflix Marathon (Pausable).user.js">Greasy Fork</a></b></sup>
-  </h1>
+<h1 align="center">
+    <center>
+        <a href="https://github.com/aminomancer/Netflix-Marathon-Pausable"><img src="https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/icon.svg" width="80em" /><br>
+        <b>Netflix Marathon（一時停止できます）</b></a><br>
+        <sup><b>インストール：&nbsp;&nbsp;<a href="https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/marathon.user.js">jsDelivr</a>&nbsp;または&nbsp;<a href="https://greasyfork.org/scripts/420475-netflix-marathon-pausable/code/Netflix Marathon (Pausable).user.js">Greasy Fork</a></b></sup>
+    </center>
+</h1>
 
 イントロ、クレジット、広告を自動的にスキップし、NetflixとAmazon PrimeVideoの「次のエピソード」プロンプトをクリックする構成可能なユーザースクリプト。[Violentmonkey](https://violentmonkey.github.io/)や[Tampermonkey](https://www.tampermonkey.net/)などのユーザースクリプトマネージャーが必要です。Greasemonkeyも完全にサポートされていますが、お勧めしません。誰かがそれを要求した場合、私はそれをブラウザ拡張機能に変えることを検討します。
 
@@ -15,15 +17,22 @@
 <br>
 <details><summary>Firefoxを使用していて、ポップアップをさらにきれいに見せたい場合は、ここをクリックしてください。</summary>
 <img src="https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/settings.png" width=67% />
-
+<br>
 これらのポップアップは、Windows 10のアクリルガラス効果と同様に、 `backdrop-filter`を使用して背後にぼかし効果を適用します。これは純粋に美的であるため、これは無視してかまいませんが、Firefoxを使用していて完全な視覚効果が必要な場合は、追加の手順があります。
+<br><br>
 
-1.  URLバーに`about：config`と入力してEnterキーを押します。`layout.css.backdrop-filter.enabled`を検索し、trueに切り替えます。
-2.  次に、WebRenderが有効になっていることを確認する必要があります:(デフォルトで有効になっていますが、確認しましょう）
-3.  URLバーから`about：support`に移動します。
-4.  グラフィックセクションを見つけ、合成の行で、WebRenderと表示されていることを確認します。
-5.  WebRenderと表示されていない場合は、 `about：config`に戻り、`gfx.webrender.all`を検索して、trueに切り替えます。
-6.  最後に、 `dom.webgpu.enabled`を検索し、falseに設定されていることを確認します。
+1.  URLバーに`about：config`と入力してEnterキーを押します。`layout.css.backdrop-filter.enabled`を検索し、trueに切り替えます。<br>
+
+2.  次に、WebRenderが有効になっていることを確認する必要があります:(デフォルトで有効になっていますが、確認しましょう）<br>
+
+3.  URLバーから`about：support`に移動します。<br>
+
+4.  グラフィックセクションを見つけ、合成の行で、WebRenderと表示されていることを確認します。<br>
+
+5.  WebRenderと表示されていない場合は、 `about：config`に戻り、`gfx.webrender.all`を検索して、trueに切り替えます。<br>
+
+6.  最後に、 `dom.webgpu.enabled`を検索し、falseに設定されていることを確認します。<br>
+<br>
 
 Firefoxを再起動すると、サポートページにWebRenderがコンポジターであることが表示されます。これらの手順を実行してもWebRenderと表示されない場合は、グラフィックドライバー、OS、ハードウェア、またはFirefoxのバージョンと互換性がない可能性があります。デスクトップではほとんどあり得ないはずです。しかし、それは大したことではありません。結局のところ、それは視覚効果にすぎません。
 

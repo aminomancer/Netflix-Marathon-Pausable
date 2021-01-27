@@ -1,8 +1,10 @@
-  <h1 align="center">
-    <a href="https://github.com/aminomancer/Netflix-Marathon-Pausable"><img src="https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/icon.svg" width="80em" /><br>
-      <b>网飞马拉松赛（可暫停）</b></a><br>
-  <sup><b>安装：<a href="https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/marathon.user.js">jsDelivr</a>&nbsp;or&nbsp;<a href="https://greasyfork.org/scripts/420475-netflix-marathon-pausable/code/Netflix Marathon (Pausable).user.js">Greasy Fork</a></b></sup>
-  </h1>
+<h1 align="center">
+    <center>
+        <a href="https://github.com/aminomancer/Netflix-Marathon-Pausable"><img src="https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/icon.svg" width="80em" /><br>
+        <b>网飞马拉松赛（可暫停）</b></a><br>
+        <sup><b>安装：<a href="https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/marathon.user.js">jsDelivr</a>&nbsp;or&nbsp;<a href="https://greasyfork.org/scripts/420475-netflix-marathon-pausable/code/Netflix Marathon (Pausable).user.js">Greasy Fork</a></b></sup>
+    </center>
+</h1>
 
 一种可配置的用户脚本，该脚本自动跳过介绍，信用和广告，并单击Netflix和Amazon Prime Video上的“下一集”提示。需要一个[Violentmonkey](https://violentmonkey.github.io/)或[Tampermonkey](https://www.tampermonkey.net/)之类的用户脚本管理器。Greasemonkey也完全受支持，但我不建议这样做。如果收到任何请求，我会考虑将其转换为浏览器插件。
 
@@ -15,15 +17,22 @@
 <br>
 <details><summary>如果您使用Firefox并关心脚本的通知和设置菜单的外观，请单击此处。</summary>
 <img src="https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/settings.png" width=67% />
-
+<br>
 这些弹出窗口使用`backdrop-filter`在其后面应用模糊效果，类似于Windows 10的丙烯酸玻璃效果。这纯粹是出于美学目的，因此您可以忽略这一点，但是如果您使用Firefox并希望获得完整的视觉效果，则需要执行额外的步骤：
+<br><br>
 
-1.  在网址栏中输入`about:config`并按Enter。搜索`layout.css.backdrop-filter.enabled`并将其切换为true。
-2.  接下来，我们应确保已启用WebRender ：（默认情况下已启用，但请确保）
-3.  从您的网址栏中导航到`about:support`。
-4.  找到“特性”部分，并在标记为“合成”的第一行中，确保其显示为WebRender。
-5.  如果没有显示WebRender，请返回到`about：config`，然后搜索`gfx.webrender.all`并将其切换为true。
-6.  然后搜索`dom.webgpu.enabled`并确保将其设置为false。
+1.  在网址栏中输入`about:config`并按Enter。搜索`layout.css.backdrop-filter.enabled`并将其切换为true。<br>
+
+2.  接下来，我们应确保已启用WebRender ：（默认情况下已启用，但请确保）<br>
+
+3.  从您的网址栏中导航到`about:support`。<br>
+
+4.  找到“特性”部分，并在标记为“合成”的第一行中，确保其显示为WebRender。<br>
+
+5.  如果没有显示WebRender，请返回到`about：config`，然后搜索`gfx.webrender.all`并将其切换为true。<br>
+
+6.  然后搜索`dom.webgpu.enabled`并确保将其设置为false。<br>
+<br>
 
 重新启动Firefox后，支持页面现在应在“特性”旁边列出WebRender。如果您按照这些步骤操作，但仍未显示WebRender，则它可能与您的图形驱动程序，操作系统，硬件或Firefox版本不兼容。在台式机上，这种情况极不可能发生。但是不要担心。毕竟这只是视觉效果。
 
