@@ -18,20 +18,20 @@
 <details><summary>如果您使用Firefox并关心脚本的通知和设置菜单的外观，请单击此处。</summary>
 <img src="https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/settings.png" width=67% />
 <br>
-这些弹出窗口使用`backdrop-filter`在其后面应用模糊效果，类似于Windows 10的丙烯酸玻璃效果。这纯粹是出于美学目的，因此您可以忽略这一点，但是如果您使用Firefox并希望获得完整的视觉效果，则需要执行额外的步骤：
+这些弹出窗口使用<code>backdrop-filter</code>在其后面应用模糊效果，类似于Windows 10的丙烯酸玻璃效果。这纯粹是出于美学目的，因此您可以忽略这一点，但是如果您使用Firefox并希望获得完整的视觉效果，则需要执行额外的步骤：
 <br><br>
 
-1.  在网址栏中输入`about:config`并按Enter。搜索`layout.css.backdrop-filter.enabled`并将其切换为true。<br>
+1.  在网址栏中输入<code>about:config</code>并按Enter。搜索<code>layout.css.backdrop-filter.enabled</code>并将其切换为true。<br>
 
 2.  接下来，我们应确保已启用WebRender ：（默认情况下已启用，但请确保）<br>
 
-3.  从您的网址栏中导航到`about:support`。<br>
+3.  从您的网址栏中导航到<code>about:support</code>。<br>
 
 4.  找到“特性”部分，并在标记为“合成”的第一行中，确保其显示为WebRender。<br>
 
-5.  如果没有显示WebRender，请返回到`about：config`，然后搜索`gfx.webrender.all`并将其切换为true。<br>
+5.  如果没有显示WebRender，请返回到<code>about：config</code>，然后搜索<code>gfx.webrender.all</code>并将其切换为true。<br>
 
-6.  然后搜索`dom.webgpu.enabled`并确保将其设置为false。<br>
+6.  然后搜索<code>dom.webgpu.enabled</code>并确保将其设置为false。<br>
 <br>
 
 重新启动Firefox后，支持页面现在应在“特性”旁边列出WebRender。如果您按照这些步骤操作，但仍未显示WebRender，则它可能与您的图形驱动程序，操作系统，硬件或Firefox版本不兼容。在台式机上，这种情况极不可能发生。但是不要担心。毕竟这只是视觉效果。

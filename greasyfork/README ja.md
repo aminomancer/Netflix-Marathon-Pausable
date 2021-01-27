@@ -18,20 +18,20 @@
 <details><summary>Firefoxを使用していて、ポップアップをさらにきれいに見せたい場合は、ここをクリックしてください。</summary>
 <img src="https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/settings.png" width=67% />
 <br>
-これらのポップアップは、Windows 10のアクリルガラス効果と同様に、 `backdrop-filter`を使用して背後にぼかし効果を適用します。これは純粋に美的であるため、これは無視してかまいませんが、Firefoxを使用していて完全な視覚効果が必要な場合は、追加の手順があります。
+これらのポップアップは、Windows 10のアクリルガラス効果と同様に、 <code>backdrop-filter</code>を使用して背後にぼかし効果を適用します。これは純粋に美的であるため、これは無視してかまいませんが、Firefoxを使用していて完全な視覚効果が必要な場合は、追加の手順があります。
 <br><br>
 
-1.  URLバーに`about：config`と入力してEnterキーを押します。`layout.css.backdrop-filter.enabled`を検索し、trueに切り替えます。<br>
+1.  URLバーに<code>about：config</code>と入力してEnterキーを押します。<code>layout.css.backdrop-filter.enabled</code>を検索し、trueに切り替えます。<br>
 
 2.  次に、WebRenderが有効になっていることを確認する必要があります:(デフォルトで有効になっていますが、確認しましょう）<br>
 
-3.  URLバーから`about：support`に移動します。<br>
+3.  URLバーから<code>about：support</code>に移動します。<br>
 
 4.  グラフィックセクションを見つけ、合成の行で、WebRenderと表示されていることを確認します。<br>
 
-5.  WebRenderと表示されていない場合は、 `about：config`に戻り、`gfx.webrender.all`を検索して、trueに切り替えます。<br>
+5.  WebRenderと表示されていない場合は、 <code>about：config</code>に戻り、<code>gfx.webrender.all</code>を検索して、trueに切り替えます。<br>
 
-6.  最後に、 `dom.webgpu.enabled`を検索し、falseに設定されていることを確認します。<br>
+6.  最後に、 <code>dom.webgpu.enabled</code>を検索し、falseに設定されていることを確認します。<br>
 <br>
 
 Firefoxを再起動すると、サポートページにWebRenderがコンポジターであることが表示されます。これらの手順を実行してもWebRenderと表示されない場合は、グラフィックドライバー、OS、ハードウェア、またはFirefoxのバージョンと互換性がない可能性があります。デスクトップではほとんどあり得ないはずです。しかし、それは大したことではありません。結局のところ、それは視覚効果にすぎません。

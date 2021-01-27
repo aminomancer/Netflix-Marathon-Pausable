@@ -18,20 +18,20 @@ If there's some player or skip element this script doesn't handle that you want 
 <details><summary>If you use Firefox and care about the appearance of the popups, click here.</summary>
 <img src="https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/settings.png" width=67% />
 <br>
-These popups use `backdrop-filter` to apply a blur effect behind them, similar to Windows 10's acrylic glass effect. This is purely aesthetic so you can simply ignore this, but if you use Firefox and want the full visual effect, there's an extra step:
+These popups use <code>backdrop-filter</code> to apply a blur effect behind them, similar to Windows 10's acrylic glass effect. This is purely aesthetic so you can simply ignore this, but if you use Firefox and want the full visual effect, there's an extra step:
 <br><br>
 
-1.  Type `about:config` into your url bar and hit enter. Search for `layout.css.backdrop-filter.enabled` and toggle it to true.<br>
+1.  Type <code>about:config</code> into your url bar and hit enter. Search for <code>layout.css.backdrop-filter.enabled</code> and toggle it to true.<br>
 
 2.  Next, we should ensure WebRender is enabled: (It should be enabled by default)<br>
 
-3.  Navigate to `about:support` from your url bar.<br>
+3.  Navigate to <code>about:support</code> from your url bar.<br>
 
 4.  Find the Graphics section, and in the row for Compositing, make sure it says WebRender.<br>
 
-5.  If it doesn't, go back to `about:config`, then search for `gfx.webrender.all` and toggle it to true.<br>
+5.  If it doesn't, go back to <code>about:config</code>, then search for <code>gfx.webrender.all</code> and toggle it to true.<br>
 
-6.  Then search `dom.webgpu.enabled` and make sure it's set to false.<br>
+6.  Then search <code>dom.webgpu.enabled</code> and make sure it's set to false.<br>
 <br>
 
 When you restart Firefox, the support page should now show WebRender is the compositor. If you followed these steps and it still doesn't say WebRender, then it might be incompatible with your graphics driver, OS, hardware, or Firefox version. Should be extremely unlikely on a desktop. But oh well, it's only a visual effect after all.
