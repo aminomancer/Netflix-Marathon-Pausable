@@ -16,7 +16,7 @@ If there's some player or skip element this script doesn't handle that you want 
 
 <br>
 <details><summary>If you use Firefox and care about the appearance of the popups, click here.</summary>
-<img src="https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/settings.png" width=67% />
+<img src="https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/settings.png" width=400 />
 <br>
 These popups use <code>backdrop-filter</code> to apply a blur effect behind them, similar to Windows 10's acrylic glass effect. This is purely aesthetic so you can simply ignore this, but if you use Firefox and want the full visual effect, there's an extra step:
 <br><br>

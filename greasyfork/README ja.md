@@ -16,7 +16,7 @@
 
 <br>
 <details><summary>Firefoxを使用していて、ポップアップをさらにきれいに見せたい場合は、ここをクリックしてください。</summary>
-<img src="https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/settings.png" width=67% />
+<img src="https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/settings.png" width=400 />
 <br>
 これらのポップアップは、Windows 10のアクリルガラス効果と同様に、 <code>backdrop-filter</code>を使用して背後にぼかし効果を適用します。これは純粋に美的であるため、これは無視してかまいませんが、Firefoxを使用していて完全な視覚効果が必要な場合は、追加の手順があります。
 <br><br>
