@@ -5,7 +5,7 @@
 // @name:ja            Netflix Marathon（一時停止できます）
 // @name:ar            ماراثون Netflix (يمكن إيقافه مؤقتًا)
 // @namespace          https://github.com/aminomancer
-// @version            4.4.5
+// @version            4.4.6
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix and Amazon Prime Video. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，该脚本自动跳过介绍，信用和广告，并单击Netflix和Amazon Prime Video上的“下一个节目”提示。包括一个可自定义的热键，以暂停/恢复自动跳过功能。按Alt + N进行配置。
 // @description:zh-TW  一个可配置的脚本，该脚本自动跳过介绍，信用和广告，并单击Netflix和Amazon Prime Video上的“下一个节目”提示。包括一个可自定义的热键，以暂停/恢复自动跳过功能。按Alt + N进行配置。
@@ -778,6 +778,8 @@ async function initConfig() {
                     border-radius: 5px;
                     padding: 10px !important;
                     transform: translate(50%, -60%);
+                    font-size: 14px;
+                    line-height: 1.2;
                 }
                 #Marathon * {
                     font-family: Source Sans Pro;
@@ -815,14 +817,27 @@ async function initConfig() {
                     line-height: normal;
                     flex-grow: 1;
                 }
+                #Marathon :is(button, input, optgroup, select, textarea) {
+                    font: inherit;
+                    margin: 0;
+                }
+                #Marathon button {
+                    text-align: center;
+                }
                 input[type="text"] {
                     appearance: none;
                     color: inherit;
                     background: hsla(0, 0%, 25%, 50%) !important;
                     border: none;
                     border-radius: 3px;
-                    padding-inline: 4px;
+                    padding: 1px 4px;
                     flex-grow: 1;
+                    height: unset;
+                    box-shadow: unset !important;
+                    outline: unset;
+                    box-sizing: initial !important;
+                    margin: 0 !important;
+                    font-size: 14px !important;
                 }
                 input[type="text"]:focus {
                     background-color: hsla(0, 0%, 25%, 70%) !important;
@@ -835,6 +850,8 @@ async function initConfig() {
                     min-height: 14px;
                     background: hsl(0, 0%, 100%) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><path stroke='transparent' fill='transparent' d='M6 14a1 1 0 01-.707-.293l-3-3a1 1 0 011.414-1.414l2.157 2.157 6.316-9.023a1 1 0 011.639 1.146l-7 10a1 1 0 01-.732.427A.863.863 0 016 14z'/></svg>") center/contain no-repeat;
                     border-radius: 2.5px;
+                    position: static;
+                    box-sizing: border-box;
                 }
                 input[type="checkbox"]:focus {
                     box-shadow: 0 0 0 .1em hsl(214.3, 58.3%, 81.8%), 0 0 0 .15em hsl(214.2, 60%, 42.7%), 0 0 0 .25em hsl(214.3, 58.3%, 71.8%);
@@ -879,6 +896,7 @@ async function initConfig() {
                     font-size: 15px;
                     padding-block: 2px;
                     flex-grow: 1;
+                    white-space: nowrap;
                 }
                 #Marathon .saveclose_buttons:hover,
                 #Marathon .reset_holder:hover {
@@ -902,6 +920,7 @@ async function initConfig() {
                     font-weight: normal !important;
                     margin-inline: 6px 0 !important;
                     white-space: nowrap;
+                    padding: unset !important;
                 }
                 #Marathon .field_label:first-child {
                     margin-inline: 0 6px !important;
