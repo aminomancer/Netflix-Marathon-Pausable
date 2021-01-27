@@ -5,7 +5,7 @@
 // @name:ja            Netflix Marathon（一時停止できます）
 // @name:ar            ماراثون Netflix (يمكن إيقافه مؤقتًا)
 // @namespace          https://github.com/aminomancer
-// @version            4.4.6
+// @version            4.4.7
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix and Amazon Prime Video. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，该脚本自动跳过介绍，信用和广告，并单击Netflix和Amazon Prime Video上的“下一个节目”提示。包括一个可自定义的热键，以暂停/恢复自动跳过功能。按Alt + N进行配置。
 // @description:zh-TW  一个可配置的脚本，该脚本自动跳过介绍，信用和广告，并单击Netflix和Amazon Prime Video上的“下一个节目”提示。包括一个可自定义的热键，以暂停/恢复自动跳过功能。按Alt + N进行配置。
@@ -311,7 +311,23 @@ class PauseUtil {
         if (options.pop) {
             document.body.insertBefore(this.popup, document.body.firstElementChild);
             this.popup.appendChild(this.text);
-            this.popup.style.cssText = `position:fixed;top:50%;right:3%;transform:translateY(-50%);z-index:2147483646;background:hsla(0, 0%, 8%, 0.7);color:hsla(0, 0%, 97%, 0.95);padding:17px 19px;border-radius:5px;pointer-events:none;letter-spacing:1px;transition:opacity 0.2s ease-in-out;opacity:0;`;
+            this.popup.style.cssText = `
+            position: fixed;
+            top: 50%;
+            right: 3%;
+            transform: translateY(-50%);
+            z-index: 2147483646;
+            background: hsla(0, 0%, 6%, 0.8);
+            -webkit-backdrop-filter: blur(7px);
+            backdrop-filter: blur(7px);
+            color: hsla(0, 0%, 97%, 0.95);
+            padding: 17px 19px;
+            border-radius: 5px;
+            pointer-events: none;
+            letter-spacing: 1px;
+            transition: opacity 0.2s ease-in-out;
+            opacity: 0;
+            `;
             this.popup.style.fontFamily = options.font;
             this.popup.style.fontSize = options.fontSize;
             this.popup.style.fontWeight = options.fontWeight;
@@ -560,9 +576,12 @@ async function initConfig() {
             let domSheets = document.getElementsByTagName("head")[0].getElementsByTagName("style"),
                 sheetArr = Array.from(domSheets);
             for (let i of sheetArr) {
-                i instanceof HTMLStyleElement &&
-                    i.sheet.cssRules[0].selectorText.includes("Marathon") &&
-                    i.remove();
+                try {
+                    i instanceof HTMLStyleElement &&
+                        i.sheet.cssRules[0].selectorText &&
+                        i.sheet.cssRules[0].selectorText.includes("Marathon") &&
+                        i.remove();
+                } catch (e) {}
             }
             // If frame is an iframe then remove it
             if (this.frame.contentDocument) {
@@ -763,187 +782,212 @@ async function initConfig() {
         },
         "frame": frame,
         "css": `
-                #Marathon {
-                    display: block !important;
-                    position: fixed !important;
-                    z-index: 2147483646 !important;
-                    inset: unset !important;
-                    top: 50% !important;
-                    left: 0% !important;
-                    background: hsla(0, 0%, 8%, 0.7);
-                    border: none !important;
-                    color: hsla(0, 0%, 97%, 0.95);
-                    max-width: min-content !important;
-                    height: min-content !important;
-                    border-radius: 5px;
-                    padding: 10px !important;
-                    transform: translate(50%, -60%);
-                    font-size: 14px;
-                    line-height: 1.2;
-                }
-                #Marathon * {
-                    font-family: Source Sans Pro;
-                    font-weight: 300;
-                }
-                #Marathon_wrapper {
-                    display: flex;
-                    flex-direction: column;
-                    align-content: center;
-                }
-                #Marathon_header {
-                    font-size: 2em !important;
-                    white-space: nowrap;
-                    padding-inline: 6px;
-                }
-                #Marathon .section_header_holder {
-                    display: flex;
-                    flex-flow: row wrap;
-                    border-top: 1px solid hsla(0, 0%, 100%, 0.1);
-                }
-                #Marathon .section_header {
-                    font-size: 1.25em !important;
-                    background: none !important;
-                    border: none !important;
-                    text-align: left !important;
-                    padding-block: 5px !important;
-                    flex-basis: 100%;
-                    margin-inline: 6px;
-                }
-                #Marathon .config_var {
-                    margin: 0 0 6px 8px;
-                    display: flex;
-                    flex-direction: row;
-                    align-items: center;
-                    line-height: normal;
-                    flex-grow: 1;
-                }
-                #Marathon :is(button, input, optgroup, select, textarea) {
-                    font: inherit;
-                    margin: 0;
-                }
-                #Marathon button {
-                    text-align: center;
-                }
-                input[type="text"] {
-                    appearance: none;
-                    color: inherit;
-                    background: hsla(0, 0%, 25%, 50%) !important;
-                    border: none;
-                    border-radius: 3px;
-                    padding: 1px 4px;
-                    flex-grow: 1;
-                    height: unset;
-                    box-shadow: unset !important;
-                    outline: unset;
-                    box-sizing: initial !important;
-                    margin: 0 !important;
-                    font-size: 14px !important;
-                }
-                input[type="text"]:focus {
-                    background-color: hsla(0, 0%, 25%, 70%) !important;
-                    color: white !important;
-                }
-                input[type="checkbox"] {
-                    appearance: none !important;
-                    border: 2px solid hsl(240, 6.7%, 58.8%);
-                    min-width: 14px;
-                    min-height: 14px;
-                    background: hsl(0, 0%, 100%) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><path stroke='transparent' fill='transparent' d='M6 14a1 1 0 01-.707-.293l-3-3a1 1 0 011.414-1.414l2.157 2.157 6.316-9.023a1 1 0 011.639 1.146l-7 10a1 1 0 01-.732.427A.863.863 0 016 14z'/></svg>") center/contain no-repeat;
-                    border-radius: 2.5px;
-                    position: static;
-                    box-sizing: border-box;
-                }
-                input[type="checkbox"]:focus {
-                    box-shadow: 0 0 0 .1em hsl(214.3, 58.3%, 81.8%), 0 0 0 .15em hsl(214.2, 60%, 42.7%), 0 0 0 .25em hsl(214.3, 58.3%, 71.8%);
-                }
-                input[type="checkbox"]:hover {
-                    border: 2px solid hsl(240, 6%, 43%);
-                }
-                input[type="checkbox"]:hover:active {
-                    background-color: hsl(240, 8%, 83%);
-                    border: 2px solid hsl(240, 6%, 30%);
-                }
-                input[type="checkbox"]:checked {
-                    border: 2px solid transparent !important;
-                    background: hsl(214.2, 100%, 43.7%) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><path stroke='hsla(0, 0%, 97%, 0.95)' fill='hsla(0, 0%, 97%, 0.95)' d='M6 14a1 1 0 01-.707-.293l-3-3a1 1 0 011.414-1.414l2.157 2.157 6.316-9.023a1 1 0 011.639 1.146l-7 10a1 1 0 01-.732.427A.863.863 0 016 14z'/></svg>") center/contain no-repeat !important;
-                }
-                input[type="checkbox"]:checked:hover {
-                    background-color: hsl(215, 98%, 37%) !important;
-                }
-                input[type="checkbox"]:checked:hover:active {
-                    background-color: hsl(216, 94%, 30%) !important;
-                }
-                #Marathon_section_0 > .config-var,
-                #Marathon_field_rate {
-                    flex-grow: unset;
-                }
-                #Marathon_buttons_holder {
-                    display: flex;
-                    flex-flow: row;
-                    align-items: center;
-                    border-top: 1px solid hsla(0, 0%, 100%, 0.1);
-                    color: inherit !important;
-                }
-                #Marathon .saveclose_buttons,
-                #Marathon .reset_holder {
-                    margin: 6px 6px 0px 0px;
-                    padding: 2px 12px;
-                    color: inherit;
-                    background: hsla(0, 0%, 25%, 50%);
-                    border: none !important;
-                    border-radius: 3px;
-                    padding-inline: 4px;
-                    font-size: 15px;
-                    padding-block: 2px;
-                    flex-grow: 1;
-                    white-space: nowrap;
-                }
-                #Marathon .saveclose_buttons:hover,
-                #Marathon .reset_holder:hover {
-                    background-color: hsla(0, 0%, 25%, 70%) !important;
-                    color: white !important;
-                }
-                #Marathon_saveBtn {
-                    padding-inline: 16px 2px !important;
-                    background: hsla(0, 0%, 25%, 50%) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><path fill='hsla(0, 0%, 97%, 0.95)' d='M6 14a1 1 0 01-.707-.293l-3-3a1 1 0 011.414-1.414l2.157 2.157 6.316-9.023a1 1 0 011.639 1.146l-7 10a1 1 0 01-.732.427A.863.863 0 016 14z'/></svg>") 3.8px 48%/12.5px no-repeat !important;
-                }
-                #Marathon .reset_holder {
-                    padding-inline: 16px 2px !important;
-                    background: hsla(0, 0%, 25%, 50%) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='hsla(0, 0%, 97%, 0.95)' height='16' width='16'><path d='M1 1a1 1 0 011 1v2.4A7 7 0 118 15a7 7 0 01-4.9-2 1 1 0 011.4-1.5 5 5 0 10-1-5.5H6a1 1 0 010 2H1a1 1 0 01-1-1V2a1 1 0 011-1z'/></svg>") 4.5px 50%/11px no-repeat !important;
-                }
-                #Marathon .reset {
-                    color: inherit !important;
-                    font-size: inherit !important;
-                }
-                #Marathon .field_label {
-                    font-size: 12px;
-                    font-weight: normal !important;
-                    margin-inline: 6px 0 !important;
-                    white-space: nowrap;
-                    padding: unset !important;
-                }
-                #Marathon .field_label:first-child {
-                    margin-inline: 0 6px !important;
-                }
-                #Marathon select {
-                    appearance: none;
-                    color: inherit;
-                    border: none;
-                    border-radius: 3px;
-                    padding-inline: 2px 13px;
-                    background: hsla(0, 0%, 25%, 50%) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='hsla(0, 0%, 97%, 0.95)' height='24' viewBox='0 0 24 24' width='24'><path d='M8.12 9.29L12 13.17l3.88-3.88c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0L6.7 10.7c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z'/></svg>") 100% 66%/18px no-repeat !important;
-                }
-                #Marathon option {
-                    appearance: none;
-                    color: inherit;
-                    background: hsl(0, 1%, 17%) !important;
-                    border: none;
-                }
-                #Marathon_rate_var,
-                #Marathon_pop_var,
-                #Marathon_font_var {
-                    flex-basis: 100%;
-                }  
+        #Marathon {
+            display: block !important;
+            position: fixed !important;
+            z-index: 2147483646 !important;
+            inset: unset !important;
+            top: 50% !important;
+            left: 0% !important;
+            background: hsla(0, 0%, 5.1%, 0.91);
+            -webkit-backdrop-filter: blur(7px);
+            backdrop-filter: blur(7px);
+            border: none !important;
+            color: hsla(0, 0%, 97%, 0.95);
+            max-width: -webkit-min-content !important;
+            max-width: -moz-min-content !important;
+            max-width: min-content !important;
+            height: -webkit-min-content !important;
+            height: -moz-min-content !important;
+            height: min-content !important;
+            border-radius: 5px;
+            padding: 10px !important;
+            transform: translate(50%, -60%);
+            font-size: 14px;
+            line-height: 1.2;
+        }
+        #Marathon * {
+            font-family: Source Sans Pro;
+            font-weight: 300;
+        }
+        #Marathon_wrapper {
+            display: flex;
+            flex-direction: column;
+            align-content: center;
+        }
+        #Marathon_header {
+            font-size: 2em !important;
+            white-space: nowrap;
+            padding-inline: 6px;
+        }
+        #Marathon .section_header_holder {
+            display: flex;
+            flex-flow: row wrap;
+            border-top: 1px solid hsla(0, 0%, 100%, 0.1);
+        }
+        #Marathon .section_header {
+            font-size: 1.25em !important;
+            background: none !important;
+            border: none !important;
+            text-align: left !important;
+            padding-block: 5px !important;
+            flex-basis: 100%;
+            margin-inline: 6px;
+        }
+        #Marathon .config_var {
+            margin: 0 0 6px 8px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            line-height: normal;
+            flex-grow: 1;
+        }
+        #Marathon :is(button, input, optgroup, select, textarea) {
+            font: inherit;
+            margin: 0;
+        }
+        #Marathon button {
+            text-align: center;
+        }
+        #Marathon input[type="text"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            color: inherit;
+            background: hsla(0, 0%, 25%, 50%) !important;
+            border: none;
+            border-radius: 3px;
+            padding: 1px 4px;
+            flex-grow: 1;
+            height: unset;
+            box-shadow: unset !important;
+            outline: unset;
+            box-sizing: initial !important;
+            margin: 0 !important;
+            font-size: 14px !important;
+        }
+        #Marathon input[type="text"]:focus {
+            background-color: hsla(0, 0%, 25%, 70%) !important;
+            color: white !important;
+        }
+        #Marathon input[type="checkbox"] {
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
+            border: 2px solid hsl(240, 6.7%, 58.8%);
+            min-width: 14px;
+            min-height: 14px;
+            background: hsl(0, 0%, 100%)
+                url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><path stroke='transparent' fill='transparent' d='M6 14a1 1 0 01-.707-.293l-3-3a1 1 0 011.414-1.414l2.157 2.157 6.316-9.023a1 1 0 011.639 1.146l-7 10a1 1 0 01-.732.427A.863.863 0 016 14z'/></svg>")
+                center/contain no-repeat;
+            border-radius: 2.5px;
+            position: static;
+            box-sizing: border-box;
+        }
+        #Marathon input[type="checkbox"]:focus {
+            box-shadow: 0 0 0 0.1em hsl(214.3, 58.3%, 81.8%), 0 0 0 0.15em hsl(214.2, 60%, 42.7%),
+                0 0 0 0.25em hsl(214.3, 58.3%, 71.8%);
+        }
+        #Marathon input[type="checkbox"]:hover {
+            border: 2px solid hsl(240, 6%, 43%);
+        }
+        #Marathon input[type="checkbox"]:hover:active {
+            background-color: hsl(240, 8%, 83%);
+            border: 2px solid hsl(240, 6%, 30%);
+        }
+        #Marathon input[type="checkbox"]:checked {
+            border: 2px solid transparent !important;
+            background: hsl(214.2, 100%, 43.7%)
+                url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><path stroke='hsla(0, 0%, 97%, 0.95)' fill='hsla(0, 0%, 97%, 0.95)' d='M6 14a1 1 0 01-.707-.293l-3-3a1 1 0 011.414-1.414l2.157 2.157 6.316-9.023a1 1 0 011.639 1.146l-7 10a1 1 0 01-.732.427A.863.863 0 016 14z'/></svg>")
+                center/contain no-repeat !important;
+        }
+        #Marathon input[type="checkbox"]:checked:hover {
+            background-color: hsl(215, 98%, 37%) !important;
+        }
+        #Marathon input[type="checkbox"]:checked:hover:active {
+            background-color: hsl(216, 94%, 30%) !important;
+        }
+        #Marathon_section_0 > .config-var,
+        #Marathon_field_rate {
+            flex-grow: unset;
+        }
+        #Marathon_buttons_holder {
+            display: flex;
+            flex-flow: row;
+            align-items: center;
+            border-top: 1px solid hsla(0, 0%, 100%, 0.1);
+            color: inherit !important;
+        }
+        #Marathon .saveclose_buttons,
+        #Marathon .reset_holder {
+            margin: 6px 6px 0px 0px;
+            padding: 2px 12px;
+            color: inherit;
+            background: hsla(0, 0%, 25%, 50%);
+            border: none !important;
+            border-radius: 3px;
+            padding-inline: 4px;
+            font-size: 15px;
+            padding-block: 2px;
+            flex-grow: 1;
+            white-space: nowrap;
+        }
+        #Marathon .saveclose_buttons:hover,
+        #Marathon .reset_holder:hover {
+            background-color: hsla(0, 0%, 25%, 70%) !important;
+            color: white !important;
+        }
+        #Marathon_saveBtn {
+            padding-inline: 16px 2px !important;
+            background: hsla(0, 0%, 25%, 50%)
+                url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><path fill='hsla(0, 0%, 97%, 0.95)' d='M6 14a1 1 0 01-.707-.293l-3-3a1 1 0 011.414-1.414l2.157 2.157 6.316-9.023a1 1 0 011.639 1.146l-7 10a1 1 0 01-.732.427A.863.863 0 016 14z'/></svg>")
+                3.8px 48%/12.5px no-repeat !important;
+        }
+        #Marathon .reset_holder {
+            padding-inline: 16px 2px !important;
+            background: hsla(0, 0%, 25%, 50%)
+                url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='hsla(0, 0%, 97%, 0.95)' height='16' width='16'><path d='M1 1a1 1 0 011 1v2.4A7 7 0 118 15a7 7 0 01-4.9-2 1 1 0 011.4-1.5 5 5 0 10-1-5.5H6a1 1 0 010 2H1a1 1 0 01-1-1V2a1 1 0 011-1z'/></svg>")
+                4.5px 50%/11px no-repeat !important;
+        }
+        #Marathon .reset {
+            color: inherit !important;
+            font-size: inherit !important;
+        }
+        #Marathon .field_label {
+            font-size: 12px;
+            font-weight: normal !important;
+            margin-inline: 6px 0 !important;
+            white-space: nowrap;
+            padding: unset !important;
+        }
+        #Marathon .field_label:first-child {
+            margin-inline: 0 6px !important;
+        }
+        #Marathon select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            color: inherit;
+            border: none;
+            border-radius: 3px;
+            padding-inline: 2px 13px;
+            background: hsla(0, 0%, 25%, 50%)
+                url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='hsla(0, 0%, 97%, 0.95)' height='24' viewBox='0 0 24 24' width='24'><path d='M8.12 9.29L12 13.17l3.88-3.88c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0L6.7 10.7c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z'/></svg>")
+                100% 66%/18px no-repeat !important;
+        }
+        #Marathon option {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            color: inherit;
+            background: hsl(0, 1%, 17%) !important;
+            border: none;
+        }
+        #Marathon_rate_var,
+        #Marathon_pop_var,
+        #Marathon_font_var {
+            flex-basis: 100%;
+        }
         `,
     });
 }

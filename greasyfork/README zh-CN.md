@@ -12,11 +12,29 @@
 
 如果存在某个播放器或跳过元素，则此脚本无法满足您的要求，请在问题页面上发布一些细节，并在可能的情况下为您正在考虑的元素提供有效的CSS选择器。如果它没有静态的类或ID，请给我标签名称，文本内容，img src，屏幕截图或可以想象用来在DOM中标识它的任何其他内容。谢谢！
 
+<br>
+<details><summary>如果您使用Firefox并关心脚本的通知和设置菜单的外观，请单击此处。</summary>
+<img src="https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/settings.png" width=67% />
+
+这些弹出窗口使用`backdrop-filter`在其后面应用模糊效果，类似于Windows 10的丙烯酸玻璃效果。这纯粹是出于美学目的，因此您可以忽略这一点，但是如果您使用Firefox并希望获得完整的视觉效果，则需要执行额外的步骤：
+
+1.  在网址栏中输入`about:config`并按Enter。搜索`layout.css.backdrop-filter.enabled`并将其切换为true。
+2.  接下来，我们应确保已启用WebRender ：（默认情况下已启用，但请确保）
+3.  从您的网址栏中导航到`about:support`。
+4.  找到“特性”部分，并在标记为“合成”的第一行中，确保其显示为WebRender。
+5.  如果没有显示WebRender，请返回到`about：config`，然后搜索`gfx.webrender.all`并将其切换为true。
+6.  然后搜索`dom.webgpu.enabled`并确保将其设置为false。
+
+重新启动Firefox后，支持页面现在应在“特性”旁边列出WebRender。如果您按照这些步骤操作，但仍未显示WebRender，则它可能与您的图形驱动程序，操作系统，硬件或Firefox版本不兼容。在台式机上，这种情况极不可能发生。但是不要担心。毕竟这只是视觉效果。
+
+</details>
+<br>
+
 Forked from [Netflix Marathon](https://greasyfork.org/en/scripts/30029-netflix-marathon)
 
 <h2>组态：</h2>
 
-<small>设置被永久存储在插件的本地存储中，以确保它们在脚本更新中保持不变。您可以通过以下方法更改它们：转到Netflix或Amazon，然后按Alt + N，或通过插件的工具栏按钮单击菜单命令。这些是设置，以及它们的功能的简要说明：
+<small>设置被永久存储在插件的本地存储中，以确保它们在脚本更新中保持不变。您可以通过以下方法更改它们：转到Netflix或Amazon，然后按Alt + N，或通过插件的工具栏按钮单击菜单命令。这些是设置，以及它们的功能的简要说明：</small>
 
 | 选项 | 默认值 | 类型 | 描述 |
 |-|-|-|-|

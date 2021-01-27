@@ -12,11 +12,29 @@ The hotkey also displays a brief popup showing whether the interval is paused or
 
 If there's some player or skip element this script doesn't handle that you want it to, make a post on the issues page with some details, and if possible a valid CSS selector for the element you're thinking of. (right click > inspect source) If it doesn't have a static class or id then give me the tag name, text content, img src, screenshot, or anything else that could conceivably be used to identify it in the DOM. Thanks~
 
+<br>
+<details><summary>If you use Firefox and care about the appearance of the popups, click here.</summary>
+<img src="https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/settings.png" width=67% />
+
+These popups use `backdrop-filter` to apply a blur effect behind them, similar to Windows 10's acrylic glass effect. This is purely aesthetic so you can simply ignore this, but if you use Firefox and want the full visual effect, there's an extra step:
+
+1.  Type `about:config` into your url bar and hit enter. Search for `layout.css.backdrop-filter.enabled` and toggle it to true.
+2.  Next, we should ensure WebRender is enabled: (It should be enabled by default)
+3.  Navigate to `about:support` from your url bar.
+4.  Find the Graphics section, and in the row for Compositing, make sure it says WebRender.
+5.  If it doesn't, go back to `about:config`, then search for `gfx.webrender.all` and toggle it to true.
+6.  Then search `dom.webgpu.enabled` and make sure it's set to false.
+
+When you restart Firefox, the support page should now show WebRender is the compositor. If you followed these steps and it still doesn't say WebRender, then it might be incompatible with your graphics driver, OS, hardware, or Firefox version. Should be extremely unlikely on a desktop. But oh well, it's only a visual effect after all.
+
+</details>
+<br>
+
 Forked from [Netflix Marathon](https://greasyfork.org/en/scripts/30029-netflix-marathon)
 
 <h2>Configuration:</h2>
 
-<small>Settings are permanently stored in your addon's local storage, to ensure they persist through script updates. You can change them by going to Netflix or Amazon and hitting Alt + N, or by clicking the menu command via your addon's toolbar button. These are the settings, and a brief description of their functionality:
+<small>Settings are permanently stored in your addon's local storage, to ensure they persist through script updates. You can change them by going to Netflix or Amazon and hitting Alt + N, or by clicking the menu command via your addon's toolbar button. These are the settings, and a brief description of their functionality:</small>
 
 | Option | Default value | Type | Description |
 |-|-|-|-|
