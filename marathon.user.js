@@ -5,7 +5,7 @@
 // @name:ja            Netflix Marathon（一時停止できます）
 // @name:ar            ماراثون Netflix (يمكن إيقافه مؤقتًا)
 // @namespace          https://github.com/aminomancer
-// @version            4.4.7
+// @version            4.4.8
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix and Amazon Prime Video. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，该脚本自动跳过介绍，信用和广告，并单击Netflix和Amazon Prime Video上的“下一个节目”提示。包括一个可自定义的热键，以暂停/恢复自动跳过功能。按Alt + N进行配置。
 // @description:zh-TW  一个可配置的脚本，该脚本自动跳过介绍，信用和广告，并单击Netflix和Amazon Prime Video上的“下一个节目”提示。包括一个可自定义的热键，以暂停/恢复自动跳过功能。按Alt + N进行配置。
@@ -622,6 +622,7 @@ async function initConfig() {
         "fields": {
             "rate": {
                 "label": "Interval Rate",
+                "title": "Time (in milliseconds) between checks for skip buttons",
                 "section": "Main Settings",
                 "type": "int",
                 "size": 8,
@@ -632,15 +633,18 @@ async function initConfig() {
             "amazon": {
                 "type": "checkbox",
                 "label": "Run on Amazon",
+                "title": "Uncheck if you don't use Amazon Prime Video",
                 "default": true,
             },
             "netflix": {
                 "type": "checkbox",
                 "label": "Run on Netflix",
+                "title": "Uncheck if you don't use Netflix",
                 "default": true,
             },
             "code": {
                 "label": "Hotkey code",
+                "title": "Which keyboard key to use (click Support for a list of key codes)",
                 "type": "text",
                 "section": "Hotkey Settings",
                 "size": 8,
@@ -649,36 +653,43 @@ async function initConfig() {
             "hotkey": {
                 "type": "checkbox",
                 "label": "Enable hotkey",
+                "title": "Uncheck to disable the keyboard shortcut",
                 "default": true,
             },
             "ctrlKey": {
                 "type": "checkbox",
                 "label": "Ctrl key",
+                "title": "Sets Ctrl as a modifier key for the shortcut",
                 "default": true,
             },
             "altKey": {
                 "type": "checkbox",
                 "label": "Alt key",
+                "title": "Sets Alt as a modifier key for the shortcut",
                 "default": false,
             },
             "shiftKey": {
                 "type": "checkbox",
                 "label": "Shift key",
+                "title": "Sets Shift as a modifier key for the shortcut",
                 "default": false,
             },
             "metaKey": {
                 "type": "checkbox",
                 "label": "Meta key",
+                "title": "Sets Meta as a modifier key for the shortcut",
                 "default": false,
             },
             "pop": {
                 "type": "checkbox",
                 "label": "Enable popup",
+                "title": "Uncheck to disable the Paused/Resumed popups",
                 "section": "Popup Settings",
                 "default": true,
             },
             "popDur": {
                 "label": "Popup duration",
+                "title": "How long (in milliseconds) the popup should stay open before fading away",
                 "type": "int",
                 "size": 4,
                 "min": 500,
@@ -688,16 +699,19 @@ async function initConfig() {
             "webfont": {
                 "type": "checkbox",
                 "label": "Use Google Fonts",
+                "title": "If the font you want is not locally installed, this must be checked",
                 "default": true,
             },
             "font": {
                 "label": "Popup font",
+                "title": "Which font to use for the Paused/Resumed popups",
                 "type": "text",
                 "size": 12,
                 "default": "Source Sans Pro",
             },
             "fontSizeInt": {
                 "label": "Font size (px)",
+                "title": "How big the Paused/Resumed popups should be",
                 "type": "int",
                 "size": 1,
                 "min": 6,
@@ -706,6 +720,7 @@ async function initConfig() {
             },
             "fontWeight": {
                 "label": "Font weight",
+                "title": "Boldness of the popup text, measured in multiples of 100 from 100-900",
                 "type": "select",
                 "options": ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
                 "default": 300,
@@ -713,6 +728,7 @@ async function initConfig() {
             "italic": {
                 "type": "checkbox",
                 "label": "Italic",
+                "title": "Check if you want the popup text to be italic",
                 "default": false,
             },
         },
