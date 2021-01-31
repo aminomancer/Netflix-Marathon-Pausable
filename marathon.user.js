@@ -5,7 +5,7 @@
 // @name:ja            Netflix Marathon（一時停止できます）
 // @name:ar            ماراثون Netflix (يمكن إيقافه مؤقتًا)
 // @namespace          https://github.com/aminomancer
-// @version            4.4.8
+// @version            4.5.2
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix and Amazon Prime Video. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，该脚本自动跳过介绍，信用和广告，并单击Netflix和Amazon Prime Video上的“下一个节目”提示。包括一个可自定义的热键，以暂停/恢复自动跳过功能。按Alt + N进行配置。
 // @description:zh-TW  一个可配置的脚本，该脚本自动跳过介绍，信用和广告，并单击Netflix和Amazon Prime Video上的“下一个节目”提示。包括一个可自定义的热键，以暂停/恢复自动跳过功能。按Alt + N进行配置。
@@ -13,13 +13,12 @@
 // @description:ar     برنامج نصي قابل للتكوين يتخطى تلقائيًا المقدمات والاعتمادات والإعلانات وينقر على "الحلقة التالية" على Netflix و Amazon Prime Video.يتضمن مفتاح اختصار قابل للتخصيص لإيقاف / استئناف وظيفة التخطي التلقائي.اضغط على Alt + N للتكوين.
 // @author             aminomancer
 // @homepageURL        https://github.com/aminomancer/Netflix-Marathon-Pausable
-// @supportURL         https://github.com/aminomancer/Netflix-Marathon-Pausable/issues
+// @supportURL         https://github.com/aminomancer/Netflix-Marathon-Pausable
 // @downloadURL        https://greasyfork.org/scripts/420475-netflix-marathon-pausable/code/Netflix%20Marathon%20(Pausable).user.js
 // @icon               data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 157.1 158.4"><path d="M156.3 79.6c0-42.8-34.9-77.7-77.7-77.7C35.7 1.9.9 36.7.9 79.6c0 39.5 29.5 72.6 68.7 77.2v-47.4c-25-3.8-43.8-25.5-43.8-50.7C25.8 30.4 49 7.4 77.6 7.4c28.5 0 51.8 23 51.8 51.3 0 26.1-19.6 47.9-45.6 51v47.6c40.6-2.8 72.5-36.8 72.5-77.7z"/><path d="M77.4 16c-23.2 0-42.1 18.9-42.1 42.1s18.9 42.1 42.1 42.1 42.1-18.9 42.1-42.1S100.7 16 77.4 16zm18.8 75.8c0 .1 0 .1 0 0v.1h-.9c-.2 0-.3 0-.5-.1-3.1-.4-7.1-.7-10.4-.9-1.1-.1-2-.1-2-.1l-.2-.4c-.1-.3-.2-.7-.4-1.2-.1-.2-.2-.5-.3-.8 0-.1 0-.1-.1-.1-.4-1.1-.9-2.5-1.5-4.2-1.5-4.3-3.8-10.6-6.7-18.8l-1.1-3v14.3c0 13.6 0 14.3-.2 14.3-.5 0-4.9.3-6.3.4-1 .1-2.9.3-4.3.4-1.2.2-2.3.3-2.4.3V24.2h13.4l.1.2.2.6c.2.6.5 1.4.9 2.5.1.2.1.4.2.6.1.4.3.8.4 1.2.2.6.5 1.3.7 2 0 .1.1.3.1.4.2.6.1.4.4 1.2.5 1.5 1 2.9 1.4 4.1.8 2.3 1.5 4.1 2 5.6.4 1.1.7 2 1 2.8.8 2.4 1.3 3.7 1.9 5.3l1.2 3.5v-30H96V58c.2 17.8.2 32.5.2 33.8z"/></svg>
 // @include            https://www.netflix.com/*
 // @include            https://*.amazon.com/*
 // @include            https://*.primevideo.com/*
-// @require            http://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js
 // @require            https://greasyfork.org/scripts/420683-gm-config-sizzle/code/GM_config_sizzle.js?version=894369
 // @grant              GM_registerMenuCommand
 // @grant              GM_unregisterMenuCommand
@@ -36,29 +35,42 @@
 // ==/UserScript==
 
 const options = {}, // where settings are stored during runtime
+    win = window,
+    doc = document,
     GMObj = typeof GM === "object" && GM !== null && typeof GM.getValue === "function", // check whether the GM object exists so we can use the right GM API functions
     GM4 = GMObj && GM.info.scriptHandler === "Greasemonkey" && GM.info.version.split(".")[0] >= 4, // check if the script handler is GM4, since if it is, we can't add a menu command
+    /**
+     * pause execution for ms milliseconds
+     * @param {int} ms (milliseconds)
+     */
+    sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+    /**
+     * @param {string} u (a string to test the URL against)
+     */
+    test = (u) => win.location.href.includes(u),
     site = test("netflix") ? "netflix" : "amazon",
     locale = {
         // some basic localization for the settings menu.
         get lang() {
             delete this.lang;
-            return (this.lang = navigator.language.split("-")[0]);
+            return (this.lang = navigator.language.split("-")[0]); // memoize the language since it's unlikely to change during runtime
         },
         get text() {
+            // returns the label for the support button in settings
             switch (this.lang) {
                 case "zh":
-                    return "信息";
+                    return "信息"; // chinese
                 case "ja":
-                    return "助けて";
+                    return "助けて"; // japanese
                 case "ar":
-                    return "تعليمات";
+                    return "تعليمات"; // arabic
                 case "en":
                 default:
-                    return "Support";
+                    return "Support"; // english etc.
             }
         },
         get title() {
+            // returns the tooltip for the support button
             switch (this.lang) {
                 case "zh":
                     return "设置的信息和翻译";
@@ -71,294 +83,231 @@ const options = {}, // where settings are stored during runtime
                     return "Info and translations for the settings";
             }
         },
-    };
-
-let marathon = {
-    count: 0,
-    results: null,
-    nDrain: "[data-uia='next-episode-seamless-button-draining']",
-    nReady: "[data-uia='next-episode-seamless-button']",
-    /**
-     * getElementsByClassName
-     * @param {string} s (class name)
-     */
-    $c(s) {
-        return document.getElementsByClassName(s);
     },
-    /**
-     * getElementsByTagName
-     * @param {string} s (tag name)
-     */
-    $t(s) {
-        return document.getElementsByTagName(s);
-    },
-    /**
-     * getElementById
-     * @param {string} s (element id)
-     */
-    $i(s) {
-        return document.getElementById(s);
-    },
-    /**
-     * querySelector
-     * @param {string} s (CSS selector e.g. ".class")
-     */
-    $q(s) {
-        return document.querySelector(s);
-    },
-    /**
-     * querySelectorAll
-     * @param {string} s (CSS selector)
-     */
-    $qa(s) {
-        return document.querySelectorAll(s);
-    },
-    /**
-     * document.evaluate
-     * @param {string} s (node's text content)
-     * @param {string} n (node's tag name. if not passed, then accept any tag)
-     * @param {string} p (node's parent's tag name. this is like saying button>div. if not passed, then just use div, ignoring the node's parent)
-     */
-    $ev(s, n = "*", p) {
-        let exp = p ? `//${p}/child::${n}[text()="${s}"]` : `//${n}[text()="${s}"]`;
-        return document.evaluate(
-            exp,
-            document,
-            null,
-            XPathResult.FIRST_ORDERED_NODE_TYPE,
-            this.results
-        ).singleNodeValue;
-    },
-    /**
-     * :contains
-     * @param {string} s (node's text content)
-     */
-    $cnt(s) {
-        return $(`div *:contains('${s}')`);
-    },
-    /**
-     * click every element with the given text content
-     * @param {string} s (node's text content)
-     */
-    $click(s) {
-        let divs = this.$cnt(s);
-        for (let i = 0; i < divs.length; i++) {
-            if (divs[i].innerText == s) {
-                divs[i].click();
-                this.count = 5;
-            }
-        }
-    },
-    /**
-     * find react property
-     * @param {object} d (DOM node)
-     */
-    findReact(d) {
-        for (const k in d) {
-            if (k.startsWith("__reactInternalInstance$")) {
-                try {
-                    return d[k].child;
-                } catch (e) {}
-            }
-        }
-        return null;
-    },
-    /**
-     * get a node's react children
-     * @param {string} s (CSS selector)
-     */
-    getReact(s) {
-        const el = this.$qa(s);
-        try {
-            return el.length > 0 ? this.findReact(el[0]).memoizedProps.children : null;
-        } catch (e) {
-            return null;
-        }
-    },
-    /**
-     * determine if an element is visible (namely the amazon player)
-     * @param {string} s (element id)
-     */
-    isVis(s) {
-        try {
-            return this.$i(s).offsetParent ? true : false;
-        } catch (e) {
-            return false;
-        }
-    },
-
-    // searches for elements that skip stuff. repeated every 300ms. change "rate" in the options if you want to make this more or less frequent.
-    async amazon() {
-        if (this.count === 0) {
-            // console.log(this.count);
-            if (this.isVis("dv-web-player")) {
-                if (this.$c("atvwebplayersdk-nextupcard-button").length) {
-                    // console.log('Found Amazon video next.');
-                    setTimeout(() => {
-                        try {
-                            this.$c("atvwebplayersdk-nextupcard-button")[0].click();
-                            this.count = 5;
-                        } catch (e) {}
-                    }, 700);
-                } else if (this.$c("atvwebplayersdk-skipelement-button").length) {
+    methods = {
+        // contains the site-specific callbacks and various utility functions to shorten and optimize the code
+        count: 0,
+        results: null,
+        nDrain: "[data-uia='next-episode-seamless-button-draining']",
+        nReady: "[data-uia='next-episode-seamless-button']",
+        /**
+         * getElementsByClassName
+         * @param {string} s (class name)
+         */
+        $c: (s, p = doc) => p.getElementsByClassName(s),
+        /**
+         * getElementsByTagName
+         * @param {string} s (tag name)
+         */
+        $t: (s, p = doc) => p.getElementsByTagName(s),
+        /**
+         * getElementById
+         * @param {string} s (element id)
+         */
+        $i: (s) => doc.getElementById(s),
+        /**
+         * querySelector
+         * @param {string} s (CSS selector e.g. ".class")
+         */
+        $q: (s, p = doc) => p.querySelector(s),
+        /**
+         * querySelectorAll
+         * @param {string} s (CSS selector)
+         */
+        $qa: (s, p = doc) => p.querySelectorAll(s),
+        /**
+         * document.evaluate
+         * @param {string} s (node's text content)
+         * @param {string} n (node's tag name. if not passed, then accept any tag)
+         * @param {string} p (node's parent's tag name. this is like saying button>div. if not passed, then just use div, ignoring the node's parent)
+         */
+        $ev(s, n = "*", p) {
+            const exp = `//${p ? `${p}/child::` : ""}${n}[text()="${s}"]`; // use /child:: syntax if p is passed.
+            return doc.evaluate(exp, doc, null, XPathResult.FIRST_ORDERED_NODE_TYPE, this.results)
+                .singleNodeValue;
+        },
+        /**
+         * find react child comp given a DOM node
+         * @param {object} d (DOM node)
+         */
+        $ri(d) {
+            for (const k in d) {
+                if (k.startsWith("__reactInternalInstance$")) {
                     try {
-                        this.$c("atvwebplayersdk-skipelement-button")[0].click();
-                        this.count = 5;
+                        return d[k].child;
                     } catch (e) {}
-                } else if (this.$c("adSkipButton").length) {
-                    // console.log('Found Amazon skip ad.');
-                    this.$c("adSkipButton")[0].click();
-                    this.count = 5;
-                } else if (this.$c("skipElement").length) {
-                    // console.log('Found Amazon skip intro.');
-                    this.$c("skipElement")[0].click();
-                    this.count = 5;
-                } else if (this.$ev("Skip Intro")) {
-                    // console.log('Found Amazon skip intro.');
-                    this.$ev("Skip Intro").click();
-                    this.count = 5;
-                } else if (this.$cnt("Skip").length) {
-                    // amazon trailers
-                    this.$click("Skip");
-                    this.count = 5;
-                } else if (this.$cnt("Skip Intro").length) {
-                    // amazon intro
-                    this.$click("Skip Intro");
-                    this.count = 5;
-                } else if (this.$cnt("Skip Recap").length) {
-                    // amazon recap
-                    this.$click("Skip Recap");
-                    this.count = 5;
-                } else {
-                    // console.log('404 keep looking.');
                 }
             }
-        } else {
-            this.count--;
-        }
-    },
-
-    async netflix() {
-        if (this.count === 0) {
-            if (this.$c("skip-credits").length && this.$c("skip-credits-hidden").length == 0) {
-                // console.log('Found credits.');
-                await sleep(200);
-                this.$c("skip-credits")[0].firstElementChild.click();
-                await sleep(200);
-                this.$q(".button-nfplayerPlay").click();
-                this.count = 80;
-                // console.log('Found credits. +4s');
-            } else if (this.$q(this.nDrain)) {
-                // console.log('Netflix next episode draining button skipped');
-                this.getReact(this.nDrain)._owner.memoizedProps.handlePress();
-                this.count = 5;
-            } else if (this.$q(this.nReady)) {
-                // console.log('Netflix next episode button skipped');
-                this.getReact(
-                    this.nReady
-                ).props.children._owner.memoizedProps.onClickWatchNextEpisode();
-                this.count = 5;
-            } else if (this.$c("postplay-still-container").length) {
-                // console.log('Found autoplay.');
-                this.$c("postplay-still-container")[0].click();
-                this.count = 5;
-            } else if (this.$c("WatchNext-still-container").length) {
-                // console.log('Found autoplay.');
-                this.$c("WatchNext-still-container")[0].click();
-                this.count = 5;
-            } else {
-                // console.log('404 keep looking.');
+            return null;
+        },
+        /**
+         * a hacky way to access semi-private methods of react components, given only a CSS selector. we may not strictly need this, but netflix has been testing new UI models and maybe you're already using them if you subscribe to netflix's beta program. Element.click() does not work on the last beta I tested, so eventually we may need to use this exclusively to get at the internal onAction methods. might as well start now for the sake of forward compatibility. if anyone knows a better way to do this please let me know on github issues or greasyfork feedback. i'm pretty new to javascript and don't know very much about hacking into someone else's react components from a userscript. but i would love to learn.
+         * @param {string} s (CSS selector)
+         */
+        $rd(s) {
+            const el = this.$qa(s);
+            try {
+                return el.length > 0 ? this.$ri(el[0]).memoizedProps.children : null;
+            } catch (e) {
+                return null;
             }
-        } else {
-            this.count--;
-        }
-    },
-};
+        },
+        /**
+         * determine if an element is visible (namely the amazon player)
+         * @param {string} s (element id)
+         */
+        isVis(s) {
+            try {
+                return this.$i(s).offsetParent ? true : false;
+            } catch (e) {
+                return false;
+            }
+        },
+        /**
+         * clicks the passed element and sets the count to 5
+         * @param {object} el (DOM element)
+         */
+        click(el) {
+            try {
+                el.click();
+                this.count = 5;
+            } catch (e) {
+                this.count = 2;
+            }
+        },
 
-/**
- * pause execution for ms milliseconds
- * @param {int} ms (milliseconds)
- */
-function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-}
+        // searches for elements that skip stuff. repeated every 300ms. change "rate" in the options if you want to make this more or less frequent.
+        async amazon() {
+            if (this.count === 0) {
+                if (this.isVis("dv-web-player")) {
+                    let store; // memoize the element when we check for its existence so we don't have to evaluate the DOM twice.
+                    if ((store = this.$c("atvwebplayersdk-nextupcard-button")[0])) {
+                        // next episode
+                        await sleep(400);
+                        this.click(store);
+                    } else if ((store = this.$c("atvwebplayersdk-skipelement-button")[0])) {
+                        // skip various things
+                        this.click(store);
+                    } else if ((store = this.$c("adSkipButton")[0])) {
+                        // skip ad
+                        this.click(store);
+                    } else if ((store = this.$c("skipElement")[0])) {
+                        //  skip intro
+                        this.click(store);
+                    } else if ((store = this.$ev("Skip", "div"))) {
+                        // skip trailers
+                        this.click(store);
+                    } else if ((store = this.$ev("Skip Intro", "button", "div"))) {
+                        // skip intro
+                        this.click(store);
+                    } else if ((store = this.$ev("Skip Recap", "button", "div"))) {
+                        // skip recap
+                        this.click(store);
+                    }
+                }
+            } else {
+                this.count--;
+            }
+        },
 
-/**
- * @param {string} u (a string to test the URL against)
- */
-function test(u) {
-    return window.location.href.includes(u);
-}
+        async netflix() {
+            if (this.count === 0) {
+                let store;
+                if (this.$c("skip-credits").length && this.$c("skip-credits-hidden").length == 0) {
+                    // skip credits
+                    // this might be out of date, it's from the original script and i think the following statements might already cover all the possible skip buttons. i'm leaving it because so far i haven't been able to fully rule out the possibility that it's still doing something for at least some layouts
+                    await sleep(200);
+                    try {
+                        this.$c("skip-credits")[0].firstElementChild.click();
+                    } catch (e) {}
+                    await sleep(200);
+                    try {
+                        this.$q(".button-nfplayerPlay").click();
+                    } catch (e) {
+                        return (this.count = 0);
+                    }
+                    this.count = 80;
+                } else if (this.$q(this.nDrain)) {
+                    // next episode button (draining)
+                    this.$rd(this.nDrain)._owner.memoizedProps.handlePress();
+                    this.count = 5;
+                } else if (this.$q(this.nReady)) {
+                    // next episode button (ready)
+                    this.$rd(
+                        this.nReady
+                    ).props.children._owner.memoizedProps.onClickWatchNextEpisode();
+                    this.count = 5;
+                } else if ((store = this.$c("postplay-still-container")[0])) {
+                    // autoplay
+                    this.click(store);
+                } else if ((store = this.$c("WatchNext-still-container")[0])) {
+                    // autoplay
+                    this.click(store);
+                }
+            } else {
+                this.count--;
+            }
+        },
+    };
 
-// an interval constructor that you can pause and resume, and which opens a brief popup when you do so.
+// an interval constructor that you can pause and resume, and which opens a brief popup when you do so. yes i'm using a class that's only instantiated once. i like the way it looks. i even use another one down below. if you know of something better lmk~
 class PauseUtil {
     /**
      * pausable interval utility
-     * @param {func} callback (the stuff you want to execute periodically, in this case marathon.netflix or marathon.amazon)
+     * @param {func} callback (the stuff you want to execute periodically, in this case methods.netflix or methods.amazon)
      * @param {int} int (how often to repeat the callback)
      */
     constructor(callback, int) {
         this.callback = callback;
         this.int = int;
-        this.popup = options.pop ? document.createElement("div") : null; // if popup is disabled, create nothing
-        this.text = options.pop ? document.createTextNode("Marathon: Paused") : null; // if popup is disabled, create nothing
+        this.popup = doc.createElement("div");
+        this.text = doc.createTextNode("Marathon: Paused");
         this.remainder = 0; // how much time is remaining on the interval when we pause it
         this.fading; // 3 second timeout (by default), after which the popup fades
         this.pauseState = 0; //  0: idle, 1: running, 2: paused, 3: resumed
+        this.toggler = this.toggle.bind(this);
 
         this.register("Pause Marathon", true); // initial creation of the menu command
         // if popup is enabled in options, style it
         if (options.pop) {
-            document.body.insertBefore(this.popup, document.body.firstElementChild);
-            this.popup.appendChild(this.text);
-            this.popup.style.cssText = `
-            position: fixed;
-            top: 50%;
-            right: 3%;
-            transform: translateY(-50%);
-            z-index: 2147483646;
-            background: hsla(0, 0%, 6%, 0.8);
-            -webkit-backdrop-filter: blur(7px);
-            backdrop-filter: blur(7px);
-            color: hsla(0, 0%, 97%, 0.95);
-            padding: 17px 19px;
-            border-radius: 5px;
-            pointer-events: none;
-            letter-spacing: 1px;
-            transition: opacity 0.2s ease-in-out;
-            opacity: 0;
-            `;
-            this.popup.style.fontFamily = options.font;
-            this.popup.style.fontSize = options.fontSize;
-            this.popup.style.fontWeight = options.fontWeight;
-            this.popup.style.fontStyle = options.italic ? "italic" : "";
+            this.setupPopup();
+            this.updatePopup();
         }
         this.time = new Date();
-        this.timer = window.setInterval(this.callback, this.int);
+        this.timer = win.setInterval(this.callback, this.int);
         this.pauseState = 1;
+        if (!options[site]) {
+            this.pause(); // if the site is disabled then stop the interval. we pause it instead of not starting it in the first place so that the user can re-enable the site and have the interval immediately start working without needing to refresh the page.
+        }
     }
 
     // returns false if we're on a valid site but not actually in the video player (e.g. we're only browsing videos).
     get playing() {
-        return site === "netflix" ? test("netflix.com/watch/") : marathon.isVis("dv-web-player");
+        return site === "netflix" ? test("netflix.com/watch/") : methods.isVis("dv-web-player");
     }
 
-    // pause the interval
-    pause() {
+    /**
+     * pause the interval
+     * @param {any} pop (string, boolean, or null — identifies the caller so we can determine the popup message)
+     */
+    pause(pop) {
         if (this.pauseState !== 1) {
             return;
         }
 
         this.remainder = this.int - (new Date() - this.time);
-        window.clearInterval(this.timer);
+        win.clearInterval(this.timer);
         this.pauseState = 2;
 
         this.register("Resume Marathon"); // update the menu command label
-        this.openPopup(false);
+        this.openPopup(pop);
     }
 
-    // resume the interval
-    async resume() {
+    /**
+     * resume the interval
+     * @param {any} pop (same as pause())
+     */
+    async resume(pop) {
         if (this.pauseState !== 2) {
             return;
         }
@@ -366,7 +315,7 @@ class PauseUtil {
         this.pauseState = 3;
 
         this.register("Pause Marathon");
-        this.openPopup(true);
+        this.openPopup(pop);
         await sleep(this.remainder);
         this.run();
     }
@@ -380,17 +329,20 @@ class PauseUtil {
         this.callback();
 
         this.time = new Date();
-        this.timer = window.setInterval(this.callback, this.int);
+        this.timer = win.setInterval(this.callback, this.int);
         this.pauseState = 1;
     }
 
     // toggle the interval on/off.
     toggle() {
+        if (!options[site]) {
+            return; // disable the pause/resume toggle when the site is disabled
+        }
         switch (this.pauseState) {
             case 1:
-                return this.pause();
+                return this.pause(false); // passing false tells openPopup to use the "Marathon: Paused" message
             case 2:
-                return this.resume();
+                return this.resume(true); // passing true => "Marathon: Resumed" message
             default:
                 return;
         }
@@ -398,30 +350,71 @@ class PauseUtil {
 
     /**
      * opens the popup and schedules it to close
-     * @param {bool} state (whether the popup should say "Resumed" or "Paused")
+     * @param {bool} msg (what the popup should say)
      */
-    openPopup(state) {
-        // if popup is disabled in options, do nothing
-        if (!options.pop) {
+    openPopup(msg) {
+        // if popup is disabled in options, or no message was sent, do nothing
+        if (msg === undefined || !options.pop) {
             return;
         }
+        const style = this.popup.style;
         // if window is netflix or amazon but there's no video player, (e.g. we're browsing titles) do nothing but ensure the popup is hidden.
-        if (!this.playing) {
-            this.popup.style.transitionDuration = "1s";
-            return (this.popup.style.opacity = "0");
+        if (!this.playing && typeof msg === "boolean") {
+            style.transitionDuration = "1s";
+            return (style.opacity = "0");
         }
 
-        let string = state ? "Resumed" : "Paused";
+        // if called by the toggle, label it "Resumed" or "Paused"
+        // if called by a settings change, label it "Updated <setting type>"
+        const string = typeof msg === "string" ? `Updated ${msg}` : msg ? "Resumed" : "Paused";
         this.popup.textContent = `Marathon: ${string}`;
-        this.popup.style.transitionDuration = "0.2s";
-        this.popup.style.opacity = "1";
-        window.clearTimeout(this.fading); // clear any existing timeout since we're about to set a new one
+        style.transitionDuration = "0.2s";
+        style.opacity = "1";
+        win.clearTimeout(this.fading); // clear any existing fade timeout since we're about to set a new one
 
         // schedule the popup to fade into oblivion
-        this.fading = window.setTimeout(() => {
-            this.popup.style.transitionDuration = "1s";
-            this.popup.style.opacity = "0";
+        this.fading = win.setTimeout(() => {
+            style.transitionDuration = "1s";
+            style.opacity = "0";
         }, options.popDur);
+    }
+
+    /**
+     * apply the basic popup style and place it in the body
+     */
+    setupPopup() {
+        const style = this.popup.style;
+        doc.body.insertBefore(this.popup, doc.body.firstElementChild);
+        this.popup.appendChild(this.text);
+        style.cssText = `
+            position: fixed;
+            top: 50%;
+            right: 3%;
+            transform: translateY(-50%);
+            z-index: 2147483646;
+            background: hsla(0, 0%, 6%, 0.8);
+            -webkit-backdrop-filter: blur(7px);
+            backdrop-filter: blur(7px);
+            color: hsla(0, 0%, 97%, 0.95);
+            padding: 17px 19px;
+            line-height: 1em;
+            border-radius: 5px;
+            pointer-events: none;
+            letter-spacing: 1px;
+            transition: opacity 0.2s ease-in-out;
+            opacity: 0;
+            `;
+    }
+
+    /**
+     * update the mutable popup attributes
+     */
+    updatePopup() {
+        const style = this.popup.style;
+        style.fontFamily = options.font;
+        style.fontSize = options.fontSize;
+        style.fontWeight = options.fontWeight;
+        style.fontStyle = options.italic ? "italic" : "";
     }
 
     /**
@@ -434,91 +427,70 @@ class PauseUtil {
             return; // don't register a menu command if the script manager is greasemonkey 4.0+ since the function doesn't exist
         }
         if (!firstRun) {
-            GM_unregisterMenuCommand(this.caption);
+            GM_unregisterMenuCommand(this.caption); // this is how we switch the menu command from play to pause. we'd prefer to just have a single menu command and use a variable to determine its label and callback behavior, but the API doesn't support that afaik.
         }
-        GM_registerMenuCommand(cap, this.toggle.bind(this));
-        this.caption = cap;
+        // don't register the pause/unpause menu command if the site is currently disabled
+        if (options[site]) {
+            GM_registerMenuCommand(cap, this.toggler);
+            this.caption = cap;
+        }
     }
 }
 
 // initial setup
-function marathonSetUp() {
-    if (!options[site]) {
-        return; // if the site we're on is disabled in options, then don't bother setting up
+class MarathonSetUp {
+    constructor() {
+        this.search = methods[site].bind(methods); // use the correct callback
+        this.searchController = new PauseUtil(this.search, options.rate); // create the interval with our rate setting
+
+        // if a hotkey is enabled in options, start listening to keyboard events
+        if (options.hotkey || options.hotkey2) {
+            this.startCapturing();
+        }
     }
-    let search = marathon[site].bind(marathon), // use the correct callback
-        searchInterval = new PauseUtil(search, options.rate), // create the interval with our rate setting
-        wf = options.webfont ? document.createElement("script") : null,
-        first = document.scripts[0],
-        ital = options.italic ? "ital," : "";
 
     /**
-     * what to do when you press the hotkey.
+     * called when you press the configured hotkey.
      * @param {object} e (event)
      */
-    function onKeyDown(e) {
-        if (e.repeat) {
-            return;
-        }
-        if (e.code == options.code && modTest(e)) {
+    handleEvent(e) {
+        if (!e.repeat && [options.code, options.code2].indexOf(e.code) > -1) {
+            if (options.hotkey && e.code === options.code && this.modTest(e)) {
+                this.searchController.toggler();
+            } else if (options.hotkey2 && e.code === options.code2 && this.modTest(e, 2)) {
+                if (GM_config.isOpen) {
+                    GM_config.close();
+                } else GM_config.open();
+            } else return;
             e.stopImmediatePropagation();
-            e.stopPropagation();
-            searchInterval.toggle();
             e.preventDefault();
+            e.stopPropagation();
         }
     }
 
     /**
-     * check that the modifier keys match those defined in user settings
+     * check that the modifier keys pressed match those defined in user settings
      * @param {object} e (event)
+     * @param {string} d (which key settings to evaluate, ctrlKey or ctrlKey1)
      */
-    function modTest(e) {
-        let ctrl = options.ctrlKey,
-            alt = options.altKey,
-            shift = options.shiftKey,
-            meta = options.metaKey;
-        return e.ctrlKey == ctrl && e.altKey == alt && e.shiftKey == shift && e.metaKey == meta;
+    modTest(e, d = "") {
+        return (
+            e.ctrlKey == options[`ctrlKey${d}`] &&
+            e.altKey == options[`altKey${d}`] &&
+            e.shiftKey == options[`shiftKey${d}`] &&
+            e.metaKey == options[`metaKey${d}`]
+        );
     }
 
     // start listening to key events
-    function startCapturing() {
-        window.addEventListener("keydown", onKeyDown, true);
+    startCapturing() {
+        win.addEventListener("keydown", this, true);
     }
 
     // stop listening to key events (currently unused)
-    function stopCapturing() {
-        window.removeEventListener("keydown", onKeyDown, true);
+    stopCapturing() {
+        win.removeEventListener("keydown", this, true);
     }
-
-    WebFontConfig = {
-        classes: false, // don't bother changing the DOM at all, we aren't listening for it
-        events: false, // no need for events, not worth the execution
-        google: {
-            families: [
-                `${options.font}:${ital}wght@1,${options.fontWeight}`,
-                "Source Sans Pro:wght@1,300",
-            ], // e.g. "Lobster Two:ital,wght@1,700"
-            display: "swap", // not really necessary since the popup doesn't appear until you press a button. but whatever
-        },
-    };
-
-    // load web font if enabled
-    if (options.webfont) {
-        wf.src = "https://cdn.jsdelivr.net/npm/webfontloader@latest/webfontloader.js";
-        wf.async = true;
-        first.parentNode.insertBefore(wf, first);
-    }
-
-    // if hotkey is enabled in options, start listening to keyboard events
-    if (options.hotkey) {
-        startCapturing();
-    }
-
-    return {
-        searchInterval,
-        startCapturing,
-        stopCapturing,
-    };
 }
 
 /**
@@ -539,9 +511,10 @@ async function checkGM() {
  */
 async function initConfig() {
     await checkGM();
-    const frame = document.createElement("div"),
-        resetti = document.createElement("button"),
-        supporti = document.createElement("button"),
+    const frame = doc.createElement("div"),
+        resetBtn = doc.createElement("button"),
+        supportBtn = doc.createElement("button"),
+        // fading animation stuff
         keyframes = {
             opacity: [0, 1],
         },
@@ -560,29 +533,22 @@ async function initConfig() {
             easing: "ease-in-out",
         };
     frame.style.display = "none";
-    document.body.appendChild(frame);
-    frame.appendChild(resetti);
-    frame.appendChild(supporti);
-    resetti.addEventListener("click", () => GM_config.reset());
-    supporti.addEventListener("click", () =>
+    doc.body.appendChild(frame);
+    frame.appendChild(resetBtn);
+    frame.appendChild(supportBtn);
+    resetBtn.addEventListener("click", () => GM_config.reset());
+    supportBtn.addEventListener("click", () =>
         GM_openInTab(`https://greasyfork.org/scripts/420475-netflix-marathon-pausable`)
     );
+    GM_config.error = false; // this switch tells us if the user input an invalid value for a setting so we won't close the GUI when they try to save.
+    // override API functions to support fancy animations
     GM_config.close = function () {
-        window.clearTimeout(this.fading);
-        GM_config.animation = this.frame.animate(keyframes, animBwd);
+        win.clearTimeout(this.fading);
+        this.animation = this.frame.animate(keyframes, animBwd);
         this.onClose(); //  Call the close() callback function
         this.isOpen = false;
-        this.fading = window.setTimeout(() => {
-            let domSheets = document.getElementsByTagName("head")[0].getElementsByTagName("style"),
-                sheetArr = Array.from(domSheets);
-            for (let i of sheetArr) {
-                try {
-                    i instanceof HTMLStyleElement &&
-                        i.sheet.cssRules[0].selectorText &&
-                        i.sheet.cssRules[0].selectorText.includes("Marathon") &&
-                        i.remove();
-                } catch (e) {}
-            }
+        this.fading = win.setTimeout(() => {
+            this.clearSheets("Marathon");
             // If frame is an iframe then remove it
             if (this.frame.contentDocument) {
                 this.remove(this.frame);
@@ -603,19 +569,90 @@ async function initConfig() {
         }, 500);
     };
     GM_config.open = function () {
-        window.clearTimeout(this.fading);
+        win.clearTimeout(this.fading);
         if (
-            GM_config.animation &&
-            GM_config.animation.id === "GM_config_bwd" &&
-            GM_config.animation.playState === "running"
+            this.animation &&
+            this.animation.id === "GM_config_bwd" &&
+            this.animation.playState === "running"
         ) {
-            GM_config.animation.playbackRate = -2.5;
+            this.animation.playbackRate = -2.5;
         } else {
-            GM_config.animation = this.frame.animate(keyframes, animFwd);
+            this.animation = this.frame.animate(keyframes, animFwd);
         }
         this.isOpen = true;
-        GM_config.__proto__.open.call(this);
+        this.__proto__.open.call(this);
     };
+    // override write function to semi-publicly memoize the error state.
+    GM_config.write = function (store, obj) {
+        if (!obj) {
+            var values = {},
+                forgotten = {},
+                fields = this.fields;
+
+            for (var id in fields) {
+                var field = fields[id];
+                var value = field.toValue();
+
+                if (field.save) {
+                    if (value != null) {
+                        values[id] = value;
+                        field.value = value;
+                    } else {
+                        this.error = true;
+                        values[id] = field.value;
+                    }
+                } else forgotten[id] = value;
+            }
+        }
+        try {
+            this.setValue(store || this.id, this.stringify(obj || values));
+        } catch (e) {
+            this.log("GM_config failed to save settings!");
+        }
+
+        return forgotten;
+    };
+    /**
+     * remove all the stylesheets generated by GM_config. without this, GM_config keeps adding a new one every time you open it. we could resolve this oversight by overriding GM_config's open() method, but that's a lot of text to duplicate and this isn't expensive. also, deleting superfluous stuff is more satisfying than doing the proper thing and never creating it in the first place.
+     * @param {string} sel (CSS selector; check each stylesheet for this string)
+     */
+    GM_config.clearSheets = function (sel) {
+        for (const i of Array.from(methods.$t("style", doc.head))) {
+            try {
+                i instanceof HTMLStyleElement &&
+                    i.sheet.cssRules[0].selectorText &&
+                    i.sheet.cssRules[0].selectorText.includes(sel) &&
+                    i.remove();
+            } catch (e) {}
+        }
+    };
+    /**
+     * remove all the link elements generated by webfontloader.js. the loader has no logic to amend its existing stylesheets and will just keep adding more for every time you call it. since we call it every time the user changes the font settings, it makes sense to delete the previous ones before calling the load method.
+     * @param {string} uri (url or part of url; check each link element's href attribute for this string)
+     */
+    GM_config.clearLinks = function (uri) {
+        for (const i of Array.from(methods.$t("link", doc.head))) {
+            try {
+                i instanceof HTMLLinkElement && i.href.includes(uri) && i.remove();
+            } catch (e) {}
+        }
+    };
+    /**
+     * return true if any of the fields passed have values that deviate from their default values. we use this to avoid performing operations that are unnecessary when aspects of the user's config are unchanged.
+     * @param {object} fields (an object whose properties are GM_config fields)
+     */
+    GM_config.checkNotDefault = function (fields) {
+        return !Object.keys(fields).every((key) => fields[key].value == fields[key].default);
+    };
+    // if webfont is enabled and any of the fields that affect webfont are non-default, (font, italic, fontWeight) then change the webfont config
+    GM_config.updateWFConfig = function () {
+        if (options.webfont && this.checkNotDefault(this.webFontFields)) {
+            WebFontConfig.google.families[1] = `${options.font}:${
+                options.italic ? "ital," : ""
+            }wght@1,${options.fontWeight}`;
+        }
+    };
+    // initialize the GUI
     GM_config.init({
         "id": "Marathon",
         "title": "Netflix Marathon Settings",
@@ -646,38 +683,76 @@ async function initConfig() {
                 "label": "Hotkey code",
                 "title": "Which keyboard key to use (click Support for a list of key codes)",
                 "type": "text",
-                "section": "Hotkey Settings",
-                "size": 8,
+                "section": "Pause/Resume Hotkey",
+                "size": 6,
                 "default": "F7",
             },
             "hotkey": {
                 "type": "checkbox",
-                "label": "Enable hotkey",
-                "title": "Uncheck to disable the keyboard shortcut",
+                "label": "Enable toggle hotkey",
+                "title": "Uncheck to disable the pause/resume shortcut",
                 "default": true,
             },
             "ctrlKey": {
                 "type": "checkbox",
                 "label": "Ctrl key",
-                "title": "Sets Ctrl as a modifier key for the shortcut",
+                "title": "Set Ctrl as a modifier key for the shortcut",
                 "default": true,
             },
             "altKey": {
                 "type": "checkbox",
                 "label": "Alt key",
-                "title": "Sets Alt as a modifier key for the shortcut",
+                "title": "Set Alt as a modifier key for the shortcut",
                 "default": false,
             },
             "shiftKey": {
                 "type": "checkbox",
                 "label": "Shift key",
-                "title": "Sets Shift as a modifier key for the shortcut",
+                "title": "Set Shift as a modifier key for the shortcut",
                 "default": false,
             },
             "metaKey": {
                 "type": "checkbox",
                 "label": "Meta key",
-                "title": "Sets Meta as a modifier key for the shortcut",
+                "title": "Set Meta as a modifier key for the shortcut",
+                "default": false,
+            },
+            "code2": {
+                "label": "Hotkey code",
+                "title": "Which keyboard key to use (click Support for a list of key codes)",
+                "type": "text",
+                "section": "Settings Hotkey",
+                "size": 6,
+                "default": "KeyN",
+            },
+            "hotkey2": {
+                "type": "checkbox",
+                "label": "Enable settings hotkey",
+                "title": "Uncheck to disable the keyboard shortcut",
+                "default": true,
+            },
+            "ctrlKey2": {
+                "type": "checkbox",
+                "label": "Ctrl key",
+                "title": "Set Ctrl as a modifier key for the shortcut",
+                "default": false,
+            },
+            "altKey2": {
+                "type": "checkbox",
+                "label": "Alt key",
+                "title": "Set Alt as a modifier key for the shortcut",
+                "default": true,
+            },
+            "shiftKey2": {
+                "type": "checkbox",
+                "label": "Shift key",
+                "title": "Set Shift as a modifier key for the shortcut",
+                "default": false,
+            },
+            "metaKey2": {
+                "type": "checkbox",
+                "label": "Meta key",
+                "title": "Set Meta as a modifier key for the shortcut",
                 "default": false,
             },
             "pop": {
@@ -734,69 +809,182 @@ async function initConfig() {
         },
         "events": {
             "init": function () {
-                // migrate settings from previous versions, if any exist
-                let migrateKeys = GM_listValues().filter((key) => key !== "Marathon");
+                // determine if user has any orphaned script settings
+                const migrateKeys = GM_listValues().filter((key) => key !== "Marathon"),
+                    f = this.fields;
+                // all the fields that affect the pause/resume hotkey
+                this.hotkeyFields = {
+                    code: f.code,
+                    hotkey: f.hotkey,
+                    ctrlKey: f.ctrlKey,
+                    altKey: f.altKey,
+                    shiftKey: f.shiftKey,
+                    metaKey: f.metaKey,
+                    code2: f.code2,
+                    hotkey2: f.hotkey2,
+                    ctrlKey2: f.ctrlKey2,
+                    altKey2: f.altKey2,
+                    shiftKey2: f.shiftKey2,
+                    metaKey2: f.metaKey2,
+                };
+                // all the fields that affect the popup appearance/existence
+                this.popupFields = {
+                    pop: f.pop,
+                    popDur: f.popDur,
+                    webfont: f.webfont,
+                    font: f.font,
+                    fontSizeInt: f.fontSizeInt,
+                    fontWeight: f.fontWeight,
+                    italic: f.italic,
+                };
+                // all the fields that necessitate loading a new font stylesheet with webfont.
+                this.webFontFields = {
+                    font: f.font,
+                    fontWeight: f.fontWeight,
+                    italic: f.italic,
+                };
+                // this exists to migrate user settings from the old system (multiple objects) to the new system (one JSON object with multiple keys)
                 if (migrateKeys.length) {
                     for (const key of migrateKeys) {
-                        let oldVal = GM_getValue(key);
+                        const oldVal = GM_getValue(key);
+                        // fontSize used to be a string setting, now it's an integer setting fontSizeInt. need to convert it first
                         if (key === "fontSize" && typeof oldVal === "string") {
-                            let newVal = Number(oldVal.match(/\d+/g)[0]);
-                            GM_config.set("fontSizeInt", newVal);
+                            const newVal = Number(oldVal.match(/\d+/g)[0]);
+                            this.set("fontSizeInt", newVal);
                         } else {
-                            GM_config.set(key, oldVal);
+                            this.set(key, oldVal);
                         }
-                        GM_deleteValue(key);
+                        GM_deleteValue(key); // get rid of the old setting so we don't have to do this again.
                     }
                 }
-                GM_config.save();
+
+                this.save(); // we need this to save the default values on first load
+
                 // for all addons except greasemonkey 4, we can add a menu command
                 if (!GM4) {
                     GM_registerMenuCommand("Open Settings", () => {
-                        if (!GM_config.isOpen) {
-                            GM_config.open();
-                        }
+                        if (!this.isOpen) this.open();
                     });
                 }
-                // add an Alt+N hotkey to pull up the settings menu, so greasemonkey 4 users can configure settings.
-                window.addEventListener("keydown", (e) => {
-                    if (e.repeat) {
-                        return;
-                    }
-                    if (e.code == "KeyN" && e.altKey) {
-                        e.stopImmediatePropagation();
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (GM_config.isOpen) {
-                            GM_config.close();
-                        } else {
-                            GM_config.open();
-                        }
-                    }
-                });
                 // memoize the settings
                 settings();
             },
             "save": function () {
-                // close the settings menu upon save.
-                if (GM_config.isOpen) {
-                    GM_config.close();
+                if (this.isOpen) {
+                    // don't do anything until the user fixes their invalid input
+                    if (this.error) return (this.error = false);
+                    const controller = marathon.searchController,
+                        f = this.fields;
+                    let message = "",
+                        hotkeyMsg = false,
+                        doResetPopup = false,
+                        doReloadWF = false;
+                    // close the settings menu upon save (provided none of the inputs is invalid)
+                    this.close();
+                    // handle changes to any hotkey-related settings
+                    for (const key in this.hotkeyFields) {
+                        const tempKey = f[key].value;
+                        // if the memoized setting doesn't match the new value...
+                        if (options[key] != tempKey) {
+                            options[key] = tempKey; // update it
+                            if (key === "hotkey" || key === "hotkey2")
+                                // if the enable hotkey setting was changed, either stop or start the keydown listener
+                                options.hotkey || options.hotkey2 // if either of these settings is true, we need the event listener
+                                    ? marathon.startCapturing()
+                                    : marathon.stopCapturing(); // if both are false then there's no need to listen to keydown at all
+                            hotkeyMsg = true;
+                        }
+                    }
+                    if (hotkeyMsg) message += "Hotkeys"; // tell popup to open and announce the successful settings update
+
+                    // handle changes to popup settings
+                    for (const key in this.popupFields) {
+                        const tempKey = f[key].value;
+                        if (options[key] != tempKey) {
+                            options[key] = tempKey; // same pattern as for the hotkey fields, but with some more bespoke behavior below
+                            switch (key) {
+                                case "pop":
+                                    return; // do nothing special if the popup was enabled/disabled since the toggle already checks the option
+                                case "webfont":
+                                    if (!tempKey) WebFontConfig.google.families.splice(1, 1); // if webfont was disabled, then remove the user-defined font from the webfont config
+                                case "font":
+                                case "fontWeight":
+                                case "italic":
+                                    doReloadWF = true; // if font, fontWeight, or italic were changed, we need to use webfontloader again
+                                    break;
+                                case "fontSizeInt":
+                                    options.fontSize = `${tempKey}px`; // if font size was changed, update the internal string version
+                                    break;
+                                default:
+                                    break;
+                            }
+                            doResetPopup = true;
+                        }
+                    }
+                    // if anything was changed, tell popup to announce it
+                    if (doResetPopup) {
+                        if (doReloadWF) {
+                            this.clearLinks("fonts.googleapis.com"); // clear old webfont sheets
+                            this.updateWFConfig(); // update WebFontConfig
+                            WebFont.load(WebFontConfig); // load new font sheet
+                        }
+                        if (options.pop) {
+                            controller.updatePopup(); // if the script started with popups disabled, then the styles won't exist yet, so load them.
+                            if (message) message += " & "; // if we already set message to Hotkey...
+                            message += "Popup"; // set it to Hotkey & Popup
+                        }
+                    }
+
+                    // handle changes to rate and site settings
+                    const newInt = f.rate.value;
+                    if (options.rate != newInt) {
+                        options.rate = newInt;
+                        controller.pause(); // stop the current interval
+                        controller.int = newInt; // update the rate
+                        if (options[site]) {
+                            controller.resume(); // if the site we're currently on is enabled, start the interval with the new rate
+                        }
+                        if (message.includes("&")) {
+                            message = "Settings"; // if we already set it to Hotkey & Popup then reset it to something general so it's not so long
+                        } else {
+                            if (message) message += " & "; // otherwise if it's set to either Hotkey *or* Popup, set it to e.g. Hotkey & Interval
+                            message += "Interval"; // otherwise just set it to Interval
+                        }
+                    }
+                    if (options.netflix != f.netflix.value || options.amazon != f.amazon.value) {
+                        // if the memoized setting for the current site doesn't match the new setting for that site...
+                        if (options[site] != f[site].value) {
+                            options[site] = f[site].value; // make them match...
+                            f[site].value // and stop or start the interval accordingly
+                                ? controller.resume()
+                                : controller.pause();
+                        }
+                        if (message.includes("&") || message.includes("Settings")) {
+                            message = "Settings"; // again, if the message is already big or broad then just set it to Settings
+                        } else {
+                            if (message) message += " & "; // otherwise do the same thing, adding ampersand...
+                            message += "Sites"; // and then add Sites. kinda hard to explain in words but you can see how it works by playing with the settings
+                        }
+                    }
+                    if (message) controller.openPopup(message); // finally open a popup with whatever message we gave.
                 }
             },
             "open": function () {
-                let resetBtn = document.getElementById("Marathon_resetLink");
-                resetti.title = resetBtn.title;
-                resetti.textContent = resetBtn.textContent;
-                resetti.className = resetBtn.parentElement.className;
-                resetBtn.parentElement.replaceWith(resetti);
-                document.getElementById("Marathon_saveBtn").after(resetti);
-                supporti.title = locale.title;
-                supporti.textContent = locale.text;
-                supporti.className = "saveclose_buttons";
-                supporti.id = "Marathon_supportBtn";
-                document.getElementById("Marathon_closeBtn").after(supporti);
+                // add a support button, make the reset link an actual button. we could do this by editing the prototype but again, it'd be a lot of duplicate code.
+                const resetLink = methods.$i("Marathon_resetLink"); // the ugly reset link that comes with GM_config
+                resetBtn.title = resetLink.title; // assign some attributes of the reset link to the new button
+                resetBtn.textContent = resetLink.textContent;
+                resetBtn.className = resetLink.parentElement.className;
+                resetLink.parentElement.replaceWith(resetBtn); // replace the link with the button
+                methods.$i("Marathon_saveBtn").after(resetBtn); // move it next to the save button
+                supportBtn.title = locale.title; // give the support button a localized tooltip and label since it's the one someone's most likely to need if they don't speak english.
+                supportBtn.textContent = locale.text;
+                supportBtn.className = "saveclose_buttons";
+                supportBtn.id = "Marathon_supportBtn";
+                methods.$i("Marathon_closeBtn").after(supportBtn); // move it to the end.
             },
         },
-        "frame": frame,
+        "frame": frame, // using an in-content element has its problems e.g. we're affected by amazon's god-awful stylesheets, but using an iframe makes animation a lot more clunky and i want the panel to be kinda spry and light
         "css": `
         #Marathon {
             display: block !important;
@@ -839,6 +1027,9 @@ async function initConfig() {
         #Marathon .section_header_holder {
             display: flex;
             flex-flow: row wrap;
+            gap: 6px 8px;
+            padding: 6px 4px 0;
+            margin-top: 8px;
             border-top: 1px solid hsla(0, 0%, 100%, 0.1);
         }
         #Marathon .section_header {
@@ -846,12 +1037,12 @@ async function initConfig() {
             background: none !important;
             border: none !important;
             text-align: left !important;
-            padding-block: 5px !important;
             flex-basis: 100%;
-            margin-inline: 6px;
+            margin-inline: -3px;
         }
         #Marathon .config_var {
-            margin: 0 0 6px 8px;
+            margin: 0 !important;
+            column-gap: 6px;
             display: flex;
             flex-direction: row;
             align-items: center;
@@ -900,10 +1091,6 @@ async function initConfig() {
             position: static;
             box-sizing: border-box;
         }
-        #Marathon input[type="checkbox"]:focus {
-            box-shadow: 0 0 0 0.1em hsl(214.3, 58.3%, 81.8%), 0 0 0 0.15em hsl(214.2, 60%, 42.7%),
-                0 0 0 0.25em hsl(214.3, 58.3%, 71.8%);
-        }
         #Marathon input[type="checkbox"]:hover {
             border: 2px solid hsl(240, 6%, 43%);
         }
@@ -923,20 +1110,25 @@ async function initConfig() {
         #Marathon input[type="checkbox"]:checked:hover:active {
             background-color: hsl(216, 94%, 30%) !important;
         }
-        #Marathon_section_0 > .config-var,
-        #Marathon_field_rate {
+        #Marathon_section_0 {
+            gap: 6px 12px;
+        }
+        #Marathon_section_0 #Marathon_amazon_var,
+        #Marathon_section_0 #Marathon_netflix_var {
             flex-grow: unset;
         }
         #Marathon_buttons_holder {
             display: flex;
             flex-flow: row;
+            gap: 6px;
+            margin-top: 6px;
             align-items: center;
             border-top: 1px solid hsla(0, 0%, 100%, 0.1);
             color: inherit !important;
         }
         #Marathon .saveclose_buttons,
         #Marathon .reset_holder {
-            margin: 6px 6px 0px 0px;
+            margin: 6px 0 0 0;
             padding: 2px 12px;
             color: inherit;
             background: hsla(0, 0%, 25%, 50%);
@@ -972,12 +1164,9 @@ async function initConfig() {
         #Marathon .field_label {
             font-size: 12px;
             font-weight: normal !important;
-            margin-inline: 6px 0 !important;
+            margin: 0 !important;
             white-space: nowrap;
             padding: unset !important;
-        }
-        #Marathon .field_label:first-child {
-            margin-inline: 0 6px !important;
         }
         #Marathon select {
             -webkit-appearance: none;
@@ -1008,7 +1197,26 @@ async function initConfig() {
     });
 }
 
-// after getting settings from *monkey storage, create properties in options (the js object) based on the stored settings.
+// load webfontloader and create the base config (to be changed by GM_config)
+function attachWebFont() {
+    const wf = doc.createElement("script"),
+        first = doc.scripts[0];
+
+    WebFontConfig = {
+        classes: false, // don't bother changing the DOM at all, we aren't listening for it
+        events: false, // no need for events, not worth the execution
+        google: {
+            families: ["Source Sans Pro:wght@1,300"], // default font and settings font
+            display: "swap", // not really necessary since the popup doesn't appear until you press a button. but whatever
+        },
+    };
+    GM_config.updateWFConfig(); // parse user-defined font settings, if any
+    wf.src = "https://cdn.jsdelivr.net/npm/webfontloader@latest/webfontloader.js";
+    wf.async = true; // don't block the rest of the page for this
+    first.parentNode.insertBefore(wf, first);
+}
+
+// after getting settings from *monkey storage, memoize their values in options.
 async function settings() {
     for (const key in GM_config.fields) {
         options[key] = GM_config.get(`${key}`);
@@ -1017,8 +1225,9 @@ async function settings() {
 }
 
 async function start() {
-    await initConfig();
-    marathonSetUp();
+    await initConfig(); // wait for GM_config
+    marathon = new MarathonSetUp(); // create the interval controller, event listeners, etc.
+    attachWebFont(); // load the font sheet
 }
 
 start();
