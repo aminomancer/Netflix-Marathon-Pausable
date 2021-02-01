@@ -135,18 +135,16 @@ const methods = {
      */
     byTxt(s, n = "*", p) {
         const exp = `//${p ? `${p}/child::` : ""}${n}[text()="${s}"]`; // use /child:: syntax if p is passed.
-        return doc.evaluate(exp, doc, null, XPathResult.FIRST_ORDERED_NODE_TYPE, this.results).singleNodeValue;
+        return doc.evaluate(exp, doc, null, XPathResult.FIRST_ORDERED_NODE_TYPE, this.results)
+            .singleNodeValue;
     },
     /**
      * find react child comp given a DOM node
      * @param {object} d (DOM node)
      */
     Ξri(d) {
-        for (const [key, value] of Object.entries(d)) {
-            if (key.startsWith("__reactInternalInstance$")) {
-                return value.child;
-            }
-        }
+        for (const [key, value] of Object.entries(d))
+            if (key.startsWith("__reactInternalInstance$")) return value.child;
         return null;
     },
     /**
@@ -198,36 +196,37 @@ const methods = {
                     // next episode
                     await sleep(400);
                     this.clk(store);
-                } else if ((store = this.byCls("atvwebplayersdk-skipelement-button")[0])) {
+                } else if ((store = this.byCls("atvwebplayersdk-skipelement-button")[0]))
                     // skip various things
                     this.clk(store);
-                } else if ((store = this.byCls("adSkipButton")[0])) {
+                else if ((store = this.byCls("adSkipButton")[0]))
                     // skip ad
                     this.clk(store);
-                } else if ((store = this.byCls("skipElement")[0])) {
+                else if ((store = this.byCls("skipElement")[0]))
                     //  skip intro
                     this.clk(store);
-                } else if ((store = this.byTxt("Skip", "div"))) {
+                else if ((store = this.byTxt("Skip", "div")))
                     // skip trailers
                     this.clk(store);
-                } else if ((store = this.byTxt("Skip Intro", "button", "div"))) {
+                else if ((store = this.byTxt("Skip Intro", "button", "div")))
                     // skip intro
                     this.clk(store);
-                } else if ((store = this.byTxt("Skip Recap", "button", "div"))) {
+                else if ((store = this.byTxt("Skip Recap", "button", "div")))
                     // skip recap
                     this.clk(store);
-                }
             }
-        } else {
-            this.count -= 1;
-        }
+        } else this.count -= 1;
+
         return this.count;
     },
 
     async netflix() {
         if (this.count === 0) {
             let store;
-            if (this.byCls("skip-credits").length && this.byCls("skip-credits-hidden").length === 0) {
+            if (
+                this.byCls("skip-credits").length &&
+                this.byCls("skip-credits-hidden").length === 0
+            ) {
                 // skip credits
                 // this might be out of date, it's from the original script and i think the following statements might already cover all the possible skip buttons. i'm leaving it because so far i haven't been able to fully rule out the possibility that it's still doing something for at least some layouts
                 await sleep(200);
@@ -251,16 +250,14 @@ const methods = {
                 // next episode button (ready)
                 this.Ξrd(this.nReady).props.children._owner.memoizedProps.onClickWatchNextEpisode();
                 this.count = 5;
-            } else if ((store = this.byCls("postplay-still-container")[0])) {
+            } else if ((store = this.byCls("postplay-still-container")[0]))
                 // autoplay
                 this.clk(store);
-            } else if ((store = this.byCls("WatchNext-still-container")[0])) {
+            else if ((store = this.byCls("WatchNext-still-container")[0]))
                 // autoplay
                 this.clk(store);
-            }
-        } else {
-            this.count -= 1;
-        }
+        } else this.count -= 1;
+
         return this.count;
     },
 };
@@ -291,9 +288,7 @@ class PauseUtil {
         this.time = new Date();
         this.timer = win.setInterval(this.callback, this.int);
         this.pauseState = 1;
-        if (!options[site]) {
-            this.pause(); // if the site is disabled then stop the interval. we pause it instead of not starting it in the first place so that the user can re-enable the site and have the interval immediately start working without needing to refresh the page.
-        }
+        if (!options[site]) this.pause(); // if the site is disabled then stop the interval. we pause it instead of not starting it in the first place so that the user can re-enable the site and have the interval immediately start working without needing to refresh the page.
     }
 
     /**
@@ -301,9 +296,7 @@ class PauseUtil {
      * @param {any} pop (string, boolean, or null — identifies the caller so we can determine the popup message)
      */
     pause(pop) {
-        if (this.pauseState !== 1) {
-            return;
-        }
+        if (this.pauseState !== 1) return;
 
         this.remainder = this.int - (new Date() - this.time);
         win.clearInterval(this.timer);
@@ -318,9 +311,7 @@ class PauseUtil {
      * @param {any} pop (same as pause())
      */
     async resume(pop) {
-        if (this.pauseState !== 2) {
-            return;
-        }
+        if (this.pauseState !== 2) return;
 
         this.pauseState = 3;
 
@@ -332,9 +323,7 @@ class PauseUtil {
 
     // when we pause, there's usually still time left on the interval. resume() calls this after waiting for the remaining duration. so this is what actually resumes the interval.
     run() {
-        if (this.pauseState !== 3) {
-            return;
-        }
+        if (this.pauseState !== 3) return;
 
         this.callback();
 
@@ -345,9 +334,8 @@ class PauseUtil {
 
     // toggle the interval on/off.
     toggle() {
-        if (!options[site]) {
-            return; // disable the pause/resume toggle when the site is disabled
-        }
+        if (!options[site]) return; // disable the pause/resume toggle when the site is disabled
+
         switch (this.pauseState) {
             case 1:
                 this.pause("Paused"); // passing false tells openPopup to use the "Marathon: Paused" message
@@ -365,9 +353,8 @@ class PauseUtil {
      */
     openPopup(msg) {
         // if popup is disabled in options, or no message was sent, do nothing
-        if (msg === undefined || !options.pop) {
-            return;
-        }
+        if (msg === undefined || !options.pop) return;
+
         const { style } = this.popup;
         // if window is netflix or amazon but there's no video player, (e.g. we're browsing titles) do nothing but ensure the popup is hidden.
         if (!methods.playing && typeof msg === "boolean") {
@@ -434,12 +421,10 @@ class PauseUtil {
      * @param {bool} firstRun (we call this function at startup and every time we pause/unpause. we don't need to register a menu command if this is the startup call, since none exists yet)
      */
     register(cap, firstRun = false) {
-        if (GM4) {
-            return; // don't register a menu command if the script manager is greasemonkey 4.0+ since the function doesn't exist
-        }
-        if (!firstRun) {
-            GM_unregisterMenuCommand(this.caption); // this is how we switch the menu command from play to pause. we'd prefer to just have a single menu command and use a variable to determine its label and callback behavior, but the API doesn't support that afaik.
-        }
+        if (GM4) return; // don't register a menu command if the script manager is greasemonkey 4.0+ since the function doesn't exist
+
+        if (!firstRun) GM_unregisterMenuCommand(this.caption); // this is how we switch the menu command from play to pause. we'd prefer to just have a single menu command and use a variable to determine its label and callback behavior, but the API doesn't support that afaik.
+
         // don't register the pause/unpause menu command if the site is currently disabled
         if (options[site]) {
             GM_registerMenuCommand(cap, this.toggler);
@@ -455,9 +440,7 @@ class MarathonSetUp {
         this.searchController = new PauseUtil(this.search, options.rate); // create the interval with our rate setting
 
         // if a hotkey is enabled in options, start listening to keyboard events
-        if (options.hotkey || options.hotkey2) {
-            this.startCapturing();
-        }
+        if (options.hotkey || options.hotkey2) this.startCapturing();
     }
 
     /**
@@ -466,13 +449,12 @@ class MarathonSetUp {
      */
     handleEvent(e) {
         if (!e.repeat && [options.code, options.code2].indexOf(e.code) > -1) {
-            if (options.hotkey && e.code === options.code && MarathonSetUp.modTest(e)) {
+            if (options.hotkey && e.code === options.code && MarathonSetUp.modTest(e))
                 this.searchController.toggler();
-            } else if (options.hotkey2 && e.code === options.code2 && MarathonSetUp.modTest(e, 2)) {
-                if (GM_config.isOpen) {
-                    GM_config.close();
-                } else GM_config.open();
-            } else return;
+            else if (options.hotkey2 && e.code === options.code2 && MarathonSetUp.modTest(e, 2))
+                if (GM_config.isOpen) GM_config.close();
+                else GM_config.open();
+            else return;
             e.stopImmediatePropagation();
             e.preventDefault();
             e.stopPropagation();
@@ -486,10 +468,10 @@ class MarathonSetUp {
      */
     static modTest(e, d = "") {
         return (
-            e.ctrlKey === options[`ctrlKey${d}`]
-            && e.altKey === options[`altKey${d}`]
-            && e.shiftKey === options[`shiftKey${d}`]
-            && e.metaKey === options[`metaKey${d}`]
+            e.ctrlKey === options[`ctrlKey${d}`] &&
+            e.altKey === options[`altKey${d}`] &&
+            e.shiftKey === options[`shiftKey${d}`] &&
+            e.metaKey === options[`metaKey${d}`]
         );
     }
 
@@ -517,14 +499,7 @@ async function checkGM() {
     }
 }
 
-/**
- * set up the GM_config settings GUI
- */
-async function initConfig() {
-    await checkGM();
-    const frame = doc.createElement("div");
-    const resetBtn = doc.createElement("button");
-    const supportBtn = doc.createElement("button");
+function overrideGMconfigFunctions() {
     // fading animation stuff
     const keyframes = {
         opacity: [0, 1],
@@ -543,13 +518,6 @@ async function initConfig() {
         iterations: 1,
         easing: "ease-in-out",
     };
-    frame.style.display = "none";
-    doc.body.appendChild(frame);
-    frame.appendChild(resetBtn);
-    frame.appendChild(supportBtn);
-    resetBtn.addEventListener("click", () => GM_config.reset());
-    supportBtn.addEventListener("click", () => GM_openInTab("https://greasyfork.org/scripts/420475-netflix-marathon-pausable"));
-    GM_config.error = false; // this switch tells us if the user input an invalid value for a setting so we won't close the GUI when they try to save.
     // override API functions to support fancy animations
     GM_config.close = function close() {
         win.clearTimeout(this.fading);
@@ -570,8 +538,7 @@ async function initConfig() {
 
             // Null out all the fields so we don't leak memory
             const { fields } = this;
-            // eslint-disable-next-line no-unused-vars
-            for (const [_key, value] of Object.entries(fields)) {
+            for (const value of Object.values(fields)) {
                 value.wrapper = null;
                 value.node = null;
             }
@@ -579,11 +546,14 @@ async function initConfig() {
     };
     GM_config.open = function open() {
         win.clearTimeout(this.fading);
-        if (this.animation && this.animation.id === "GM_config_bwd" && this.animation.playState === "running") {
+        if (
+            this.animation &&
+            this.animation.id === "GM_config_bwd" &&
+            this.animation.playState === "running"
+        )
             this.animation.playbackRate = -2.5;
-        } else {
-            this.animation = this.frame.animate(keyframes, animFwd);
-        }
+        else this.animation = this.frame.animate(keyframes, animFwd);
+
         this.isOpen = true;
         Object.getPrototypeOf(this).open.call(this);
     };
@@ -597,7 +567,7 @@ async function initConfig() {
             for (const [id, field] of Object.entries(fields)) {
                 const value = field.toValue();
 
-                if (field.save) {
+                if (field.save)
                     if (value != null) {
                         values[id] = value;
                         field.value = value;
@@ -605,7 +575,7 @@ async function initConfig() {
                         this.error = true;
                         values[id] = field.value;
                     }
-                } else forgotten[id] = value;
+                else forgotten[id] = value;
             }
         }
         try {
@@ -621,32 +591,56 @@ async function initConfig() {
      * @param {string} sel (CSS selector; check each stylesheet for this string)
      */
     GM_config.clearSheets = (sel) => {
-        for (const i of Array.from(methods.byTag("style", doc.head))) {
-            if (i instanceof HTMLStyleElement && i.sheet.cssRules[0].selectorText && i.sheet.cssRules[0].selectorText.includes(sel)) i.remove();
-        }
+        for (const i of Array.from(methods.byTag("style", doc.head)))
+            if (
+                i instanceof HTMLStyleElement &&
+                i.sheet.cssRules[0].selectorText &&
+                i.sheet.cssRules[0].selectorText.includes(sel)
+            )
+                i.remove();
     };
     /**
      * remove all the link elements generated by webfontloader.js. the loader has no logic to amend its existing stylesheets and will just keep adding more for every time you call it. since we call it every time the user changes the font settings, it makes sense to delete the previous ones before calling the load method.
      * @param {string} uri (url or part of url; check each link element's href attribute for this string)
      */
     GM_config.clearLinks = (uri) => {
-        for (const i of Array.from(methods.byTag("link", doc.head))) {
+        for (const i of Array.from(methods.byTag("link", doc.head)))
             if (i instanceof HTMLLinkElement && i.href.includes(uri)) i.remove();
-        }
     };
     /**
      * return true if any of the fields passed have values that deviate from their default values. we use this to avoid performing operations that are unnecessary when aspects of the user's config are unchanged.
      * @param {object} fields (an object whose properties are GM_config fields)
      */
     GM_config.checkNotDefault = function checkNotDefault(fields) {
-        return !Object.keys(fields).every((key) => fields[key].value === fields[key].default);
+        return !Object.values(fields).every((field) => field.value === field.default);
     };
     // if webfont is enabled and any of the fields that affect webfont are non-default, (font, italic, fontWeight) then change the webfont config
     GM_config.updateWFConfig = function updateWFConfig() {
-        if (options.webfont && this.checkNotDefault(this.webFontFields)) {
-            WebFontConfig.google.families[1] = `${options.font}:${options.italic ? "ital," : ""}wght@1,${options.fontWeight}`;
-        }
+        if (options.webfont && this.checkNotDefault(this.webFontFields))
+            WebFontConfig.google.families[1] = `${options.font}:${
+                options.italic ? "ital," : ""
+            }wght@1,${options.fontWeight}`;
     };
+}
+
+/**
+ * set up the GM_config settings GUI
+ */
+async function initConfig() {
+    await checkGM();
+    const frame = doc.createElement("div");
+    const resetBtn = doc.createElement("button");
+    const supportBtn = doc.createElement("button");
+    frame.style.display = "none";
+    doc.body.appendChild(frame);
+    frame.appendChild(resetBtn);
+    frame.appendChild(supportBtn);
+    resetBtn.addEventListener("click", () => GM_config.reset());
+    supportBtn.addEventListener("click", () =>
+        GM_openInTab("https://greasyfork.org/scripts/420475-netflix-marathon-pausable")
+    );
+    GM_config.error = false; // this switch tells us if the user input an invalid value for a setting so we won't close the GUI when they try to save.
+    overrideGMconfigFunctions();
     // initialize the GUI
     GM_config.init({
         id: "Marathon",
@@ -839,28 +833,26 @@ async function initConfig() {
                     italic: f.italic,
                 };
                 // this exists to migrate user settings from the old system (multiple objects) to the new system (one JSON object with multiple keys)
-                if (migrateKeys.length) {
+                if (migrateKeys.length)
                     for (const key of migrateKeys) {
                         const oldVal = GM_getValue(key);
                         // fontSize used to be a string setting, now it's an integer setting fontSizeInt. need to convert it first
                         if (key === "fontSize" && typeof oldVal === "string") {
                             const newVal = Number(oldVal.match(/\d+/g)[0]);
                             this.set("fontSizeInt", newVal);
-                        } else {
-                            this.set(key, oldVal);
-                        }
+                        } else this.set(key, oldVal);
+
                         GM_deleteValue(key); // get rid of the old setting so we don't have to do this again.
                     }
-                }
 
                 this.save(); // we need this to save the default values on first load
 
                 // for all addons except greasemonkey 4, we can add a menu command
-                if (!GM4) {
+                if (!GM4)
                     GM_registerMenuCommand("Open Settings", () => {
                         if (!this.isOpen) this.open();
                     });
-                }
+
                 // memoize the settings
                 settings();
             },
@@ -877,25 +869,25 @@ async function initConfig() {
                     // close the settings menu upon save (provided none of the inputs is invalid)
                     this.close();
                     // handle changes to any hotkey-related settings
-                    for (const [key] of Object.entries(this.hotkeyFields)) {
-                        const tempKey = f[key].value;
+                    for (const [key, field] of Object.entries(this.hotkeyFields)) {
+                        const tempKey = field.value;
                         // if the memoized setting doesn't match the new value...
                         if (options[key] !== tempKey) {
                             options[key] = tempKey; // update it
-                            if (key === "hotkey" || key === "hotkey2") {
+                            if (key === "hotkey" || key === "hotkey2")
                                 // if the enable hotkey setting was changed, either stop or start the keydown listener
                                 options.hotkey || options.hotkey2 // if either of these settings is true, we need the event listener
                                     ? marathon.startCapturing()
                                     : marathon.stopCapturing();
-                            } // if both are false then there's no need to listen to keydown at all
+                            // if both are false then there's no need to listen to keydown at all
                             hotkeyMsg = true;
                         }
                     }
                     if (hotkeyMsg) message += "Hotkeys"; // tell popup to open and announce the successful settings update
 
                     // handle changes to popup settings
-                    for (const [key] of Object.entries(this.popupFields)) {
-                        const tempKey = f[key].value;
+                    for (const [key, field] of Object.entries(this.popupFields)) {
+                        const tempKey = field.value;
                         if (options[key] !== tempKey) {
                             options[key] = tempKey; // same pattern as for the hotkey fields, but with some more bespoke behavior below
                             switch (key) {
@@ -938,12 +930,11 @@ async function initConfig() {
                         options.rate = newInt;
                         controller.pause(); // stop the current interval
                         controller.int = newInt; // update the rate
-                        if (options[site]) {
-                            controller.resume(); // if the site we're currently on is enabled, start the interval with the new rate
-                        }
-                        if (message.includes("&")) {
-                            message = "Settings"; // if we already set it to Hotkey & Popup then reset it to something general so it's not so long
-                        } else {
+                        if (options[site]) controller.resume(); // if the site we're currently on is enabled, start the interval with the new rate
+
+                        if (message.includes("&")) message = "Settings";
+                        // if we already set it to Hotkey & Popup then reset it to something general so it's not so long
+                        else {
                             if (message) message += " & "; // otherwise if it's set to either Hotkey *or* Popup, set it to e.g. Hotkey & Interval
                             message += "Interval"; // otherwise just set it to Interval
                         }
@@ -956,9 +947,10 @@ async function initConfig() {
                                 ? controller.resume()
                                 : controller.pause();
                         }
-                        if (message.includes("&") || message.includes("Settings")) {
-                            message = "Settings"; // again, if the message is already big or broad then just set it to Settings
-                        } else {
+                        if (message.includes("&") || message.includes("Settings"))
+                            message = "Settings";
+                        // again, if the message is already big or broad then just set it to Settings
+                        else {
                             if (message) message += " & "; // otherwise do the same thing, adding ampersand...
                             message += "Sites"; // and then add Sites. kinda hard to explain in words but you can see how it works by playing with the settings
                         }
@@ -1216,9 +1208,7 @@ function attachWebFont() {
 
 // after getting settings from *monkey storage, memoize their values in options.
 async function settings() {
-    for (const [key, field] of Object.entries(GM_config.fields)) {
-        options[key] = field.value;
-    }
+    for (const [key, field] of Object.entries(GM_config.fields)) options[key] = field.value;
     options.fontSize = `${options.fontSizeInt}px`;
 }
 

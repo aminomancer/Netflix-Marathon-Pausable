@@ -4,7 +4,8 @@
         "es2021": true
     },
     "extends": [
-        "airbnb-base"
+        "airbnb-base",
+        "prettier"
     ],
     "parserOptions": {
         "ecmaVersion": 12,
@@ -20,6 +21,10 @@
                 "avoidEscape": true,
                 "allowTemplateLiterals": true
             }
+        ],
+        "curly": [
+            "error",
+            "multi"
         ],
         "camelcase": [
             "error",
