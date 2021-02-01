@@ -1,0 +1,31 @@
+{
+  "name": "netflix-marathon-pausable",
+  "version": "4.5.3",
+  "description": "A configurable script that automatically skips recaps, intros, credits, and ads, and clicks \"next episode\" prompts on Netflix and Amazon Prime Video. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.",
+  "main": "marathon.user.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aminomancer/Netflix-Marathon-Pausable.git"
+  },
+  "keywords": [
+    "userscript",
+    "netflix",
+    "greasemonkey",
+    "amazon",
+    "amazon-prime-video"
+  ],
+  "author": "aminomancer",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/aminomancer/Netflix-Marathon-Pausable/issues"
+  },
+  "homepage": "https://github.com/aminomancer/Netflix-Marathon-Pausable#readme",
+  "devDependencies": {
+    "eslint": "^7.19.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.22.1"
+  }
+}
