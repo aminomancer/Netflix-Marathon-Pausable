@@ -5,7 +5,7 @@
 // @name:ja            Netflix Marathon（一時停止できます）
 // @name:ar            ماراثون Netflix (يمكن إيقافه مؤقتًا)
 // @namespace          https://github.com/aminomancer
-// @version            4.5.4
+// @version            4.5.5
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix and Amazon Prime Video. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，该脚本自动跳过介绍，信用和广告，并单击Netflix和Amazon Prime Video上的“下一个节目”提示。包括一个可自定义的热键，以暂停/恢复自动跳过功能。按Alt + N进行配置。
 // @description:zh-TW  一个可配置的脚本，该脚本自动跳过介绍，信用和广告，并单击Netflix和Amazon Prime Video上的“下一个节目”提示。包括一个可自定义的热键，以暂停/恢复自动跳过功能。按Alt + N进行配置。
@@ -186,7 +186,6 @@ const methods = {
             this.count = 2;
         }
     },
-
     // searches for elements that skip stuff. repeated every 300ms. change "rate" in the options if you want to make this more or less frequent.
     async amazon() {
         if (this.count === 0) {
@@ -216,10 +215,8 @@ const methods = {
                     this.clk(store);
             }
         } else this.count -= 1;
-
         return this.count;
     },
-
     async netflix() {
         if (this.count === 0) {
             let store;
@@ -257,28 +254,26 @@ const methods = {
                 // autoplay
                 this.clk(store);
         } else this.count -= 1;
-
         return this.count;
     },
 };
 
-// an interval constructor that you can pause and resume, and which opens a brief popup when you do so. yes i'm using a class that's only instantiated once. i like the way it looks. i even use another one down below. if you know of something better lmk~
-class PauseUtil {
+// an interval constructor that you can pause and resume, and which opens a brief popup when you do so. yes i'm using a class that's only instantiated once. i like the way it looks. if you know of something better lmk~
+class Controller {
     /**
      * pausable interval utility
-     * @param {func} callback (the stuff you want to execute periodically, in this case methods.netflix or methods.amazon)
+     * @param {object} handler (object containing the site methods)
      * @param {int} int (how often to repeat the callback)
      */
-    constructor(callback, int) {
-        this.callback = callback;
-        this.int = int;
+    constructor(handler, int) {
+        this.callback = handler[site].bind(handler); // e.g. methods.amazon.bind(methods)
+        this.int = int; // can be changed in real-time and the next resume() call will use the new value
         this.popup = doc.createElement("div");
         this.text = doc.createTextNode("Marathon: Paused");
         this.remainder = 0; // how much time is remaining on the interval when we pause it
         this.fading = null; // 3 second timeout (by default), after which the popup fades
         this.pauseState = 0; //  0: idle, 1: running, 2: paused, 3: resumed
         this.toggler = this.toggle.bind(this);
-
         this.register("Pause Marathon", true); // initial creation of the menu command
         // if popup is enabled in options, style it
         if (options.pop) {
@@ -288,12 +283,44 @@ class PauseUtil {
         this.time = new Date();
         this.timer = win.setInterval(this.callback, this.int);
         this.pauseState = 1;
+        if (options.hotkey || options.hotkey2) this.startCapturing();
         if (!options[site]) this.pause(); // if the site is disabled then stop the interval. we pause it instead of not starting it in the first place so that the user can re-enable the site and have the interval immediately start working without needing to refresh the page.
     }
 
     /**
+     * check that the modifier keys pressed match those defined in user settings
+     * @param {object} e (event)
+     * @param {string} d (which key settings to evaluate, ctrlKey or ctrlKey1)
+     */
+    static modTest(e, d = "") {
+        return (
+            e.ctrlKey === options[`ctrlKey${d}`] &&
+            e.altKey === options[`altKey${d}`] &&
+            e.shiftKey === options[`shiftKey${d}`] &&
+            e.metaKey === options[`metaKey${d}`]
+        );
+    }
+
+    /**
+     * called when you press the configured hotkey.
+     * @param {object} e (event)
+     */
+    handleEvent(e) {
+        if (!e.repeat && [options.code, options.code2].indexOf(e.code) > -1) {
+            if (options.hotkey && e.code === options.code && Controller.modTest(e)) this.toggler();
+            else if (options.hotkey2 && e.code === options.code2 && Controller.modTest(e, 2))
+                if (GM_config.isOpen) GM_config.close();
+                else GM_config.open();
+            else return;
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }
+
+    /**
      * pause the interval
-     * @param {any} pop (string, boolean, or null — identifies the caller so we can determine the popup message)
+     * @param {string} pop (string or null — identifies the caller so we can determine the popup message)
      */
     pause(pop) {
         if (this.pauseState !== 1) return;
@@ -308,7 +335,7 @@ class PauseUtil {
 
     /**
      * resume the interval
-     * @param {any} pop (same as pause())
+     * @param {string} pop (same as pause())
      */
     async resume(pop) {
         if (this.pauseState !== 2) return;
@@ -335,7 +362,6 @@ class PauseUtil {
     // toggle the interval on/off.
     toggle() {
         if (!options[site]) return; // disable the pause/resume toggle when the site is disabled
-
         switch (this.pauseState) {
             case 1:
                 this.pause("Paused"); // passing false tells openPopup to use the "Marathon: Paused" message
@@ -349,22 +375,13 @@ class PauseUtil {
 
     /**
      * opens the popup and schedules it to close
-     * @param {bool} msg (what the popup should say)
+     * @param {string} msg (what the popup should say)
      */
     openPopup(msg) {
         // if popup is disabled in options, or no message was sent, do nothing
         if (msg === undefined || !options.pop) return;
 
         const { style } = this.popup;
-        // if window is netflix or amazon but there's no video player, (e.g. we're browsing titles) do nothing but ensure the popup is hidden.
-        if (!methods.playing && typeof msg === "boolean") {
-            style.transitionDuration = "1s";
-            style.opacity = "0";
-            return;
-        }
-
-        // if called by the toggle, label it "Resumed" or "Paused"
-        // if called by a settings change, label it "Updated <setting type>"
         this.popup.textContent = `Marathon: ${msg}`;
         style.transitionDuration = "0.2s";
         style.opacity = "1";
@@ -377,14 +394,11 @@ class PauseUtil {
         }, options.popDur);
     }
 
-    /**
-     * apply the basic popup style and place it in the body
-     */
+    // apply the basic popup style and place it in the body
     setupPopup() {
-        const { style } = this.popup;
         doc.body.insertBefore(this.popup, doc.body.firstElementChild);
         this.popup.appendChild(this.text);
-        style.cssText = `
+        this.popup.style.cssText = `
             position: fixed;
             top: 50%;
             right: 3%;
@@ -404,9 +418,7 @@ class PauseUtil {
             `;
     }
 
-    /**
-     * update the mutable popup attributes
-     */
+    // update the mutable popup attributes
     updatePopup() {
         const { style } = this.popup;
         style.fontFamily = options.font;
@@ -431,49 +443,6 @@ class PauseUtil {
             this.caption = cap;
         }
     }
-}
-
-// initial setup
-class MarathonSetUp {
-    constructor() {
-        this.search = methods[site].bind(methods); // use the correct callback
-        this.searchController = new PauseUtil(this.search, options.rate); // create the interval with our rate setting
-
-        // if a hotkey is enabled in options, start listening to keyboard events
-        if (options.hotkey || options.hotkey2) this.startCapturing();
-    }
-
-    /**
-     * called when you press the configured hotkey.
-     * @param {object} e (event)
-     */
-    handleEvent(e) {
-        if (!e.repeat && [options.code, options.code2].indexOf(e.code) > -1) {
-            if (options.hotkey && e.code === options.code && MarathonSetUp.modTest(e))
-                this.searchController.toggler();
-            else if (options.hotkey2 && e.code === options.code2 && MarathonSetUp.modTest(e, 2))
-                if (GM_config.isOpen) GM_config.close();
-                else GM_config.open();
-            else return;
-            e.stopImmediatePropagation();
-            e.preventDefault();
-            e.stopPropagation();
-        }
-    }
-
-    /**
-     * check that the modifier keys pressed match those defined in user settings
-     * @param {object} e (event)
-     * @param {string} d (which key settings to evaluate, ctrlKey or ctrlKey1)
-     */
-    static modTest(e, d = "") {
-        return (
-            e.ctrlKey === options[`ctrlKey${d}`] &&
-            e.altKey === options[`altKey${d}`] &&
-            e.shiftKey === options[`shiftKey${d}`] &&
-            e.metaKey === options[`metaKey${d}`]
-        );
-    }
 
     // start listening to key events
     startCapturing() {
@@ -486,9 +455,7 @@ class MarathonSetUp {
     }
 }
 
-/**
- * if using greasemonkey 4, remap the GM_* functions to GM.*
- */
+// if using greasemonkey 4, remap the GM_* functions to GM.*
 async function checkGM() {
     if (GM4) {
         GM_getValue = GM.getValue;
@@ -499,7 +466,8 @@ async function checkGM() {
     }
 }
 
-function overrideGMconfigFunctions() {
+// override API functions so we can animate the settings panel and auto-close it on save.
+function extendGMC() {
     // fading animation stuff
     const keyframes = {
         opacity: [0, 1],
@@ -518,7 +486,7 @@ function overrideGMconfigFunctions() {
         iterations: 1,
         easing: "ease-in-out",
     };
-    // override API functions to support fancy animations
+    // support fancy animations
     GM_config.close = function close() {
         win.clearTimeout(this.fading);
         this.animation = this.frame.animate(keyframes, animBwd);
@@ -640,7 +608,7 @@ async function initConfig() {
         GM_openInTab("https://greasyfork.org/scripts/420475-netflix-marathon-pausable")
     );
     GM_config.error = false; // this switch tells us if the user input an invalid value for a setting so we won't close the GUI when they try to save.
-    overrideGMconfigFunctions();
+    extendGMC();
     // initialize the GUI
     GM_config.init({
         id: "Marathon",
@@ -860,7 +828,6 @@ async function initConfig() {
                 if (this.isOpen) {
                     // don't do anything until the user fixes their invalid input
                     if (this.error) return (this.error = false);
-                    const controller = marathon.searchController;
                     const f = this.fields;
                     let message = "";
                     let hotkeyMsg = false;
@@ -918,7 +885,7 @@ async function initConfig() {
                             WebFont.load(WebFontConfig); // load new font sheet
                         }
                         if (options.pop) {
-                            controller.updatePopup(); // if the script started with popups disabled, then the styles won't exist yet, so load them.
+                            marathon.updatePopup(); // if the script started with popups disabled, then the styles won't exist yet, so load them.
                             if (message) message += " & "; // if we already set message to Hotkey...
                             message += "Popup"; // set it to Hotkey & Popup
                         }
@@ -928,9 +895,9 @@ async function initConfig() {
                     const newInt = f.rate.value;
                     if (options.rate !== newInt) {
                         options.rate = newInt;
-                        controller.pause(); // stop the current interval
-                        controller.int = newInt; // update the rate
-                        if (options[site]) controller.resume(); // if the site we're currently on is enabled, start the interval with the new rate
+                        marathon.pause(); // stop the current interval
+                        marathon.int = newInt; // update the rate
+                        if (options[site]) marathon.resume(); // if the site we're currently on is enabled, start the interval with the new rate
 
                         if (message.includes("&")) message = "Settings";
                         // if we already set it to Hotkey & Popup then reset it to something general so it's not so long
@@ -944,8 +911,8 @@ async function initConfig() {
                         if (options[site] !== f[site].value) {
                             options[site] = f[site].value; // make them match...
                             f[site].value // and stop or start the interval accordingly
-                                ? controller.resume()
-                                : controller.pause();
+                                ? marathon.resume()
+                                : marathon.pause();
                         }
                         if (message.includes("&") || message.includes("Settings"))
                             message = "Settings";
@@ -955,7 +922,7 @@ async function initConfig() {
                             message += "Sites"; // and then add Sites. kinda hard to explain in words but you can see how it works by playing with the settings
                         }
                     }
-                    if (message) controller.openPopup(`Updated ${message}`); // finally open a popup with whatever message we gave.
+                    if (message) marathon.openPopup(`Updated ${message}`); // finally open a popup with whatever message we gave.
                 }
                 return null;
             },
@@ -1214,7 +1181,7 @@ async function settings() {
 
 async function start() {
     await initConfig(); // wait for GM_config
-    marathon = new MarathonSetUp(); // create the interval controller, event listeners, etc.
+    marathon = new Controller(methods, options.rate); // create the interval controller, event listeners, etc.
     attachWebFont(); // load the font sheet
 }
 
