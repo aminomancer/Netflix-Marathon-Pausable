@@ -404,7 +404,11 @@ class Controller {
             right: 3%;
             transform: translateY(-50%);
             z-index: 2147483646;
-            background: hsla(0, 0%, 6%, 0.8);
+            background-color: hsla(0, 0%, 6%, 0.8);
+            background-image: url("https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/texture/noise-512x512.png");
+            background-repeat: repeat;
+            background-size: auto;
+            background-attachment: local;
             -webkit-backdrop-filter: blur(7px);
             backdrop-filter: blur(7px);
             color: hsla(0, 0%, 97%, 0.95);
@@ -950,7 +954,11 @@ async function initConfig() {
             inset: unset !important;
             top: 50% !important;
             left: 0% !important;
-            background: hsla(0, 0%, 5.1%, 0.91);
+            background-color: hsla(0, 0%, 5.1%, 0.91);
+            background-image: url("https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/texture/noise-512x512.png");
+            background-repeat: repeat;
+            background-size: auto;
+            background-attachment: local;
             -webkit-backdrop-filter: blur(7px);
             backdrop-filter: blur(7px);
             border: none !important;
