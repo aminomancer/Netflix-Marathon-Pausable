@@ -5,7 +5,7 @@
 // @name:ja            Netflix Marathon（一時停止できます）
 // @name:ar            ماراثون Netflix (يمكن إيقافه مؤقتًا)
 // @namespace          https://github.com/aminomancer
-// @version            4.5.6
+// @version            4.6.0
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix and Amazon Prime Video. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，该脚本自动跳过介绍，信用和广告，并单击Netflix和Amazon Prime Video上的“下一个节目”提示。包括一个可自定义的热键，以暂停/恢复自动跳过功能。按Alt + N进行配置。
 // @description:zh-TW  一个可配置的脚本，该脚本自动跳过介绍，信用和广告，并单击Netflix和Amazon Prime Video上的“下一个节目”提示。包括一个可自定义的热键，以暂停/恢复自动跳过功能。按Alt + N进行配置。
@@ -69,30 +69,32 @@ const locale = {
     },
     get text() {
         // returns the label for the support button in settings
+        delete this.text;
         switch (this.lang) {
             case "zh":
-                return "信息"; // chinese
+                return (this.text = "信息"); // chinese
             case "ja":
-                return "助けて"; // japanese
+                return (this.text = "助けて"); // japanese
             case "ar":
-                return "تعليمات"; // arabic
+                return (this.text = "تعليمات"); // arabic
             case "en":
             default:
-                return "Support"; // english etc.
+                return (this.text = "Support"); // english etc.
         }
     },
     get title() {
         // returns the tooltip for the support button
+        delete this.title;
         switch (this.lang) {
             case "zh":
-                return "设置的信息和翻译";
+                return (this.title = "设置的信息和翻译");
             case "ja":
-                return "設定の情報と翻訳";
+                return (this.title = "設定の情報と翻訳");
             case "ar":
-                return "معلومات وترجمات للإعدادات";
+                return (this.title = "معلومات وترجمات للإعدادات");
             case "en":
             default:
-                return "Info and translations for the settings";
+                return (this.title = "Info and translations for the settings");
         }
     },
 };
@@ -224,21 +226,20 @@ const methods = {
                 this.byCls("skip-credits").length &&
                 this.byCls("skip-credits-hidden").length === 0
             ) {
-                // skip credits
-                // this might be out of date, it's from the original script and i think the following statements might already cover all the possible skip buttons. i'm leaving it because so far i haven't been able to fully rule out the possibility that it's still doing something for at least some layouts
                 await sleep(200);
                 try {
                     this.byCls("skip-credits")[0].firstElementChild.click();
+                    this.count = 80;
                 } catch (e) {
-                    await sleep(100);
+                    return (this.count -= 1);
                 }
                 await sleep(100);
                 try {
                     this.qry(".button-nfplayerPlay").click();
+                    this.count = 80;
                 } catch (e) {
-                    return (this.count = 0);
+                    return (this.count -= 1);
                 }
-                this.count = 80;
             } else if (this.qry(this.nDrain)) {
                 // next episode button (draining)
                 this.Ξrd(this.nDrain)._owner.memoizedProps.handlePress();
@@ -247,6 +248,10 @@ const methods = {
                 // next episode button (ready)
                 this.Ξrd(this.nReady).props.children._owner.memoizedProps.onClickWatchNextEpisode();
                 this.count = 5;
+            } else if (options.promoted && (store = this.byCls("PromotedVideo-actions")[0])) {
+                // promoted video autoplay
+                await sleep(700);
+                this.clk(store.firstElementChild);
             } else if ((store = this.byCls("postplay-still-container")[0]))
                 // autoplay
                 this.clk(store);
@@ -472,28 +477,19 @@ async function checkGM() {
 
 // override API functions so we can animate the settings panel and auto-close it on save.
 function extendGMC() {
-    // fading animation stuff
-    const keyframes = {
-        opacity: [0, 1],
-    };
-    const animFwd = {
-        id: "GM_config_fwd",
-        direction: "normal",
-        duration: 200,
-        iterations: 1,
-        easing: "ease-in-out",
-    };
-    const animBwd = {
-        id: "GM_config_bwd",
-        direction: "reverse",
-        duration: 500,
-        iterations: 1,
-        easing: "ease-in-out",
-    };
     // support fancy animations
     GM_config.close = function close() {
         win.clearTimeout(this.fading);
-        this.animation = this.frame.animate(keyframes, animBwd);
+        this.animation = this.frame.animate(
+            { opacity: [0, 1] },
+            {
+                id: "GM_config_bwd",
+                direction: "reverse",
+                duration: 500,
+                iterations: 1,
+                easing: "ease-in-out",
+            }
+        );
         this.onClose(); //  Call the close() callback function
         this.isOpen = false;
         this.fading = win.setTimeout(() => {
@@ -524,7 +520,17 @@ function extendGMC() {
             this.animation.playState === "running"
         )
             this.animation.playbackRate = -2.5;
-        else this.animation = this.frame.animate(keyframes, animFwd);
+        else
+            this.animation = this.frame.animate(
+                { opacity: [0, 1] },
+                {
+                    id: "GM_config_fwd",
+                    direction: "normal",
+                    duration: 200,
+                    iterations: 1,
+                    easing: "ease-in-out",
+                }
+            );
 
         this.isOpen = true;
         Object.getPrototypeOf(this).open.call(this);
@@ -583,9 +589,8 @@ function extendGMC() {
      * return true if any of the fields passed have values that deviate from their default values. we use this to avoid performing operations that are unnecessary when aspects of the user's config are unchanged.
      * @param {object} fields (an object whose properties are GM_config fields)
      */
-    GM_config.checkNotDefault = function checkNotDefault(fields) {
-        return !Object.values(fields).every((field) => field.value === field.default);
-    };
+    GM_config.checkNotDefault = (fields) =>
+        !Object.values(fields).every((field) => field.value === field.default);
     // if webfont is enabled and any of the fields that affect webfont are non-default, (font, italic, fontWeight) then change the webfont config
     GM_config.updateWFConfig = function updateWFConfig() {
         if (options.webfont && this.checkNotDefault(this.webFontFields))
@@ -618,20 +623,11 @@ async function initConfig() {
         id: "Marathon",
         title: "Netflix Marathon Settings",
         fields: {
-            rate: {
-                label: "Interval Rate",
-                title: "Time (in milliseconds) between checks for skip buttons",
-                section: "Main Settings",
-                type: "int",
-                size: 8,
-                min: 50,
-                max: 5000,
-                default: 300,
-            },
             amazon: {
                 type: "checkbox",
                 label: "Run on Amazon",
                 title: "Uncheck if you don't use Amazon Prime Video",
+                section: "Main Settings",
                 default: true,
             },
             netflix: {
@@ -639,6 +635,22 @@ async function initConfig() {
                 label: "Run on Netflix",
                 title: "Uncheck if you don't use Netflix",
                 default: true,
+            },
+            rate: {
+                label: "Interval Rate",
+                title: "Time (in milliseconds) between checks for skip buttons",
+                type: "int",
+                size: 2,
+                min: 50,
+                max: 5000,
+                default: 300,
+            },
+            promoted: {
+                type: "checkbox",
+                label: "Autoplay promoted videos",
+                title:
+                    "After the final credits of a film or the last episode of a series, Netflix recommends a trending or similar movie/series. Check this if you want to automatically start playing Netflix's recommendation at the end of the credits",
+                default: false,
             },
             code: {
                 label: "Hotkey code",
@@ -863,7 +875,7 @@ async function initConfig() {
                             options[key] = tempKey; // same pattern as for the hotkey fields, but with some more bespoke behavior below
                             switch (key) {
                                 case "pop":
-                                    return null; // do nothing special if the popup was enabled/disabled since the toggle already checks the option
+                                    return (this.error = false); // do nothing special if the popup was enabled/disabled since the toggle already checks the option
                                 case "webfont":
                                     if (!tempKey) WebFontConfig.google.families.splice(1, 1); // if webfont was disabled, then remove the user-defined font from the webfont config
                                 // break omitted
@@ -910,7 +922,11 @@ async function initConfig() {
                             message += "Interval"; // otherwise just set it to Interval
                         }
                     }
-                    if (options.netflix !== f.netflix.value || options.amazon !== f.amazon.value) {
+                    if (
+                        options.netflix !== f.netflix.value ||
+                        options.amazon !== f.amazon.value ||
+                        options.promoted !== f.promoted.value
+                    ) {
                         // if the memoized setting for the current site doesn't match the new setting for that site...
                         if (options[site] !== f[site].value) {
                             options[site] = f[site].value; // make them match...
@@ -918,17 +934,14 @@ async function initConfig() {
                                 ? marathon.resume()
                                 : marathon.pause();
                         }
-                        if (message.includes("&") || message.includes("Settings"))
-                            message = "Settings";
-                        // again, if the message is already big or broad then just set it to Settings
-                        else {
-                            if (message) message += " & "; // otherwise do the same thing, adding ampersand...
-                            message += "Sites"; // and then add Sites. kinda hard to explain in words but you can see how it works by playing with the settings
-                        }
+                        options.promoted = f.promoted.value;
+                        // if we already changed other types of settings then set the message to something general
+                        if (message) message = "Settings";
+                        else message = "Site Settings"; // otherwise make it specific to site settings.
                     }
                     if (message) marathon.openPopup(`Updated ${message}`); // finally open a popup with whatever message we gave.
                 }
-                return null;
+                return (this.error = false);
             },
             open() {
                 // add a support button, make the reset link an actual button. we could do this by editing the prototype but again, it'd be a lot of duplicate code.
@@ -1153,7 +1166,6 @@ async function initConfig() {
             background: hsl(0, 1%, 17%) !important;
             border: none;
         }
-        #Marathon_rate_var,
         #Marathon_pop_var,
         #Marathon_font_var {
             flex-basis: 100%;
