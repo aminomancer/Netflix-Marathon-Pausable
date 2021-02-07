@@ -23,6 +23,7 @@ Forked from [Netflix Marathon](https://greasyfork.org/en/scripts/30029-netflix-m
 | オプション | デフォルト値 | タイプ | 説明 |
 |-|-|-|-|
 | **Interval&#160;Rate** | 300 | integer | ミリ秒単位の間隔レート—クリックする要素をチェックする頻度。お使いのコンピューターがジャガイモの場合は、この設定を増やすことができます。 |
+| **Autoplay&#160;promoted&#160;videos** | false | boolean | Netflixは、映画の最後またはシリーズの最後のエピソードの後に映画/シリーズを提案します。自動的に再生する場合は、これを有効にします。 |
 | **Run&#160;on&#160;Amazon** | true | boolean | スクリプトがAmazonで実行されるかどうか。 |
 | **Run&#160;on&#160;Netflix** | true | boolean | スクリプトがNetflixで実行されるかどうか。 |
 | **Hotkey&#160;code**&#160;（一時停止） | F7 | string | 使用するキー。たとえば、 KeyFはFキー用です。これは codeであり、 keyCodeではありません。 [こちらのリストをご覧ください](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code/code_values)。 |

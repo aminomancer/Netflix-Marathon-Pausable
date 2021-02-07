@@ -23,6 +23,7 @@ Forked from [Netflix Marathon](https://greasyfork.org/en/scripts/30029-netflix-m
 | Option | Default value | Type | Description |
 |-|-|-|-|
 | **Interval&#160;Rate** | 300 | integer | Interval rate in milliseconds — How often to check for the elements we want to click. Increase if you're running this on a mega-potato? |
+| **Autoplay&#160;promoted&#160;videos** | false | boolean | After the final credits of a film or the last episode of a series, Netflix recommends a trending or similar movie/series. Enable this if you want it to automatically start. |
 | **Run&#160;on&#160;Amazon** | true | boolean | Whether to bother checking for amazon elements. |
 | **Run&#160;on&#160;Netflix** | true | boolean | Whether to check for netflix elements. |
 | **Hotkey&#160;code**&#160;(pause/resume) | F7 | string | Physical key, e.g. `KeyF` for the F key. This is the `code`, NOT the `keyCode`. [See the list here](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code/code_values). |
