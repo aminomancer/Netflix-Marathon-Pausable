@@ -458,7 +458,7 @@ class Controller {
         win.addEventListener("keydown", this, true);
     }
 
-    // stop listening to key events (currently unused)
+    // stop listening to key events
     stopCapturing() {
         win.removeEventListener("keydown", this, true);
     }
@@ -603,7 +603,7 @@ function extendGMC() {
 /**
  * set up the GM_config settings GUI
  */
-async function initConfig() {
+async function initGMC() {
     await checkGM();
     const frame = doc.createElement("div");
     const resetBtn = doc.createElement("button");
@@ -1200,7 +1200,7 @@ async function settings() {
 }
 
 async function start() {
-    await initConfig(); // wait for GM_config
+    await initGMC(); // wait for GM_config
     marathon = new Controller(methods, options.rate); // create the interval controller, event listeners, etc.
     attachWebFont(); // load the font sheet
 }

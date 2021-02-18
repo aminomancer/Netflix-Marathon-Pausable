@@ -26,7 +26,7 @@ Forked from [Netflix Marathon](https://greasyfork.org/en/scripts/30029-netflix-m
 | **Autoplay&#160;promoted&#160;videos** | false | boolean | Netflixは、映画の最後またはシリーズの最後のエピソードの後に映画/シリーズを提案します。自動的に再生する場合は、これを有効にします。 |
 | **Run&#160;on&#160;Amazon** | true | boolean | スクリプトがAmazonで実行されるかどうか。 |
 | **Run&#160;on&#160;Netflix** | true | boolean | スクリプトがNetflixで実行されるかどうか。 |
-| **Hotkey&#160;code**&#160;（一時停止） | F7 | string | 使用するキー。たとえば、 KeyFはFキー用です。これは codeであり、 keyCodeではありません。 [こちらのリストをご覧ください](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code/code_values)。 |
+| **Hotkey&#160;code**&#160;（一時停止） | F7 | string | 使用するキー。たとえば、 KeyFはFキー用です。これは `event.code`であり、 `event.keyCode`ではありません。[このツールを使用することも](https://keycode.info/)、[ここで完全なリストを確認することもできます](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code/code_values)。  |
 | **Enable toggle hotkey** | true | boolean | ホットキーで一時停止/再開を有効にします。 |
 | **Hotkey&#160;code**&#160;（設定） | KeyN | string | 物理キー。たとえば、番号9の場合は`Digit9`。 |
 | **Enable settings hotkey** | true | boolean | ホットキーで設定パネルを開くことを有効にします。 |

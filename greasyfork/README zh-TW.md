@@ -26,7 +26,7 @@ Forked from [Netflix Marathon](https://greasyfork.org/en/scripts/30029-netflix-m
 | **Autoplay&#160;promoted&#160;videos** | false | boolean | Netflix可以在电影结尾或连续剧的最后一集之后播放推荐的电影或连续剧。如果要自动播放推荐，请启用此设置。 |
 | **Run&#160;on&#160;Amazon** | true | boolean | 是否在亚马逊上运行 |
 | **Run&#160;on&#160;Netflix** | true | boolean | 是否在网飞上运行 |
-| **Hotkey&#160;code**&#160;（暂停/恢复） | F7 | string | 您要使用的密钥。例如，如果要使用Ctrl + Alt + F，请将此设置设置为`KeyF`。这是`event.code`，而不是`keyCode`。[在这里查看清单](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code/code_values)。 |
+| **Hotkey&#160;code**&#160;（暂停/恢复） | F7 | string | 您要使用的密钥。例如，如果要使用Ctrl + Alt + F，请将此设置设置为`KeyF`。这是`event.code`，而不是`event.keyCode`。[使用此工具](https://keycode.info)查找所需的代码，或检查[完整列表](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code/code_values)。 |
 | **Enable toggle hotkey** | true | boolean | 绑定一个键盘快捷键，以便您可以随意暂停/恢复脚本。 |
 | **Hotkey&#160;code**&#160;（设置） | KeyN | string | 物理键，例如，您可以使用`Digit9`绑定数字9。 |
 | **Enable settings hotkey** | true | boolean | 绑定一个键盘快捷键，以打开设置面板。 |
