@@ -5,7 +5,7 @@
 // @name:ja            Netflix Marathon（一時停止できます）
 // @name:ar            ماراثون Netflix (يمكن إيقافه مؤقتًا)
 // @namespace          https://github.com/aminomancer
-// @version            4.6.2
+// @version            4.6.3
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix and Amazon Prime Video. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，该脚本自动跳过介绍，信用和广告，并单击Netflix和Amazon Prime Video上的“下一个节目”提示。包括一个可自定义的热键，以暂停/恢复自动跳过功能。按Alt + N进行配置。
 // @description:zh-TW  一个可配置的脚本，该脚本自动跳过介绍，信用和广告，并单击Netflix和Amazon Prime Video上的“下一个节目”提示。包括一个可自定义的热键，以暂停/恢复自动跳过功能。按Alt + N进行配置。
@@ -480,16 +480,9 @@ function extendGMC() {
     // support fancy animations
     GM_config.close = function close() {
         win.clearTimeout(this.fading);
-        this.animation = this.frame.animate(
-            { opacity: [0, 1] },
-            {
-                id: "GM_config_bwd",
-                direction: "reverse",
-                duration: 500,
-                iterations: 1,
-                easing: "ease-in-out",
-            }
-        );
+
+        this.frame.setAttribute("closed", true);
+
         this.onClose(); //  Call the close() callback function
         this.isOpen = false;
         this.fading = win.setTimeout(() => {
@@ -514,23 +507,8 @@ function extendGMC() {
     };
     GM_config.open = function open() {
         win.clearTimeout(this.fading);
-        if (
-            this.animation &&
-            this.animation.id === "GM_config_bwd" &&
-            this.animation.playState === "running"
-        )
-            this.animation.playbackRate = -2.5;
-        else
-            this.animation = this.frame.animate(
-                { opacity: [0, 1] },
-                {
-                    id: "GM_config_fwd",
-                    direction: "normal",
-                    duration: 200,
-                    iterations: 1,
-                    easing: "ease-in-out",
-                }
-            );
+
+        this.frame.removeAttribute("closed");
 
         this.isOpen = true;
         Object.getPrototypeOf(this).open.call(this);
@@ -992,6 +970,11 @@ async function initGMC() {
             transform: translate(50%, -60%);
             font-size: 14px;
             line-height: 1.2;
+            transition: .2s ease-in-out opacity;
+        }
+        #Marathon[closed] {
+            opacity: 0 !important;
+            transition: .5s ease-in-out opacity;
         }
         #Marathon * {
             font-family: Source Sans Pro;
