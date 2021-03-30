@@ -215,6 +215,9 @@ const methods = {
                 else if ((store = this.byTxt("Skip Recap", "button", "div")))
                     // skip recap
                     this.clk(store);
+                else if ((store = this.byCls("countdown")[0]))
+                    // skip next ep
+                    this.clk(store);
             }
         } else this.count -= 1;
         return this.count;
