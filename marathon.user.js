@@ -5,7 +5,7 @@
 // @name:ja            Netflix Marathon（一時停止できます）
 // @name:ar            ماراثون Netflix (يمكن إيقافه مؤقتًا)
 // @namespace          https://github.com/aminomancer
-// @version            4.6.3
+// @version            4.7.0
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix and Amazon Prime Video. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，该脚本自动跳过介绍，信用和广告，并单击Netflix和Amazon Prime Video上的“下一个节目”提示。包括一个可自定义的热键，以暂停/恢复自动跳过功能。按Alt + N进行配置。
 // @description:zh-TW  一个可配置的脚本，该脚本自动跳过介绍，信用和广告，并单击Netflix和Amazon Prime Video上的“下一个节目”提示。包括一个可自定义的热键，以暂停/恢复自动跳过功能。按Alt + N进行配置。
@@ -62,39 +62,40 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const test = (u) => win.location.href.includes(u);
 const site = test("netflix") ? "netflix" : "amazon";
 const locale = {
-    // some basic localization for the settings menu.
+    // some basic localization for the settings menu. just the parts necessary to get to the readme, which has chinese, japanese, and arabic translations
     get lang() {
-        delete this.lang;
-        return (this.lang = navigator.language.split("-")[0]); // memoize the language since it's unlikely to change during runtime
+        return (
+            this._lang || (this._lang = navigator.language.split("-")[0]) // memoize the language since it's unlikely to change during runtime
+        );
     },
     get text() {
         // returns the label for the support button in settings
-        delete this.text;
+        if (this._text) return this._text;
         switch (this.lang) {
             case "zh":
-                return (this.text = "信息"); // chinese
+                return (this._text = "信息"); // chinese
             case "ja":
-                return (this.text = "助けて"); // japanese
+                return (this._text = "助けて"); // japanese
             case "ar":
-                return (this.text = "تعليمات"); // arabic
+                return (this._text = "تعليمات"); // arabic
             case "en":
             default:
-                return (this.text = "Support"); // english etc.
+                return (this._text = "Support"); // english etc.
         }
     },
     get title() {
         // returns the tooltip for the support button
-        delete this.title;
+        if (this._title) return this._title;
         switch (this.lang) {
             case "zh":
-                return (this.title = "设置的信息和翻译");
+                return (this._title = "设置的信息和翻译");
             case "ja":
-                return (this.title = "設定の情報と翻訳");
+                return (this._title = "設定の情報と翻訳");
             case "ar":
-                return (this.title = "معلومات وترجمات للإعدادات");
+                return (this._title = "معلومات وترجمات للإعدادات");
             case "en":
             default:
-                return (this.title = "Info and translations for the settings");
+                return (this._title = "Info and translations for the settings");
         }
     },
 };
@@ -104,11 +105,6 @@ const methods = {
     results: null,
     nDrain: "[data-uia='next-episode-seamless-button-draining']",
     nReady: "[data-uia='next-episode-seamless-button']",
-    /**
-     * getElementsByClassName
-     * @param {string} s (class name)
-     */
-    byCls: (s, p = doc) => p.getElementsByClassName(s),
     /**
      * getElementsByTagName
      * @param {string} s (tag name)
@@ -141,25 +137,13 @@ const methods = {
             .singleNodeValue;
     },
     /**
-     * find react child comp given a DOM node
+     * find react component instance given a DOM node
      * @param {object} d (DOM node)
      */
-    Ξri(d) {
+    react(d) {
         for (const [key, value] of Object.entries(d))
-            if (key.startsWith("__reactInternalInstance$")) return value.child;
+            if (key.startsWith("__reactInternalInstance$")) return value;
         return null;
-    },
-    /**
-     * a hacky way to access semi-private methods of react components, given only a CSS selector. we may not strictly need this, but netflix has been testing new UI models and maybe you're already using them if you subscribe to netflix's beta program. Element.click() does not work on the last beta I tested, so eventually we may need to use this exclusively to get at the internal onAction methods. might as well start now for the sake of forward compatibility. if anyone knows a better way to do this please let me know on github issues or greasyfork feedback. i'm pretty new to javascript and don't know very much about hacking into someone else's react components from a userscript. but i would love to learn.
-     * @param {string} s (CSS selector)
-     */
-    Ξrd(s) {
-        const el = this.qryAll(s);
-        try {
-            return el.length > 0 ? this.Ξri(el[0]).memoizedProps.children : null;
-        } catch (e) {
-            return null;
-        }
     },
     /**
      * determine if an element is visible (namely the amazon player)
@@ -193,17 +177,17 @@ const methods = {
         if (this.count === 0) {
             if (this.isVis("dv-web-player")) {
                 let store; // memoize the element when we check for its existence so we don't have to evaluate the DOM twice.
-                if ((store = this.byCls("atvwebplayersdk-nextupcard-button")[0])) {
+                if ((store = this.qry(".atvwebplayersdk-nextupcard-button"))) {
                     // next episode
                     await sleep(400);
                     this.clk(store);
-                } else if ((store = this.byCls("atvwebplayersdk-skipelement-button")[0]))
+                } else if ((store = this.qry(".atvwebplayersdk-skipelement-button")))
                     // skip various things
                     this.clk(store);
-                else if ((store = this.byCls("adSkipButton")[0]))
+                else if ((store = this.qry(".adSkipButton")))
                     // skip ad
                     this.clk(store);
-                else if ((store = this.byCls("skipElement")[0]))
+                else if ((store = this.qry(".skipElement")))
                     //  skip intro
                     this.clk(store);
                 else if ((store = this.byTxt("Skip", "div")))
@@ -223,12 +207,12 @@ const methods = {
         if (this.count === 0) {
             let store;
             if (
-                this.byCls("skip-credits").length &&
-                this.byCls("skip-credits-hidden").length === 0
+                this.qryAll(".skip-credits").length &&
+                this.qryAll(".skip-credits-hidden").length === 0
             ) {
                 await sleep(200);
                 try {
-                    this.byCls("skip-credits")[0].firstElementChild.click();
+                    this.qry(".skip-credits").firstElementChild.click();
                     this.count = 80;
                 } catch (e) {
                     return (this.count -= 1);
@@ -240,22 +224,18 @@ const methods = {
                 } catch (e) {
                     return (this.count -= 1);
                 }
-            } else if (this.qry(this.nDrain)) {
-                // next episode button (draining)
-                this.Ξrd(this.nDrain)._owner.memoizedProps.handlePress();
+            } else if ((store = this.qry(this.nDrain)) || (store = this.qry(this.nReady))) {
+                // next episode button
+                this.react(store).memoizedProps.onClick();
                 this.count = 5;
-            } else if (this.qry(this.nReady)) {
-                // next episode button (ready)
-                this.Ξrd(this.nReady).props.children._owner.memoizedProps.onClickWatchNextEpisode();
-                this.count = 5;
-            } else if (options.promoted && (store = this.byCls("PromotedVideo-actions")[0])) {
+            } else if (options.promoted && (store = this.qry(".PromotedVideo-actions"))) {
                 // promoted video autoplay
                 await sleep(700);
                 this.clk(store.firstElementChild);
-            } else if ((store = this.byCls("postplay-still-container")[0]))
+            } else if ((store = this.qry(".postplay-still-container")))
                 // autoplay
                 this.clk(store);
-            else if ((store = this.byCls("WatchNext-still-container")[0]))
+            else if ((store = this.qry(".WatchNext-still-container")))
                 // autoplay
                 this.clk(store);
         } else this.count -= 1;
@@ -631,8 +611,7 @@ async function initGMC() {
             promoted: {
                 type: "checkbox",
                 label: "Autoplay promoted videos",
-                title:
-                    "After the final credits of a film or the last episode of a series, Netflix recommends a trending or similar movie/series. Check this if you want to automatically start playing Netflix's recommendation at the end of the credits",
+                title: "After the final credits of a film or the last episode of a series, Netflix recommends a trending or similar movie/series. Check this if you want to automatically start playing Netflix's recommendation at the end of the credits",
                 default: false,
             },
             code: {
