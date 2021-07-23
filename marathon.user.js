@@ -5,7 +5,7 @@
 // @name:ja            Netflix Marathon（一時停止できます）
 // @name:ar            ماراثون Netflix (يمكن إيقافه مؤقتًا)
 // @namespace          https://github.com/aminomancer
-// @version            4.7.0
+// @version            4.7.1
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix and Amazon Prime Video. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，该脚本自动跳过介绍，信用和广告，并单击Netflix和Amazon Prime Video上的“下一个节目”提示。包括一个可自定义的热键，以暂停/恢复自动跳过功能。按Alt + N进行配置。
 // @description:zh-TW  一个可配置的脚本，该脚本自动跳过介绍，信用和广告，并单击Netflix和Amazon Prime Video上的“下一个节目”提示。包括一个可自定义的热键，以暂停/恢复自动跳过功能。按Alt + N进行配置。
@@ -918,6 +918,16 @@ async function initGMC() {
                 supportBtn.className = "saveclose_buttons";
                 supportBtn.id = "Marathon_supportBtn";
                 methods.byID("Marathon_closeBtn").after(supportBtn); // move it to the end.
+                const firstField = frame.querySelector(`.config_var [id^="Marathon_field_"]`);
+                if (firstField) firstField.focus();
+            },
+            close() {
+                let blurTo;
+                if (site === "netflix") {
+                    const mountPoint = document.getElementById("appMountPoint");
+                    blurTo = mountPoint.querySelector(`[tabindex]`) || mountPoint;
+                } else blurTo = document.querySelector(".webPlayerSDKUiContainer");
+                blurTo.focus();
             },
         },
         frame, // using an in-content element has its problems e.g. we're affected by amazon's god-awful stylesheets, but using an iframe makes animation a lot more clunky and i want the panel to be kinda spry and light
