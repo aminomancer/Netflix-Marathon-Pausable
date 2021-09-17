@@ -5,7 +5,7 @@
 // @name:ja            Netflix Marathon（一時停止できます）
 // @name:ar            ماراثون Netflix (يمكن إيقافه مؤقتًا)
 // @namespace          https://github.com/aminomancer
-// @version            4.7.2
+// @version            5.0
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix and Amazon Prime Video. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，该脚本自动跳过介绍，信用和广告，并单击Netflix和Amazon Prime Video上的“下一个节目”提示。包括一个可自定义的热键，以暂停/恢复自动跳过功能。按Alt + N进行配置。
 // @description:zh-TW  一个可配置的脚本，该脚本自动跳过介绍，信用和广告，并单击Netflix和Amazon Prime Video上的“下一个节目”提示。包括一个可自定义的热键，以暂停/恢复自动跳过功能。按Alt + N进行配置。
@@ -237,11 +237,17 @@ const methods = {
                 // promoted video autoplay
                 await sleep(700);
                 this.clk(store.firstElementChild);
-            } else if ((store = this.qry(".postplay-still-container")))
-                // autoplay
+            } else if ((store = this.qry(".watch-video--skip-content-button")))
+                // skip intro, recap, etc. (new netflix UI)
+                this.clk(store);
+            else if ((store = this.qry(".watch-video--skip-preplay-button")))
+                // not sure what this does but I found this while trying to reverse engineer the source code. please inform me if you know
+                this.clk(store);
+            else if ((store = this.qry(".postplay-still-container")))
+                // autoplay (old netflix UI)
                 this.clk(store);
             else if ((store = this.qry(".WatchNext-still-container")))
-                // autoplay
+                // autoplay (old netflix UI)
                 this.clk(store);
         } else this.count -= 1;
         return this.count;
