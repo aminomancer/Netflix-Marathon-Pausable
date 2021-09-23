@@ -3,15 +3,22 @@
 // @name:zh-CN         网飞马拉松赛（可暫停）
 // @name:zh-TW         网飞马拉松赛（可暫停）
 // @name:ja            Netflix Marathon（一時停止できます）
+// @name:ko            Netflix 마라톤(일시 중지 가능)
 // @name:ar            ماراثون Netflix (يمكن إيقافه مؤقتًا)
+// @name:de            Netflix-Marathon (pausierbar)
+// @name:ru            Netflix Marathon (пауза)
+// @name:hi            नेटफ्लिक्स मैराथन (रोकने योग्य)
 // @namespace          https://github.com/aminomancer
-// @version            5.1.1
+// @version            5.1.2
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，可自动跳过 Netflix、Amazon Prime Video 和 Disney+ 上的重述、介绍、字幕和广告，并单击“下一集”提示。 可自定义的热键来暂停/恢复自动跳过功能。 Alt + N 用于设置。
 // @description:zh-TW  一个可配置的脚本，可自动跳过 Netflix、Amazon Prime Video 和 Disney+ 上的重述、介绍、字幕和广告，并单击“下一集”提示。 可自定义的热键来暂停/恢复自动跳过功能。 Alt + N 用于设置。
 // @description:ja     要約、イントロ、クレジット、広告を自動的にスキップし、Netflix、Amazon Prime Video、Disney +の「次のエピソード」のプロンプトをクリックする構成可能なスクリプト。 自動スキップ機能を一時停止/再開するためのカスタマイズ可能なホットキー。 Alt + Nで設定します。
+// @description:ko     요약, 소개, 크레딧 및 광고를 자동으로 건너뛰고 Netflix, Amazon Prime Video 및 Disney+에서 "다음 에피소드" 프롬프트를 클릭하는 구성 가능한 스크립트입니다. 자동 건너뛰기 기능을 일시 중지/재개하는 사용자 지정 가능한 단축키입니다. Alt + N은 설정입니다.
 // @description:ar     برنامج نصي قابل للتكوين يتخطى الملخصات والمقدمات والاعتمادات والإعلانات تلقائيًا وينقر على "الحلقة التالية" على Netflix و Amazon Prime Video و Disney +. مفتاح التشغيل السريع القابل للتخصيص لإيقاف / استئناف وظيفة التخطي التلقائي. Alt + N للإعدادات.
 // @description:de     Ein konfigurierbares Skript, das automatisch Zusammenfassungen, Vorspänne, Abspänne und Werbung überspringt und bei Netflix, Amazon Prime Video und Disney+ auf die Aufforderung "nächste Episode" klickt. Anpassbarer Hotkey zum Anhalten/Fortsetzen der Auto-Skipping-Funktion. Alt + N für Einstellungen.
+// @description:ru     Настраиваемый сценарий, который автоматически пропускает резюме, вступление, титры и рекламу, а также нажимает подсказки «следующий выпуск» на Netflix, Amazon Prime Video и Disney +. Настраиваемая горячая клавиша для приостановки / возобновления функции автоматического пропуска. Alt + N для настроек.
+// @description:hi     एक विन्यास योग्य स्क्रिप्ट जो स्वचालित रूप से रिकैप, इंट्रो, क्रेडिट और विज्ञापनों को छोड़ देती है, और नेटफ्लिक्स, अमेज़ॅन प्राइम वीडियो और डिज़नी + पर "अगला एपिसोड" पर क्लिक करती है। ऑटो-स्किपिंग कार्यक्षमता को रोकने/फिर से शुरू करने के लिए अनुकूलन योग्य हॉटकी। ऑल्ट + एन सेटिंग्स के लिए।
 // @author             aminomancer
 // @homepageURL        https://github.com/aminomancer/Netflix-Marathon-Pausable
 // @supportURL         https://github.com/aminomancer/Netflix-Marathon-Pausable
@@ -86,7 +93,7 @@ const getHost = () => {
     }
 };
 const site = getHost();
-const locale = {
+const l10n = {
     // some basic localization for the settings menu. just the parts necessary to get to the readme, which has chinese, japanese, and arabic translations
     get lang() {
         return (
@@ -98,34 +105,61 @@ const locale = {
         if (this._text) return this._text;
         switch (this.lang) {
             case "zh":
-                return (this._text = "信息"); // chinese
+                this._text = "信息"; // chinese
+                break;
             case "ja":
-                return (this._text = "助けて"); // japanese
+                this._text = "助けて"; // japanese
+                break;
+            case "ko":
+                this._text = "기술 지원"; // korean
+                break;
             case "ar":
-                return (this._text = "تعليمات"); // arabic
+                this._text = "تعليمات"; // arabic
+                break;
             case "de":
-                return (this._text = "Hilfe"); // german
-            case "en":
+                this._text = "Hilfe"; // german
+                break;
+            case "ru":
+                this._text = "помощь"; // russian
+                break;
+            case "hi":
+                this._text = "तकनीकी समर्थन"; // hindi
+                break;
             default:
-                return (this._text = "Support"); // english etc.
+                this._text = "Support"; // english etc.
         }
+        return this._text;
     },
     get title() {
         // returns the tooltip for the support button
         if (this._title) return this._title;
         switch (this.lang) {
             case "zh":
-                return (this._title = "设置的信息和翻译");
+                this._title = "设置的信息和翻译";
+                break;
             case "ja":
-                return (this._title = "設定の情報と翻訳");
+                this._title = "設定の情報と翻訳";
+                break;
+            case "ko":
+                this._title = "설정에 대한 정보 및 번역";
+                break;
             case "ar":
-                return (this._title = "معلومات وترجمات للإعدادات");
+                this._title = "معلومات وترجمات للإعدادات";
+                break;
             case "de":
-                return (this._title = "Infos und Übersetzungen zu den Einstellungen");
-            case "en":
+                this._title = "Infos und Übersetzungen zu den Einstellungen";
+                break;
+            case "ru":
+                this._title = "Информация и переводы для настроек";
+                break;
+            case "hi":
+                this._title = "सेटिंग्स के लिए जानकारी और अनुवाद";
+                break;
             default:
-                return (this._title = "Info and translations for the settings");
+                this._title = "Info and translations for the settings";
+                break;
         }
+        return this._title;
     },
 };
 const methods = {
@@ -1067,11 +1101,11 @@ async function initGMC() {
                 methods.byID("Marathon_saveBtn").after(resetBtn); // move it next to the save button
                 // give the support button a localized tooltip and label since it's the one someone's most likely to need if they don't speak english.
                 methods.maybeSetAttributes(supportBtn, {
-                    title: locale.title,
+                    title: l10n.title,
                     class: "saveclose_buttons",
                     id: "Marathon_supportBtn",
                 });
-                supportBtn.textContent = locale.text;
+                supportBtn.textContent = l10n.text;
                 methods.byID("Marathon_closeBtn").after(supportBtn); // move it to the end.
                 const firstField = methods.qry(`.config_var [id^="Marathon_field_"]`, frame);
                 if (firstField) firstField.focus();
