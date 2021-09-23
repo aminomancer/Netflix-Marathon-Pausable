@@ -10,7 +10,7 @@
 // @name:ru            Netflix Marathon (пауза)
 // @name:hi            नेटफ्लिक्स मैराथन (रोकने योग्य)
 // @namespace          https://github.com/aminomancer
-// @version            5.1.4
+// @version            5.1.5
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:en    A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，可自动跳过 Netflix、Amazon Prime Video 和 Disney+ 上的重述、介绍、字幕和广告，并单击“下一集”提示。 可自定义的热键来暂停/恢复自动跳过功能。 Alt + N 用于设置。
@@ -26,10 +26,29 @@
 // @supportURL         https://github.com/aminomancer/Netflix-Marathon-Pausable
 // @downloadURL        https://greasyfork.org/scripts/420475-netflix-marathon-pausable/code/Netflix%20Marathon%20(Pausable).user.js
 // @icon               https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/icon-small.svg
-// @include            https://www.netflix.com/*
-// @include            https://*.amazon.*
-// @include            https://*.primevideo.com/*
-// @include            https://*.disneyplus.com/*
+// @match              http*://*.amazon.ae/*
+// @match              http*://*.amazon.ca/*
+// @match              http*://*.amazon.cn/*
+// @match              http*://*.amazon.co.jp/*
+// @match              http*://*.amazon.co.uk/*
+// @match              http*://*.amazon.com/*
+// @match              http*://*.amazon.com.au/*
+// @match              http*://*.amazon.com.br/*
+// @match              http*://*.amazon.com.mx/*
+// @match              http*://*.amazon.de/*
+// @match              http*://*.amazon.eg/*
+// @match              http*://*.amazon.es/*
+// @match              http*://*.amazon.fr/*
+// @match              http*://*.amazon.in/*
+// @match              http*://*.amazon.it/*
+// @match              http*://*.amazon.nl/*
+// @match              http*://*.amazon.pl/*
+// @match              http*://*.amazon.sa/*
+// @match              http*://*.amazon.se/*
+// @match              http*://*.amazon.sg/*
+// @match              http*://*.amazon.tr/*
+// @match              http*://*.disneyplus.com/*
+// @match              http*://*.netflix.com/*
 // @require            https://greasyfork.org/scripts/420683-gm-config-sizzle/code/GM_config_sizzle.js?version=894369
 // @grant              GM_registerMenuCommand
 // @grant              GM_unregisterMenuCommand
