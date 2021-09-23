@@ -1,5 +1,6 @@
 // ==UserScript==
 // @name               Netflix Marathon (Pausable)
+// @name:en            Netflix Marathon (Pausable)
 // @name:zh-CN         网飞马拉松赛（可暫停）
 // @name:zh-TW         网飞马拉松赛（可暫停）
 // @name:ja            Netflix Marathon（一時停止できます）
@@ -9,8 +10,9 @@
 // @name:ru            Netflix Marathon (пауза)
 // @name:hi            नेटफ्लिक्स मैराथन (रोकने योग्य)
 // @namespace          https://github.com/aminomancer
-// @version            5.1.3
+// @version            5.1.4
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
+// @description:en    A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，可自动跳过 Netflix、Amazon Prime Video 和 Disney+ 上的重述、介绍、字幕和广告，并单击“下一集”提示。 可自定义的热键来暂停/恢复自动跳过功能。 Alt + N 用于设置。
 // @description:zh-TW  一个可配置的脚本，可自动跳过 Netflix、Amazon Prime Video 和 Disney+ 上的重述、介绍、字幕和广告，并单击“下一集”提示。 可自定义的热键来暂停/恢复自动跳过功能。 Alt + N 用于设置。
 // @description:ja     要約、イントロ、クレジット、広告を自動的にスキップし、Netflix、Amazon Prime Video、Disney +の「次のエピソード」のプロンプトをクリックする構成可能なスクリプト。 自動スキップ機能を一時停止/再開するためのカスタマイズ可能なホットキー。 Alt + Nで設定します。
@@ -157,7 +159,6 @@ const l10n = {
                 break;
             default:
                 this._title = "Info and translations for the settings";
-                break;
         }
         return this._title;
     },
