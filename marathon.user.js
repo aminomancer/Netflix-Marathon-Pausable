@@ -5,7 +5,7 @@
 // @name:ja            Netflix Marathon（一時停止できます）
 // @name:ar            ماراثون Netflix (يمكن إيقافه مؤقتًا)
 // @namespace          https://github.com/aminomancer
-// @version            5.1.0
+// @version            5.1.1
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，可自动跳过 Netflix、Amazon Prime Video 和 Disney+ 上的重述、介绍、字幕和广告，并单击“下一集”提示。 可自定义的热键来暂停/恢复自动跳过功能。 Alt + N 用于设置。
 // @description:zh-TW  一个可配置的脚本，可自动跳过 Netflix、Amazon Prime Video 和 Disney+ 上的重述、介绍、字幕和广告，并单击“下一集”提示。 可自定义的热键来暂停/恢复自动跳过功能。 Alt + N 用于设置。
@@ -346,7 +346,7 @@ class Controller {
         this.remainder = 0; // how much time is remaining on the interval when we pause it
         this.fading = null; // 3 second timeout (by default), after which the popup fades
         this.pauseState = 0; //  0: idle, 1: running, 2: paused, 3: resumed
-        this.toggler = this.toggle.bind(this);
+        this.toggle = this.toggler.bind(this);
         this.register("Pause Marathon", true); // initial creation of the menu command
         // if popup is enabled in options, style it
         if (options.pop) {
@@ -375,20 +375,67 @@ class Controller {
     }
 
     /**
-     * called when you press the configured hotkey.
+     * Controller's event handler. only handles keydown currently but may expand in the future.
      * @param {object} e (event)
      */
     handleEvent(e) {
-        if (!e.repeat && [options.code, options.code2].indexOf(e.code) > -1) {
-            if (options.hotkey && e.code === options.code && Controller.modTest(e)) this.toggler();
-            else if (options.hotkey2 && e.code === options.code2 && Controller.modTest(e, 2))
-                if (GM_config.isOpen) GM_config.close();
-                else GM_config.open();
-            else return;
-            e.stopImmediatePropagation();
-            e.preventDefault();
-            e.stopPropagation();
+        switch (e.type) {
+            case "keydown":
+                this.onKeyDown(e);
+                break;
+            default:
         }
+    }
+
+    /**
+     * implementation for hotkeys and "escape to close"
+     * @param {object} e (KeyboardEvent)
+     */
+    onKeyDown(e) {
+        if (e.repeat) return;
+        const { code, code2, hotkey, hotkey2 } = options;
+        switch (e.code) {
+            case code:
+                if (hotkey && Controller.modTest(e)) this.toggle();
+                else return;
+                break;
+            case code2:
+                if (hotkey2 && Controller.modTest(e, 2))
+                    GM_config.isOpen ? GM_config.close() : GM_config.open();
+                else return;
+                break;
+            case "Escape":
+                if (this.onEscape(e)) break;
+                else return;
+            default:
+                return;
+        }
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    /**
+     * on pressing the Escape key, close any open popups
+     * @param {object} e (KeyboardEvent)
+     * @returns true if the config menu was open and we closed it. this determines whether the event will propagate any further or be consumed by the menu.
+     */
+    onEscape(e) {
+        let consumed = false;
+        if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return consumed;
+        // hide the settings menu
+        if (GM_config.isOpen) {
+            GM_config.close();
+            consumed = true;
+        }
+        // hide the pause/resume popup
+        if (options.pop) {
+            const { style } = this.popup;
+            win.clearTimeout(this.fading);
+            style.transitionDuration = "0.5s";
+            style.opacity = "0";
+        }
+        return consumed;
     }
 
     /**
@@ -433,7 +480,7 @@ class Controller {
     }
 
     // toggle the interval on/off.
-    toggle() {
+    toggler() {
         if (!options[site]) return; // disable the pause/resume toggle when the site is disabled
         switch (this.pauseState) {
             case 1:
@@ -516,7 +563,7 @@ class Controller {
 
         // don't register the pause/unpause menu command if the site is currently disabled
         if (options[site]) {
-            GM_registerMenuCommand(cap, this.toggler);
+            GM_registerMenuCommand(cap, this.toggle);
             this.caption = cap;
         }
     }
