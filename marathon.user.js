@@ -5,13 +5,13 @@
 // @name:ja            Netflix Marathon（一時停止できます）
 // @name:ar            ماراثون Netflix (يمكن إيقافه مؤقتًا)
 // @namespace          https://github.com/aminomancer
-// @version            5.0
-// @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix and Amazon Prime Video. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
-// @description:zh-CN  一个可配置的脚本，该脚本自动跳过介绍，信用和广告，并单击Netflix和Amazon Prime Video上的“下一个节目”提示。包括一个可自定义的热键，以暂停/恢复自动跳过功能。按Alt + N进行配置。
-// @description:zh-TW  一个可配置的脚本，该脚本自动跳过介绍，信用和广告，并单击Netflix和Amazon Prime Video上的“下一个节目”提示。包括一个可自定义的热键，以暂停/恢复自动跳过功能。按Alt + N进行配置。
-// @description:ja     イントロ、クレジット、広告を自動的にスキップし、NetflixとAmazon PrimeVideoの「次のエピソード」プロンプトをクリックする構成可能なスクリプト。自動スキップ機能を一時停止/再開するためのカスタマイズ可能なホットキーが含まれています。Alt + Nを押して構成します。
-// @description:ar     برنامج نصي قابل للتكوين يتخطى تلقائيًا المقدمات والاعتمادات والإعلانات وينقر على "الحلقة التالية" على Netflix و Amazon Prime Video.يتضمن مفتاح اختصار قابل للتخصيص لإيقاف / استئناف وظيفة التخطي التلقائي.اضغط على Alt + N للتكوين.
-// @description:de     Ein konfigurierbares Skript, das automatisch Zusammenfassungen, Vorspänne, Abspänne und Werbung überspringt und bei Netflix und Amazon Prime Video auf die Aufforderung "nächste Episode" klickt. Anpassbarer Hotkey zum Anhalten/Fortsetzen der Auto-Skipping-Funktion. Alt + N für Einstellungen.
+// @version            5.1.0
+// @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
+// @description:zh-CN  一个可配置的脚本，可自动跳过 Netflix、Amazon Prime Video 和 Disney+ 上的重述、介绍、字幕和广告，并单击“下一集”提示。 可自定义的热键来暂停/恢复自动跳过功能。 Alt + N 用于设置。
+// @description:zh-TW  一个可配置的脚本，可自动跳过 Netflix、Amazon Prime Video 和 Disney+ 上的重述、介绍、字幕和广告，并单击“下一集”提示。 可自定义的热键来暂停/恢复自动跳过功能。 Alt + N 用于设置。
+// @description:ja     要約、イントロ、クレジット、広告を自動的にスキップし、Netflix、Amazon Prime Video、Disney +の「次のエピソード」のプロンプトをクリックする構成可能なスクリプト。 自動スキップ機能を一時停止/再開するためのカスタマイズ可能なホットキー。 Alt + Nで設定します。
+// @description:ar     برنامج نصي قابل للتكوين يتخطى الملخصات والمقدمات والاعتمادات والإعلانات تلقائيًا وينقر على "الحلقة التالية" على Netflix و Amazon Prime Video و Disney +. مفتاح التشغيل السريع القابل للتخصيص لإيقاف / استئناف وظيفة التخطي التلقائي. Alt + N للإعدادات.
+// @description:de     Ein konfigurierbares Skript, das automatisch Zusammenfassungen, Vorspänne, Abspänne und Werbung überspringt und bei Netflix, Amazon Prime Video und Disney+ auf die Aufforderung "nächste Episode" klickt. Anpassbarer Hotkey zum Anhalten/Fortsetzen der Auto-Skipping-Funktion. Alt + N für Einstellungen.
 // @author             aminomancer
 // @homepageURL        https://github.com/aminomancer/Netflix-Marathon-Pausable
 // @supportURL         https://github.com/aminomancer/Netflix-Marathon-Pausable
@@ -20,6 +20,7 @@
 // @include            https://www.netflix.com/*
 // @include            https://*.amazon.*
 // @include            https://*.primevideo.com/*
+// @include            https://*.disneyplus.com/*
 // @require            https://greasyfork.org/scripts/420683-gm-config-sizzle/code/GM_config_sizzle.js?version=894369
 // @grant              GM_registerMenuCommand
 // @grant              GM_unregisterMenuCommand
@@ -61,7 +62,30 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
  * @param {string} u (a string to test the URL against)
  */
 const test = (u) => win.location.href.includes(u);
-const site = test("netflix") ? "netflix" : "amazon";
+const getHost = () => {
+    const urlParts = win.location.hostname.split(".");
+    const host = urlParts
+        .filter((part) => {
+            switch (part) {
+                case "amazon":
+                case "primevideo":
+                case "disneyplus":
+                case "netflix":
+                    return true;
+                default:
+                    return false;
+            }
+        })
+        .join();
+    switch (host) {
+        case "amazon":
+        case "primevideo":
+            return "amazon";
+        default:
+            return host;
+    }
+};
+const site = getHost();
 const locale = {
     // some basic localization for the settings menu. just the parts necessary to get to the readme, which has chinese, japanese, and arabic translations
     get lang() {
@@ -163,7 +187,16 @@ const methods = {
     },
     // returns false if we're on a valid site but not actually in the video player (e.g. we're only browsing videos).
     get playing() {
-        return site === "netflix" ? test("netflix.com/watch/") : this.isVis("dv-web-player");
+        switch (site) {
+            case "netflix":
+                return test("netflix.com/watch/");
+            case "amazon":
+                return this.isVis("dv-web-player");
+            case "disneyplus":
+                return test("disneyplus.com/video/");
+            default:
+                return false;
+        }
     },
     /**
      * clicks the passed element and sets the count to 5
@@ -176,6 +209,28 @@ const methods = {
         } catch (e) {
             this.count = 2;
         }
+    },
+    /**
+     * set a bunch of attributes on a node
+     * @param {object} element (a DOM node)
+     * @param {object} attrs (an object containing properties — keys are turned into attributes on the DOM node)
+     */
+    maybeSetAttributes(element, attrs) {
+        for (const [name, value] of Object.entries(attrs))
+            if (value === undefined) element.removeAttribute(name);
+            else element.setAttribute(name, value);
+    },
+    /**
+     * create a DOM node with given parameters
+     * @param {object} aDoc (which doc to create the element in)
+     * @param {string} tag (an HTML tag name, like "button" or "p")
+     * @param {object} props (an object containing attribute name/value pairs, e.g. class: ".bookmark-item")
+     * @returns the created DOM node
+     */
+    create(aDoc, tag, props) {
+        const el = aDoc.createElement(tag);
+        this.maybeSetAttributes(el, props);
+        return el;
     },
     // searches for elements that skip stuff. repeated every 300ms. change "rate" in the options if you want to make this more or less frequent.
     async amazon() {
@@ -249,6 +304,28 @@ const methods = {
             else if ((store = this.qry(".WatchNext-still-container")))
                 // autoplay (old netflix UI)
                 this.clk(store);
+        } else this.count -= 1;
+        return this.count;
+    },
+    async disneyplus() {
+        if (this.count === 0) {
+            if (test("disneyplus.com/video/")) {
+                let store;
+                if ((store = this.qry(".skip__button")))
+                    // skip intro, skip recap, skip credits, etc.
+                    this.clk(store);
+                else if ((store = this.qry(`button[data-gv2elementkey="playNext"]`))) {
+                    // next episode
+                    const spans = this.qryAll("span", store);
+                    if (options.promoted || (spans && spans.length > 2)) this.clk(store);
+                    // if there are 3 spans inside the button, it means the countdown number is visible.
+                    // countdown number means it's going to automatically proceed in 10 seconds even if we don't click it,
+                    // which usually happens when watching a series and proceeding to the next episode. so all we do in this case is speed up the process.
+                    // but if there are 2 spans in the button, it means there's no countdown. it won't do anything without user interaction.
+                    // this is the case when watching a film, and disney+ recommends a new title for the user to watch. hence, we read the "promoted" option.
+                    // I looked hard for a cleaner, more future proof way to do this, even prying apart the react components. no such luck.
+                }
+            }
         } else this.count -= 1;
         return this.count;
     },
@@ -580,10 +657,16 @@ function extendGMC() {
 async function initGMC() {
     await checkGM();
     const frame = doc.createElement("div");
+    const sitesFieldLabel = methods.create(doc, "div", {
+        class: "field_label",
+        id: "Marathon_section_0_subheader_0",
+    });
+    sitesFieldLabel.innerHTML = "Run on:&nbsp;";
     const resetBtn = doc.createElement("button");
     const supportBtn = doc.createElement("button");
     frame.style.display = "none";
     doc.body.appendChild(frame);
+    frame.appendChild(sitesFieldLabel);
     frame.appendChild(resetBtn);
     frame.appendChild(supportBtn);
     resetBtn.addEventListener("click", () => GM_config.reset());
@@ -599,15 +682,21 @@ async function initGMC() {
         fields: {
             amazon: {
                 type: "checkbox",
-                label: "Run on Amazon",
+                label: "Amazon",
                 title: "Uncheck if you don't use Amazon Prime Video",
                 section: "Main Settings",
                 default: true,
             },
             netflix: {
                 type: "checkbox",
-                label: "Run on Netflix",
+                label: "Netflix",
                 title: "Uncheck if you don't use Netflix",
+                default: true,
+            },
+            disneyplus: {
+                type: "checkbox",
+                label: "Disney+",
+                title: "Uncheck if you don't use Disney+",
                 default: true,
             },
             rate: {
@@ -622,7 +711,7 @@ async function initGMC() {
             promoted: {
                 type: "checkbox",
                 label: "Autoplay promoted videos",
-                title: "After the final credits of a film or the last episode of a series, Netflix recommends a trending or similar movie/series. Check this if you want to automatically start playing Netflix's recommendation at the end of the credits",
+                title: "After the final credits of a film or the last episode of a series, Netflix and Disney+ recommend a trending or similar movie/series. Check this if you want to automatically start playing the site's recommendation at the end of the credits",
                 default: false,
             },
             code: {
@@ -898,6 +987,7 @@ async function initGMC() {
                     if (
                         options.netflix !== f.netflix.value ||
                         options.amazon !== f.amazon.value ||
+                        options.disneyplus !== f.disneyplus.value ||
                         options.promoted !== f.promoted.value
                     ) {
                         // if the memoized setting for the current site doesn't match the new setting for that site...
@@ -917,27 +1007,45 @@ async function initGMC() {
                 return (this.error = false);
             },
             open() {
+                // add a label to the amazon/netflix/disney+ checkboxes
+                methods.byID("Marathon_section_header_0").after(sitesFieldLabel);
                 // add a support button, make the reset link an actual button. we could do this by editing the prototype but again, it'd be a lot of duplicate code.
                 const resetLink = methods.byID("Marathon_resetLink"); // the ugly reset link that comes with GM_config
-                resetBtn.title = resetLink.title; // assign some attributes of the reset link to the new button
+                methods.maybeSetAttributes(resetBtn, {
+                    title: resetLink.title,
+                    class: resetLink.parentElement.className,
+                });
                 resetBtn.textContent = resetLink.textContent;
-                resetBtn.className = resetLink.parentElement.className;
                 resetLink.parentElement.replaceWith(resetBtn); // replace the link with the button
                 methods.byID("Marathon_saveBtn").after(resetBtn); // move it next to the save button
-                supportBtn.title = locale.title; // give the support button a localized tooltip and label since it's the one someone's most likely to need if they don't speak english.
+                // give the support button a localized tooltip and label since it's the one someone's most likely to need if they don't speak english.
+                methods.maybeSetAttributes(supportBtn, {
+                    title: locale.title,
+                    class: "saveclose_buttons",
+                    id: "Marathon_supportBtn",
+                });
                 supportBtn.textContent = locale.text;
-                supportBtn.className = "saveclose_buttons";
-                supportBtn.id = "Marathon_supportBtn";
                 methods.byID("Marathon_closeBtn").after(supportBtn); // move it to the end.
-                const firstField = frame.querySelector(`.config_var [id^="Marathon_field_"]`);
+                const firstField = methods.qry(`.config_var [id^="Marathon_field_"]`, frame);
                 if (firstField) firstField.focus();
             },
             close() {
                 let blurTo;
-                if (site === "netflix") {
-                    const mountPoint = document.getElementById("appMountPoint");
-                    blurTo = mountPoint.querySelector(`[tabindex]`) || mountPoint;
-                } else blurTo = document.querySelector(".webPlayerSDKUiContainer");
+                switch (site) {
+                    case "netflix": {
+                        const mountPoint = methods.byID("appMountPoint");
+                        blurTo = methods.qry(`[tabindex]`, mountPoint) || mountPoint;
+                        break;
+                    }
+                    case "amazon":
+                        blurTo = methods.qry(".webPlayerSDKUiContainer");
+                        break;
+                    case "disneyplus":
+                        blurTo = methods.qry(".btm-media-client-element");
+                        break;
+                    default:
+                        return;
+                }
                 blurTo.focus();
             },
         },
@@ -1079,9 +1187,8 @@ async function initGMC() {
         #Marathon_section_0 {
             gap: 6px 12px;
         }
-        #Marathon_section_0 #Marathon_amazon_var,
-        #Marathon_section_0 #Marathon_netflix_var {
-            flex-grow: unset;
+        #Marathon_section_0_subheader_0 {
+            flex-grow: 1;
         }
         #Marathon_buttons_holder {
             display: flex;

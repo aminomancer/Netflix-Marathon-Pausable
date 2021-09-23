@@ -6,13 +6,13 @@
     </center>
 </h1>
 
-一种可配置的用户脚本，该脚本自动跳过介绍，信用和广告，并单击Netflix和Amazon Prime Video上的“下一集”提示。需要一个[Violentmonkey](https://violentmonkey.github.io/)或[Tampermonkey](https://www.tampermonkey.net/)之类的用户脚本管理器。Greasemonkey也完全受支持，但我不建议这样做。如果收到任何请求，我会考虑将其转换为浏览器插件。
+这是一个用于流式传输电影和电视节目的 JavaScript 文件。 它适用于 Netflix、Amazon Prime Video 和 Disney+。 它会自动跳过重述、介绍、信用和广告。 它还单击“下一集”提示。 因此，您不必浪费时间单击这些按钮。 需要像 [Violentmonkey](https://violentmonkey.github.io/) 或 [Tampermonkey](https://www.tampermonkey.net/) 这样的用户脚本管理器。 Greasemonkey 也完全支持，但不推荐。 如果我收到任何请求，我会考虑将其转换为 webextension 插件。
 
-该脚本通过查询文档中跳过视频的元素来工作。通常，即使您可能想看学分之类的东西，它也会不断地这样做。因此，我认为最好添加一个切换按钮来立即禁用/启用搜索，而无需重新加载网站。默认情况下，热键为Ctrl + F7。它会暂停时间间隔，这意味着暂停时不会跳过任何内容。再次按下热键将恢复间隔。它还会根据您使用的插件，在插件的弹出菜单或上下文菜单中添加2个按钮。
+此脚本通过查询文档中跳过视频的元素来工作。通常它会不断执行此操作，即使您可能想观看演职员表或其他内容。所以我认为最好添加一个切换来禁用/启用搜索，而无需重新加载网站。默认情况下，热键是 Ctrl+F7。它暂停间隔，这意味着它在暂停时不会跳过任何内容。再次按下热键可恢复间隔。它还向您的插件的弹出菜单或上下文菜单添加 2 个按钮，具体取决于您使用的插件。
 
-热键还会显示一个简短的弹出窗口，显示间隔是暂停还是恢复，因此您始终可以知道间隔是打开还是关闭。您可以通过按Alt + N来配置脚本设置。（可以更改或禁用设置热键）。您也可以在用户脚本管理器的菜单中单击“打开设置”命令以打开弹出窗口。您可以更改热键，禁用网站之一，更改间隔率，更改暂停/继续弹出窗口的各个方面，或者完全禁用弹出窗口。设置实时更新，而无需重新加载页面。如果忘记了打开设置的热键，请使用Violentmonkey工具栏按钮上的菜单命令。
+热键还会显示一个简短的弹出窗口，显示间隔是暂停还是恢复，因此您不会忘记它是打开还是关闭。您可以通过按 Alt+N 来配置脚本设置。 （可以更改或禁用设置热键）您还可以单击用户脚本管理器菜单中的“打开设置”命令以打开弹出窗口。您可以更改热键、禁用其中一个网站、更改间隔率、更改暂停/恢复弹出窗口的各个方面，或完全禁用弹出窗口。设置实时更新，无需重新加载页面。如果您忘记了打开设置的热键是什么，请使用 Violentmonkey 工具栏按钮中的菜单命令。
 
-如果存在某个播放器或跳过元素，则此脚本无法满足您的要求，请在问题页面上发布一些细节，并在可能的情况下为您正在考虑的元素提供有效的CSS选择器。如果它没有静态的类或ID，请给我标签名称，文本内容，img src，屏幕截图或可以想象用来在DOM中标识它的任何其他内容。谢谢！
+如果有一些网站或跳过元素，这个脚本没有处理你想要的，在问题页面上发布一些细节，如果可能的话，为你正在考虑的元素提供一个有效的 CSS 选择器。 （右键单击 > 检查源代码）如果它没有静态类或 id，那么给我标签名称、文本内容、img src、屏幕截图或任何其他可以想象用于在 DOM 中识别它的东西。谢谢~
 
 Forked from [Netflix Marathon](https://greasyfork.org/en/scripts/30029-netflix-marathon)
 
@@ -24,8 +24,9 @@ Forked from [Netflix Marathon](https://greasyfork.org/en/scripts/30029-netflix-m
 |-|-|-|-|
 | **Interval&#160;Rate** | 300 | integer | 时间间隔（以毫秒为单位）。这决定了脚本多久检查一次元素并尝试单击它们。如果您的计算机是马铃薯，则可能需要增加此数字。 |
 | **Autoplay&#160;promoted&#160;videos** | false | boolean | Netflix可以在电影结尾或连续剧的最后一集之后播放推荐的电影或连续剧。如果要自动播放推荐，请启用此设置。 |
-| **Run&#160;on&#160;Amazon** | true | boolean | 是否在亚马逊上运行 |
-| **Run&#160;on&#160;Netflix** | true | boolean | 是否在网飞上运行 |
+| **Run&#160;on&#160;Amazon** | true | boolean | 它应该在亚马逊上运行吗？ |
+| **Run&#160;on&#160;Netflix** | true | boolean | 它应该在Netflix上运行吗？ |
+| **Run&#160;on&#160;Disney+** | true | boolean | 它应该在迪士尼+上运行吗？ |
 | **Hotkey&#160;code**&#160;（暂停/恢复） | F7 | string | 您要使用的密钥。例如，如果要使用Ctrl + Alt + F，请将此设置设置为`KeyF`。这是`event.code`，而不是`event.keyCode`。[使用此工具](https://keycode.info)查找所需的代码，或检查[完整列表](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code/code_values)。 |
 | **Enable toggle hotkey** | true | boolean | 绑定一个键盘快捷键，以便您可以随意暂停/恢复脚本。 |
 | **Hotkey&#160;code**&#160;（设置） | KeyN | string | 物理键，例如，您可以使用`Digit9`绑定数字9。 |
