@@ -10,7 +10,7 @@
 // @name:ru            Netflix Marathon (пауза)
 // @name:hi            नेटफ्लिक्स मैराथन (रोकने योग्य)
 // @namespace          https://github.com/aminomancer
-// @version            5.1.8
+// @version            5.1.9
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:en     A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，可自动跳过 Netflix、Amazon Prime Video 和 Disney+ 上的重述、介绍、字幕和广告，并单击“下一集”提示。 可自定义的热键来暂停/恢复自动跳过功能。 Alt + N 用于设置。
@@ -78,8 +78,11 @@ WebFont */
 const options = {}; // where settings are stored during runtime
 const win = window;
 const doc = document;
-const GMObj = typeof GM === "object" && GM !== null && typeof GM.getValue === "function"; // check whether the GM object exists so we can use the right GM API functions
-const GM4 = GMObj && GM.info.scriptHandler === "Greasemonkey" && GM.info.version.split(".")[0] >= 4; // check if the script handler is GM4, since if it is, we can't add a menu command
+// check whether the GM object exists so we can use the right GM API functions
+const GMObj =
+    "GM" in window && typeof window.GM === "object" && typeof window.GM.getValue === "function";
+// check if the script handler is GM4, since if it is, we can't add a menu command
+const GM4 = GMObj && GM.info.scriptHandler === "Greasemonkey" && GM.info.version.split(".")[0] >= 4;
 let marathon;
 /**
  * pause execution for ms milliseconds
@@ -237,19 +240,6 @@ const methods = {
             return !!this.byID(s).offsetParent;
         } catch (e) {
             return false;
-        }
-    },
-    // returns false if we're on a valid site but not actually in the video player (e.g. we're only browsing videos).
-    get playing() {
-        switch (site) {
-            case "netflix":
-                return test("netflix.com/watch/");
-            case "amazon":
-                return this.isVis("dv-web-player");
-            case "disneyplus":
-                return test("disneyplus.com/video/");
-            default:
-                return false;
         }
     },
     /**
@@ -498,11 +488,9 @@ class Controller {
      */
     pause(pop) {
         if (this.pauseState !== 1) return;
-
         this.remainder = this.int - (new Date() - this.time);
         win.clearInterval(this.timer);
         this.pauseState = 2;
-
         this.register("Resume Marathon"); // update the menu command label
         this.openPopup(pop);
     }
@@ -513,9 +501,7 @@ class Controller {
      */
     async resume(pop) {
         if (this.pauseState !== 2) return;
-
         this.pauseState = 3;
-
         this.register("Pause Marathon");
         this.openPopup(pop);
         await sleep(this.remainder);
@@ -525,9 +511,7 @@ class Controller {
     // when we pause, there's usually still time left on the interval. resume() calls this after waiting for the remaining duration. so this is what actually resumes the interval.
     run() {
         if (this.pauseState !== 3) return;
-
         this.callback();
-
         this.time = new Date();
         this.timer = win.setInterval(this.callback, this.int);
         this.pauseState = 1;
@@ -538,10 +522,10 @@ class Controller {
         if (!options[site]) return; // disable the pause/resume toggle when the site is disabled
         switch (this.pauseState) {
             case 1:
-                this.pause("Paused"); // passing false tells openPopup to use the "Marathon: Paused" message
+                this.pause("Paused"); // passing "Paused" tells openPopup to use the "Marathon: Paused" message
                 break;
             case 2:
-                this.resume("Resumed"); // passing true => "Marathon: Resumed" message
+                this.resume("Resumed"); // passing "Resumed" => "Marathon: Resumed" message
                 break;
             default:
         }
@@ -554,13 +538,11 @@ class Controller {
     openPopup(msg) {
         // if popup is disabled in options, or no message was sent, do nothing
         if (msg === undefined || !options.pop) return;
-
         const { style } = this.popup;
         this.popup.textContent = `Marathon: ${msg}`;
         style.transitionDuration = "0.2s";
         style.opacity = "1";
         win.clearTimeout(this.fading); // clear any existing fade timeout since we're about to set a new one
-
         // schedule the popup to fade into oblivion
         this.fading = win.setTimeout(() => {
             style.transitionDuration = "1s";
@@ -612,9 +594,7 @@ class Controller {
      */
     register(cap, firstRun = false) {
         if (GM4) return; // don't register a menu command if the script manager is greasemonkey 4.0+ since the function doesn't exist
-
         if (!firstRun) GM_unregisterMenuCommand(this.caption); // this is how we switch the menu command from play to pause. we'd prefer to just have a single menu command and use a variable to determine its label and callback behavior, but the API doesn't support that afaik.
-
         // don't register the pause/unpause menu command if the site is currently disabled
         if (options[site]) {
             GM_registerMenuCommand(cap, this.toggle);
@@ -649,9 +629,7 @@ function extendGMC() {
     // support fancy animations
     GM_config.close = function close() {
         win.clearTimeout(this.fading);
-
         this.frame.setAttribute("closed", true);
-
         this.onClose(); //  Call the close() callback function
         this.isOpen = false;
         this.fading = win.setTimeout(() => {
@@ -665,7 +643,6 @@ function extendGMC() {
                 this.frame.innerHTML = "";
                 this.frame.style.display = "none";
             }
-
             // Null out all the fields so we don't leak memory
             const { fields } = this;
             for (const value of Object.values(fields)) {
@@ -676,9 +653,7 @@ function extendGMC() {
     };
     GM_config.open = function open() {
         win.clearTimeout(this.fading);
-
         this.frame.removeAttribute("closed");
-
         this.isOpen = true;
         Object.getPrototypeOf(this).open.call(this);
     };
@@ -688,10 +663,8 @@ function extendGMC() {
         const forgotten = {};
         if (!obj) {
             const { fields } = this;
-
             for (const [id, field] of Object.entries(fields)) {
                 const value = field.toValue();
-
                 if (field.save)
                     if (value != null) {
                         values[id] = value;
@@ -708,7 +681,6 @@ function extendGMC() {
         } catch (e) {
             this.log("GM_config failed to save settings!");
         }
-
         return forgotten;
     };
     /**
@@ -991,15 +963,12 @@ async function initGMC() {
 
                         GM_deleteValue(key); // get rid of the old setting so we don't have to do this again.
                     }
-
                 this.save(); // we need this to save the default values on first load
-
                 // for all addons except greasemonkey 4, we can add a menu command
                 if (!GM4)
                     GM_registerMenuCommand("Open Settings", () => {
                         if (!this.isOpen) this.open();
                     });
-
                 // memoize the settings
                 settings();
             },
@@ -1030,7 +999,6 @@ async function initGMC() {
                         }
                     }
                     if (hotkeyMsg) message += "Hotkeys"; // tell popup to open and announce the successful settings update
-
                     // handle changes to popup settings
                     for (const [key, field] of Object.entries(this.popupFields)) {
                         const tempKey = field.value;
@@ -1051,7 +1019,6 @@ async function initGMC() {
                                     options.fontSize = `${tempKey}px`; // if font size was changed, update the internal string version
                                     break;
                                 default:
-                                    break;
                             }
                             doResetPopup = true;
                         }
@@ -1077,7 +1044,6 @@ async function initGMC() {
                         marathon.pause(); // stop the current interval
                         marathon.int = newInt; // update the rate
                         if (options[site]) marathon.resume(); // if the site we're currently on is enabled, start the interval with the new rate
-
                         if (message.includes("&")) message = "Settings";
                         // if we already set it to Hotkey & Popup then reset it to something general so it's not so long
                         else {
@@ -1159,7 +1125,6 @@ async function initGMC() {
 function attachWebFont() {
     const wf = doc.createElement("script");
     const first = doc.scripts[0];
-
     WebFontConfig = {
         classes: false, // don't bother changing the DOM at all, we aren't listening for it
         events: false, // no need for events, not worth the execution
