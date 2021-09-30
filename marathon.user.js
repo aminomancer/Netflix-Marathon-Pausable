@@ -10,7 +10,7 @@
 // @name:ru            Netflix Marathon (пауза)
 // @name:hi            नेटफ्लिक्स मैराथन (रोकने योग्य)
 // @namespace          https://github.com/aminomancer
-// @version            5.1.9
+// @version            5.2.0
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:en     A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，可自动跳过 Netflix、Amazon Prime Video 和 Disney+ 上的重述、介绍、字幕和广告，并单击“下一集”提示。 可自定义的热键来暂停/恢复自动跳过功能。 Alt + N 用于设置。
@@ -361,11 +361,11 @@ const methods = {
                 else if ((store = this.qry(`button[data-gv2elementkey="playNext"]`))) {
                     // next episode
                     const spans = this.qryAll("span", store);
-                    if (options.promoted || (spans && spans.length > 2)) this.clk(store);
-                    // if there are 3 spans inside the button, it means the countdown number is visible.
+                    if (options.promoted || (spans && spans.length > 1)) this.clk(store);
+                    // if there are 2 spans inside the button, it means the countdown number is visible.
                     // countdown number means it's going to automatically proceed in 10 seconds even if we don't click it,
                     // which usually happens when watching a series and proceeding to the next episode. so all we do in this case is speed up the process.
-                    // but if there are 2 spans in the button, it means there's no countdown. it won't do anything without user interaction.
+                    // but if there is only 1 span in the button, it means there's no countdown. it won't do anything without user interaction.
                     // this is the case when watching a film, and disney+ recommends a new title for the user to watch. hence, we read the "promoted" option.
                     // I looked hard for a cleaner, more future proof way to do this, even prying apart the react components. no such luck.
                 }
