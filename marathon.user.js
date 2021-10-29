@@ -10,7 +10,7 @@
 // @name:ru            Netflix Marathon (пауза)
 // @name:hi            नेटफ्लिक्स मैराथन (रोकने योग्य)
 // @namespace          https://github.com/aminomancer
-// @version            5.3.0
+// @version            5.3.1
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:en     A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，可自动跳过 Netflix、Amazon Prime Video、Hulu 和 Disney+ 上的重述、介绍、字幕和广告，并单击“下一集”提示。 可自定义的热键来暂停/恢复自动跳过功能。 Alt + N 用于设置。
@@ -399,10 +399,20 @@ const methods = {
                     if (controlProps.endCardType === "credit" || options.promoted)
                         // next episode
                         this.clkQry(".EndCardButton--active");
-                } else if (controlProps.isOverlayVisible)
+                } else if (controlProps.isOverlayVisible) {
                     if (controlProps.endCardType === "legacy" || options.promoted)
                         // next episode
                         this.clkQry(".end-card__metadata-area-play-button");
+                } else
+                    this.qryAll(
+                        `.AdPlayer:not(.AdPlayer--hidden) video[class^="AdPlayer__video"],
+                        .IntroPlayer:not(.IntroPlayer--hidden) video[class^="IntroPlayer"]`
+                    ).forEach((video) => {
+                        // fast forward and mute ads if they can't be skipped
+                        video.playbackRate = 16.0; // 16 should be the max but apparently we can go arbitrarily high in some versions of firefox.
+                        video.muted = true; // it should be muted automatically at this playback rate but if this feature is missing, mute it manually.
+                        this.count = 80;
+                    });
             }
         } else this.count -= 1;
     },

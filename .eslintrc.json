@@ -66,6 +66,7 @@
                 "allowTaggedTemplates": true
             }
         ],
+        "no-param-reassign": "off",
         "no-return-assign": "off",
         "prefer-destructuring": "off",
         "no-underscore-dangle": "off",
