@@ -6,7 +6,7 @@
     </center>
 </h1>
 
-这是一个用于流式传输电影和电视节目的 JavaScript 文件。 它适用于 Netflix、Amazon Prime Video 和 Disney+。 它会自动跳过重述、介绍、信用和广告。 它还单击“下一集”提示。 因此，您不必浪费时间单击这些按钮。 需要像 [Violentmonkey](https://violentmonkey.github.io/) 或 [Tampermonkey](https://www.tampermonkey.net/) 这样的用户脚本管理器。 Greasemonkey 也完全支持，但不推荐。 如果我收到任何请求，我会考虑将其转换为 webextension 插件。
+这是一个用于流式传输电影和电视节目的 JavaScript 文件。 它适用于 Netflix、Amazon Prime Video、Hulu 和 Disney+。 它会自动跳过重述、介绍、信用和广告。 它还单击“下一集”提示。 因此，您不必浪费时间单击这些按钮。 需要像 [Violentmonkey](https://violentmonkey.github.io/) 或 [Tampermonkey](https://www.tampermonkey.net/) 这样的用户脚本管理器。 Greasemonkey 也完全支持，但不推荐。 如果我收到任何请求，我会考虑将其转换为 webextension 插件。
 
 此脚本通过查询文档中跳过视频的元素来工作。通常它会不断执行此操作，即使您可能想观看演职员表或其他内容。所以我认为最好添加一个切换来禁用/启用搜索，而无需重新加载网站。默认情况下，热键是 Ctrl+F7。它暂停间隔，这意味着它在暂停时不会跳过任何内容。再次按下热键可恢复间隔。它还向您的插件的弹出菜单或上下文菜单添加 2 个按钮，具体取决于您使用的插件。
 
@@ -24,9 +24,10 @@ Forked from [Netflix Marathon](https://greasyfork.org/en/scripts/30029-netflix-m
 |-|-|-|-|
 | **Interval&#160;Rate** | 300 | integer | 时间间隔（以毫秒为单位）。这决定了脚本多久检查一次元素并尝试单击它们。如果您的计算机是马铃薯，则可能需要增加此数字。 |
 | **Autoplay&#160;promoted&#160;videos** | false | boolean | Netflix可以在电影结尾或连续剧的最后一集之后播放推荐的电影或连续剧。如果要自动播放推荐，请启用此设置。 |
-| **Run&#160;on&#160;Amazon** | true | boolean | 它应该在亚马逊上运行吗？ |
-| **Run&#160;on&#160;Netflix** | true | boolean | 它应该在Netflix上运行吗？ |
-| **Run&#160;on&#160;Disney+** | true | boolean | 它应该在迪士尼+上运行吗？ |
+| **Run&#160;on&#160;Amazon** | true | boolean | 在亚马逊上启用跳过。 |
+| **Run&#160;on&#160;Netflix** | true | boolean | 在 Netflix |
+| **Run&#160;on&#160;Disney+** | true | boolean | 在迪士尼 + |
+| **Run&#160;on&#160;Hulu** | true | boolean | 在 Hulu |
 | **Hotkey&#160;code**&#160;（暂停/恢复） | F7 | string | 您要使用的密钥。例如，如果要使用Ctrl + Alt + F，请将此设置设置为`KeyF`。这是`event.code`，而不是`event.keyCode`。[使用此工具](https://keycode.info)查找所需的代码，或检查[完整列表](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code/code_values)。 |
 | **Enable toggle hotkey** | true | boolean | 绑定一个键盘快捷键，以便您可以随意暂停/恢复脚本。 |
 | **Hotkey&#160;code**&#160;（设置） | KeyN | string | 物理键，例如，您可以使用`Digit9`绑定数字9。 |

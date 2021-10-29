@@ -6,7 +6,7 @@
     </center>
 </h1>
 
-A configurable userscript that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, and Disney+. Requires a userscript manager like [Violentmonkey](https://violentmonkey.github.io/) or [Tampermonkey](https://www.tampermonkey.net/). Greasemonkey is fully supported too, but not recommended. If I get any requests I'll consider turning it into a webextension addon.
+A configurable userscript that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, and Disney+. Requires a userscript manager like [Violentmonkey](https://violentmonkey.github.io/) or [Tampermonkey](https://www.tampermonkey.net/). Greasemonkey is fully supported too, but not recommended. If I get any requests I'll consider turning it into a webextension addon.
 
 This script works by querying the document for elements that skip through the video. Normally it does this constantly, even when you might want to watch the credits or something. So I thought it'd be nice to add a toggle to disable/enable the searching, on the fly, without needing to reload the website. By default, the hotkey is Ctrl+F7. It pauses the interval, meaning it won't skip anything while paused. Hitting the hotkey again resumes the interval. It also adds 2 buttons to your addon's popup menu or context menu, depending on the addon you use.
 
@@ -24,9 +24,10 @@ Forked from [Netflix Marathon](https://greasyfork.org/en/scripts/30029-netflix-m
 |-|-|-|-|
 | **Interval&#160;Rate** | 300 | integer | Interval rate in milliseconds — How often to check for the elements we want to click. Increase if you're running this on a mega-potato? |
 | **Autoplay&#160;promoted&#160;videos** | false | boolean | After the final credits of a film or the last episode of a series, Netflix recommends a trending or similar movie/series. Enable this if you want it to automatically start. |
-| **Run&#160;on&#160;Amazon** | true | boolean | Whether to bother checking for Amazon elements. |
-| **Run&#160;on&#160;Netflix** | true | boolean | Whether to check for Netflix elements. |
-| **Run&#160;on&#160;Disney+** | true | boolean | Whether to check for Disney+ elements. |
+| **Run&#160;on&#160;Amazon** | true | boolean | Enable skipping on Amazon. |
+| **Run&#160;on&#160;Netflix** | true | boolean | And so on... |
+| **Run&#160;on&#160;Disney+** | true | boolean | |
+| **Run&#160;on&#160;Hulu** | true | boolean | |
 | **Hotkey&#160;code**&#160;(pause/resume) | F7 | string | Physical key, e.g. `KeyF` for the F key. This is `event.code`, NOT `event.keyCode`. [Use this tool](https://keycode.info) or [see the full list here](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code/code_values). |
 | **Enable toggle hotkey** | true | boolean | Enable pausing/resuming with a hotkey. |
 | **Hotkey&#160;code**&#160;(settings) | KeyN | string | Physical key, e.g. `Digit9` for the number 9. |

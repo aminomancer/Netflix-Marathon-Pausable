@@ -10,17 +10,17 @@
 // @name:ru            Netflix Marathon (пауза)
 // @name:hi            नेटफ्लिक्स मैराथन (रोकने योग्य)
 // @namespace          https://github.com/aminomancer
-// @version            5.2.3
-// @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
-// @description:en     A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
-// @description:zh-CN  一个可配置的脚本，可自动跳过 Netflix、Amazon Prime Video 和 Disney+ 上的重述、介绍、字幕和广告，并单击“下一集”提示。 可自定义的热键来暂停/恢复自动跳过功能。 Alt + N 用于设置。
-// @description:zh-TW  一个可配置的脚本，可自动跳过 Netflix、Amazon Prime Video 和 Disney+ 上的重述、介绍、字幕和广告，并单击“下一集”提示。 可自定义的热键来暂停/恢复自动跳过功能。 Alt + N 用于设置。
-// @description:ja     要約、イントロ、クレジット、広告を自動的にスキップし、Netflix、Amazon Prime Video、Disney +の「次のエピソード」のプロンプトをクリックする構成可能なスクリプト。 自動スキップ機能を一時停止/再開するためのカスタマイズ可能なホットキー。 Alt + Nで設定します。
-// @description:ko     요약, 소개, 크레딧 및 광고를 자동으로 건너뛰고 Netflix, Amazon Prime Video 및 Disney+에서 "다음 에피소드" 프롬프트를 클릭하는 구성 가능한 스크립트입니다. 자동 건너뛰기 기능을 일시 중지/재개하는 사용자 지정 가능한 단축키입니다. Alt + N은 설정입니다.
-// @description:ar     برنامج نصي قابل للتكوين يتخطى الملخصات والمقدمات والاعتمادات والإعلانات تلقائيًا وينقر على "الحلقة التالية" على Netflix و Amazon Prime Video و Disney +. مفتاح التشغيل السريع القابل للتخصيص لإيقاف / استئناف وظيفة التخطي التلقائي. Alt + N للإعدادات.
-// @description:de     Ein konfigurierbares Skript, das automatisch Zusammenfassungen, Vorspänne, Abspänne und Werbung überspringt und bei Netflix, Amazon Prime Video und Disney+ auf die Aufforderung "nächste Episode" klickt. Anpassbarer Hotkey zum Anhalten/Fortsetzen der Auto-Skipping-Funktion. Alt + N für Einstellungen.
-// @description:ru     Настраиваемый сценарий, который автоматически пропускает резюме, вступление, титры и рекламу, а также нажимает подсказки «следующий выпуск» на Netflix, Amazon Prime Video и Disney +. Настраиваемая горячая клавиша для приостановки / возобновления функции автоматического пропуска. Alt + N для настроек.
-// @description:hi     एक विन्यास योग्य स्क्रिप्ट जो स्वचालित रूप से रिकैप, इंट्रो, क्रेडिट और विज्ञापनों को छोड़ देती है, और नेटफ्लिक्स, अमेज़ॅन प्राइम वीडियो और डिज़नी + पर "अगला एपिसोड" पर क्लिक करती है। ऑटो-स्किपिंग कार्यक्षमता को रोकने/फिर से शुरू करने के लिए अनुकूलन योग्य हॉटकी। ऑल्ट + एन सेटिंग्स के लिए।
+// @version            5.3.0
+// @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
+// @description:en     A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
+// @description:zh-CN  一个可配置的脚本，可自动跳过 Netflix、Amazon Prime Video、Hulu 和 Disney+ 上的重述、介绍、字幕和广告，并单击“下一集”提示。 可自定义的热键来暂停/恢复自动跳过功能。 Alt + N 用于设置。
+// @description:zh-TW  一个可配置的脚本，可自动跳过 Netflix、Amazon Prime Video、Hulu 和 Disney+ 上的重述、介绍、字幕和广告，并单击“下一集”提示。 可自定义的热键来暂停/恢复自动跳过功能。 Alt + N 用于设置。
+// @description:ja     要約、イントロ、クレジット、広告を自動的にスキップし、Netflix、Amazon Prime Video、Hulu、Disney +の「次のエピソード」のプロンプトをクリックする構成可能なスクリプト。 自動スキップ機能を一時停止/再開するためのカスタマイズ可能なホットキー。 Alt + Nで設定します。
+// @description:ko     요약, 소개, 크레딧 및 광고를 자동으로 건너뛰고 Netflix, Amazon Prime Video, Hulu 및 Disney+에서 "다음 에피소드" 프롬프트를 클릭하는 구성 가능한 스크립트입니다. 자동 건너뛰기 기능을 일시 중지/재개하는 사용자 지정 가능한 단축키입니다. Alt + N은 설정입니다.
+// @description:ar     برنامج نصي قابل للتكوين يتخطى الملخصات والمقدمات والاعتمادات والإعلانات تلقائيًا وينقر على "الحلقة التالية" على Netflix و Amazon Prime Video و Hulu و Disney +. مفتاح التشغيل السريع القابل للتخصيص لإيقاف / استئناف وظيفة التخطي التلقائي. Alt + N للإعدادات.
+// @description:de     Ein konfigurierbares Skript, das automatisch Zusammenfassungen, Vorspänne, Abspänne und Werbung überspringt und bei Netflix, Amazon Prime Video, Hulu und Disney+ auf die Aufforderung "nächste Episode" klickt. Anpassbarer Hotkey zum Anhalten/Fortsetzen der Auto-Skipping-Funktion. Alt + N für Einstellungen.
+// @description:ru     Настраиваемый сценарий, который автоматически пропускает резюме, вступление, титры и рекламу, а также нажимает подсказки «следующий выпуск» на Netflix, Amazon Prime Video, Hulu и Disney +. Настраиваемая горячая клавиша для приостановки / возобновления функции автоматического пропуска. Alt + N для настроек.
+// @description:hi     एक विन्यास योग्य स्क्रिप्ट जो स्वचालित रूप से रिकैप, इंट्रो, क्रेडिट और विज्ञापनों को छोड़ देती है, और नेटफ्लिक्स, अमेज़ॅन प्राइम वीडियो, हुलु और डिज़नी + पर "अगला एपिसोड" पर क्लिक करती है। ऑटो-स्किपिंग कार्यक्षमता को रोकने/फिर से शुरू करने के लिए अनुकूलन योग्य हॉटकी। ऑल्ट + एन सेटिंग्स के लिए।
 // @author             aminomancer
 // @homepageURL        https://github.com/aminomancer/Netflix-Marathon-Pausable
 // @supportURL         https://github.com/aminomancer/Netflix-Marathon-Pausable
@@ -48,6 +48,7 @@
 // @match              http*://*.amazon.sg/*
 // @match              http*://*.amazon.tr/*
 // @match              http*://*.disneyplus.com/*
+// @match              http*://*.hulu.com/*
 // @match              http*://*.netflix.com/*
 // @match              http*://*.primevideo.com/*
 // @require            https://greasyfork.org/scripts/420683-gm-config-sizzle/code/GM_config_sizzle.js?version=894369
@@ -102,6 +103,7 @@ const getHost = () => {
                 case "amazon":
                 case "primevideo":
                 case "disneyplus":
+                case "hulu":
                 case "netflix":
                     return true;
                 default:
@@ -256,6 +258,14 @@ const methods = {
         }
     },
     /**
+     * pass a CSS selector string to locate an element and immediately click it.
+     * a shortcut for this.clk(this.qry("button"))
+     * @param {string} s (CSS selector e.g. ".class")
+     */
+    clkQry(s, p = doc) {
+        this.clk(this.qry(s, p));
+    },
+    /**
      * set a bunch of attributes on a node
      * @param {object} element (a DOM node)
      * @param {object} attrs (an object containing properties — keys are turned into attributes on the DOM node)
@@ -309,7 +319,6 @@ const methods = {
                 //     this.clk(store);
             }
         } else this.count -= 1;
-        return this.count;
     },
     async netflix() {
         if (this.count === 0) {
@@ -375,7 +384,27 @@ const methods = {
                 }
             }
         } else this.count -= 1;
-        return this.count;
+    },
+    async hulu() {
+        if (this.count === 0) {
+            if (test("hulu.com/watch/")) {
+                const controls = this.qry(".ControlsContainer");
+                if (!controls) return;
+                const controlProps = this.react(controls)?.return.memoizedProps;
+                if (!controlProps) return;
+                if (controlProps.isSkipButtonShown)
+                    // skip intro, skip recap, skip ad, etc.
+                    this.clkQry(".SkipButton button");
+                else if (controlProps.isEndCardVisible) {
+                    if (controlProps.endCardType === "credit" || options.promoted)
+                        // next episode
+                        this.clkQry(".EndCardButton--active");
+                } else if (controlProps.isOverlayVisible)
+                    if (controlProps.endCardType === "legacy" || options.promoted)
+                        // next episode
+                        this.clkQry(".end-card__metadata-area-play-button");
+            }
+        } else this.count -= 1;
     },
 };
 
@@ -776,6 +805,12 @@ async function initGMC() {
                 title: "Uncheck if you don't use Disney+",
                 default: true,
             },
+            hulu: {
+                type: "checkbox",
+                label: "Hulu",
+                title: "Uncheck if you don't use Hulu",
+                default: true,
+            },
             rate: {
                 label: "Interval Rate",
                 title: "Time (in milliseconds) between checks for skip buttons",
@@ -1059,6 +1094,7 @@ async function initGMC() {
                         options.netflix !== f.netflix.value ||
                         options.amazon !== f.amazon.value ||
                         options.disneyplus !== f.disneyplus.value ||
+                        options.hulu !== f.hulu.value ||
                         options.promoted !== f.promoted.value
                     ) {
                         // if the memoized setting for the current site doesn't match the new setting for that site...
@@ -1078,8 +1114,16 @@ async function initGMC() {
                 return (this.error = false);
             },
             open() {
-                // add a label to the amazon/netflix/disney+ checkboxes
+                // add a label to the "Run on" checkboxes
                 methods.byID("Marathon_section_header_0").after(sitesFieldLabel);
+                // put the checkboxes in a container so we can ensure it doesn't wrap
+                const sites = Array.from(methods.byID("Marathon_section_0").children).slice(1, 6);
+                const container = sites[0].parentElement.insertBefore(
+                    document.createElement("div"),
+                    sites[0]
+                );
+                container.className = "horizontal_container";
+                sites.forEach((div) => container.appendChild(div));
                 // add a support button, make the reset link an actual button. we could do this by editing the prototype but again, it'd be a lot of duplicate code.
                 const resetLink = methods.byID("Marathon_resetLink"); // the ugly reset link that comes with GM_config
                 methods.maybeSetAttributes(resetBtn, {
@@ -1096,7 +1140,9 @@ async function initGMC() {
                     id: "Marathon_supportBtn",
                 });
                 supportBtn.textContent = l10n.text;
-                methods.byID("Marathon_closeBtn").after(supportBtn); // move it to the end.
+                const closeBtn = methods.byID("Marathon_closeBtn");
+                closeBtn.after(supportBtn); // move it to the end.
+                closeBtn.textContent = "Cancel"; // change the text from "Close" to "Cancel" so it's clear that this will discard changes to settings
                 const firstField = methods.qry(`.config_var [id^="Marathon_field_"]`, frame);
                 if (firstField) firstField.focus();
             },
@@ -1114,14 +1160,18 @@ async function initGMC() {
                     case "disneyplus":
                         blurTo = methods.qry(".btm-media-client-element");
                         break;
+                    case "hulu":
+                        blurTo = methods.qry(".addFocus");
+                        break;
                     default:
                         return;
                 }
+                blurTo = blurTo || document.documentElement;
                 blurTo.focus();
             },
         },
         frame, // using an in-content element has its problems e.g. we're affected by amazon's god-awful stylesheets, but using an iframe makes animation a lot more clunky and i want the panel to be kinda spry and light
-        css: `#Marathon{display:block!important;position:fixed!important;z-index:2147483646!important;inset:unset!important;top:50%!important;left:0!important;background-color:hsla(0,0%,5.1%,.91);background-image:url("https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/texture/noise-512x512.png");background-repeat:repeat;background-size:auto;background-attachment:local;-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);border:none!important;color:hsla(0,0%,97%,.95);max-width:-webkit-min-content!important;max-width:-moz-min-content!important;max-width:min-content!important;height:-webkit-min-content!important;height:-moz-min-content!important;height:min-content!important;border-radius:5px;padding:10px!important;transform:translate(50%,-60%);font-size:14px;line-height:1.2;transition:.2s ease-in-out opacity;}#Marathon[closed]{opacity:0!important;transition:.5s ease-in-out opacity;}#Marathon *{font-family:Source Sans Pro;font-weight:300;}#Marathon_wrapper{display:flex;flex-direction:column;align-content:center;}#Marathon_header{font-size:2em!important;white-space:nowrap;padding-inline:6px;}#Marathon .section_header_holder{display:flex;flex-flow:row wrap;gap:6px 8px;padding:6px 4px 0;margin-top:8px;border-top:1px solid hsla(0,0%,100%,.1);}#Marathon .section_header{font-size:1.25em!important;background:none!important;border:none!important;text-align:left!important;flex-basis:100%;margin-inline:-3px;}#Marathon .config_var{margin:0!important;column-gap:6px;display:flex;flex-direction:row;align-items:center;line-height:normal;flex-grow:1;}#Marathon:is(button,input,optgroup,select,textarea){font:inherit;margin:0;}#Marathon button{text-align:center;}#Marathon input[type="text"]{-webkit-appearance:none;-moz-appearance:none;appearance:none;color:inherit;background:hsla(0,0%,25%,50%)!important;border:none;border-radius:3px;padding:1px 4px;flex-grow:1;height:unset;box-shadow:unset!important;outline:unset;box-sizing:initial!important;margin:0!important;font-size:14px!important;}#Marathon input[type="text"]:focus{background-color:hsla(0,0%,25%,70%)!important;color:white!important;}#Marathon input[type="checkbox"]{min-width:14px;min-height:14px;margin-inline:0;border-radius:2.5px;position:static;box-sizing:border-box;}#Marathon:is(select,button,textarea):focus-visible,#Marathon input:not([type="file"],[type="image"]):focus-visible,#Marathon:is(button,select,input:is([type="checkbox"],[type="color"],[type="radio"])):-moz-focusring{outline-style:auto!important;box-shadow:none!important;}#Marathon_section_0{gap:6px 12px;}#Marathon_section_0_subheader_0{flex-grow:1;}#Marathon_buttons_holder{display:flex;flex-flow:row;gap:6px;margin-top:6px;align-items:center;border-top:1px solid hsla(0,0%,100%,.1);color:inherit!important;}#Marathon .saveclose_buttons,#Marathon .reset_holder{margin:6px 0 0 0;padding:2px 12px;color:inherit;background:hsla(0,0%,25%,50%);border:none!important;border-radius:3px;padding-inline:4px;font-size:15px;padding-block:2px;flex-grow:1;white-space:nowrap;}#Marathon .saveclose_buttons:hover,#Marathon .reset_holder:hover{background-color:hsla(0,0%,25%,70%)!important;color:white!important;}#Marathon_saveBtn{padding-inline:16px 2px!important;background:hsla(0,0%,25%,50%) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><path fill='hsla(0,0%,97%,.95)' d='M6 14a1 1 0 01-.707-.293l-3-3a1 1 0 011.414-1.414l2.157 2.157 6.316-9.023a1 1 0 011.639 1.146l-7 10a1 1 0 01-.732.427A.863.863 0 016 14z'/></svg>") 3.8px 48%/12.5px no-repeat!important;}#Marathon .reset_holder{padding-inline:16px 2px!important;background:hsla(0,0%,25%,50%) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='hsla(0,0%,97%,.95)' height='16' width='16'><path d='M1 1a1 1 0 011 1v2.4A7 7 0 118 15a7 7 0 01-4.9-2 1 1 0 011.4-1.5 5 5 0 10-1-5.5H6a1 1 0 010 2H1a1 1 0 01-1-1V2a1 1 0 011-1z'/></svg>") 4.5px 50%/11px no-repeat!important;}#Marathon .reset{color:inherit!important;font-size:inherit!important;}#Marathon .field_label{font-size:12px;font-weight:normal!important;margin:0!important;white-space:nowrap;padding:unset!important;}#Marathon select{-webkit-appearance:none;-moz-appearance:none;appearance:none;color:inherit;border:none;border-radius:3px;padding-inline:2px 13px;background:hsla(0,0%,25%,50%) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='hsla(0,0%,97%,.95)' height='24' viewBox='0 0 24 24' width='24'><path d='M8.12 9.29L12 13.17l3.88-3.88c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0L6.7 10.7c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z'/></svg>") 100% 66%/18px no-repeat!important;}#Marathon option{-webkit-appearance:none;-moz-appearance:none;appearance:none;color:inherit;background:hsl(0,1%,17%)!important;border:none;}#Marathon_pop_var,#Marathon_font_var{flex-basis:100%;}`,
+        css: `#Marathon{display:block!important;position:fixed!important;z-index:2147483646!important;inset:unset!important;top:50%!important;left:0!important;background-color:hsla(0,0%,5.1%,.91);background-image:url("https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/texture/noise-512x512.png");background-repeat:repeat;background-size:auto;background-attachment:local;-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);border:none!important;color:hsla(0,0%,97%,.95);max-width:-webkit-min-content!important;max-width:-moz-min-content!important;max-width:min-content!important;height:-webkit-min-content!important;height:-moz-min-content!important;height:min-content!important;border-radius:5px;padding:10px!important;transform:translate(50%,-60%);font-size:14px;line-height:1.2;transition:.2s ease-in-out opacity;}#Marathon[closed]{opacity:0!important;transition:.5s ease-in-out opacity;}#Marathon *{font-family:Source Sans Pro;font-weight:300;}#Marathon_wrapper{display:flex;flex-direction:column;align-content:center;}#Marathon_header{font-size:2em!important;white-space:nowrap;padding-inline:6px;}#Marathon .section_header_holder{display:flex;flex-flow:row wrap;gap:6px 8px;padding:6px 4px 0;margin-top:8px;border-top:1px solid hsla(0,0%,100%,.1);}#Marathon .section_header{font-size:1.25em!important;background:none!important;border:none!important;text-align:left!important;flex-basis:100%;margin-inline:-3px;}#Marathon .horizontal_container{display:flex;flex-flow:row nowrap;column-gap:10px;}#Marathon .config_var{margin:0!important;display:flex;flex-direction:row;align-items:center;line-height:normal;flex-grow:1;}#Marathon .config_var .field_label:first-child:not(:only-child){padding-inline-end:6px!important;}#Marathon .config_var .field_label:last-child:not(:only-child){padding-inline-start:6px!important;}#Marathon:is(button,input,optgroup,select,textarea){font:inherit;margin:0;}#Marathon button{text-align:center;}#Marathon input[type="text"]{-webkit-appearance:none;-moz-appearance:none;appearance:none;color:inherit;background:hsla(0,0%,25%,50%)!important;border:none;border-radius:3px;padding:1px 4px;flex-grow:1;height:unset;box-shadow:unset!important;outline:unset;box-sizing:initial!important;margin:0!important;font-size:14px!important;}#Marathon input[type="text"]:focus{background-color:hsla(0,0%,25%,70%)!important;color:white!important;}#Marathon input[type="checkbox"]{min-width:14px;min-height:14px;margin-inline:0;border-radius:2.5px;position:static;box-sizing:border-box;}#Marathon:is(select,button,textarea):focus-visible,#Marathon input:not([type="file"],[type="image"]):focus-visible,#Marathon:is(button,select,input:is([type="checkbox"],[type="color"],[type="radio"])):-moz-focusring{outline-style:auto!important;box-shadow:none!important;}#Marathon_section_0{gap:6px 12px;}#Marathon_section_0_subheader_0{flex-grow:1;}#Marathon_buttons_holder{display:flex;flex-flow:row;gap:6px;margin-top:6px;align-items:center;border-top:1px solid hsla(0,0%,100%,.1);color:inherit!important;}#Marathon .saveclose_buttons,#Marathon .reset_holder{margin:6px 0 0 0;padding:2px 12px;min-height:24px;color:inherit;background:hsla(0,0%,25%,50%);border:none!important;border-radius:3px;padding-inline:4px;font-size:15px;padding-block:2px;flex-grow:1;white-space:nowrap;}#Marathon .saveclose_buttons:hover,#Marathon .reset_holder:hover{background-color:hsla(0,0%,25%,70%)!important;color:white!important;}#Marathon_saveBtn{padding-inline:16px 2px!important;background:hsla(0,0%,25%,50%) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><path fill='hsla(0,0%,97%,.95)' d='M6 14a1 1 0 01-.707-.293l-3-3a1 1 0 011.414-1.414l2.157 2.157 6.316-9.023a1 1 0 011.639 1.146l-7 10a1 1 0 01-.732.427A.863.863 0 016 14z'/></svg>") 3.8px 48%/12.5px no-repeat!important;}#Marathon .reset_holder{padding-inline:16px 2px!important;background:hsla(0,0%,25%,50%) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='hsla(0,0%,97%,.95)' height='16' width='16'><path d='M1 1a1 1 0 011 1v2.4A7 7 0 118 15a7 7 0 01-4.9-2 1 1 0 011.4-1.5 5 5 0 10-1-5.5H6a1 1 0 010 2H1a1 1 0 01-1-1V2a1 1 0 011-1z'/></svg>") 4.5px 50%/11px no-repeat!important;}#Marathon .reset{color:inherit!important;font-size:inherit!important;}#Marathon .field_label{font-size:12px;font-weight:normal!important;margin:0!important;white-space:nowrap;padding:unset!important;}#Marathon select{-webkit-appearance:none;-moz-appearance:none;appearance:none;color:inherit;border:none;border-radius:3px;padding-inline:2px 13px;background:hsla(0,0%,25%,50%) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='hsla(0,0%,97%,.95)' height='24' viewBox='0 0 24 24' width='24'><path d='M8.12 9.29L12 13.17l3.88-3.88c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0L6.7 10.7c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z'/></svg>") 100% 66%/18px no-repeat!important;}#Marathon select:is(:hover,:focus){background-color:hsla(0,0%,25%,70%)!important;}#Marathon option{-webkit-appearance:none;-moz-appearance:none;appearance:none;color:inherit;background:hsl(0,1%,17%)!important;border:none;}#Marathon_pop_var,#Marathon_font_var{flex-basis:100%;}`,
     });
 }
 
