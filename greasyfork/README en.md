@@ -46,7 +46,7 @@ Forked from [Netflix Marathon](https://greasyfork.org/en/scripts/30029-netflix-m
 
 
 <br />
-<img src="https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/settings-blur.png" width=400 />
+<img src="https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/settings-blur.webp" width=400 />
 <details><summary>If you use Firefox and care about the appearance of the popups, click here.</summary>
 <br />
 These popups use <code>backdrop-filter</code> to apply a blur effect behind them, similar to Windows 10's acrylic glass effect. This is purely aesthetic so you can simply ignore this, but if you use Firefox and want the full visual effect, there's an extra step:

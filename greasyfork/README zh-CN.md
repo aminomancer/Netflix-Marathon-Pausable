@@ -46,7 +46,7 @@ Forked from [Netflix Marathon](https://greasyfork.org/en/scripts/30029-netflix-m
 
 
 <br>
-<img src="https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/settings-blur.png" width=400 />
+<img src="https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/settings-blur.webp" width=400 />
 <details><summary>如果您使用Firefox并关心脚本的通知和设置菜单的外观，请单击此处。</summary>
 <br>
 这些弹出窗口使用<code>backdrop-filter</code>在其后面应用模糊效果，类似于Windows 10的丙烯酸玻璃效果。这纯粹是出于美学目的，因此您可以忽略这一点，但是如果您使用Firefox并希望获得完整的视觉效果，则需要执行额外的步骤：
