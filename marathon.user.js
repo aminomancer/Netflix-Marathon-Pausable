@@ -10,7 +10,7 @@
 // @name:ru            Netflix Marathon (пауза)
 // @name:hi            नेटफ्लिक्स मैराथन (रोकने योग्य)
 // @namespace          https://github.com/aminomancer
-// @version            5.3.3
+// @version            5.3.4
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:en     A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，可自动跳过 Netflix、Amazon Prime Video、Hulu 和 Disney+ 上的重述、介绍、字幕和广告，并单击“下一集”提示。 可自定义的热键来暂停/恢复自动跳过功能。 Alt + N 用于设置。
@@ -413,7 +413,9 @@ const methods = {
     },
 };
 
-// an interval constructor that you can pause and resume, and which opens a brief popup when you do so. yes i'm using a class that's only instantiated once. i like the way it looks. if you know of something better lmk~
+// creates an interval for a given callback manager (the methods object)
+// and the various methods for interacting with the interval (pause, resume, etc.)
+// and the popup that shows when the interval has been paused or resumed.
 class Controller {
     /**
      * pausable interval utility
@@ -620,7 +622,7 @@ class Controller {
     updatePopup() {
         const { style } = this.popup;
         style.fontFamily = options.font;
-        style.fontSize = options.fontSize;
+        style.fontSize = `${options.fontSizeInt}px`;
         style.fontWeight = options.fontWeight;
         style.fontStyle = options.italic ? "italic" : "";
     }
@@ -1063,9 +1065,6 @@ async function initGMC() {
                                 case "italic":
                                     doReloadWF = true; // if font, fontWeight, or italic were changed, we need to use webfontloader again
                                     break;
-                                case "fontSizeInt":
-                                    options.fontSize = `${tempKey}px`; // if font size was changed, update the internal string version
-                                    break;
                                 default:
                             }
                             doResetPopup = true;
@@ -1186,26 +1185,25 @@ async function initGMC() {
 
 // load webfontloader and create the base config (to be changed by GM_config)
 function attachWebFont() {
-    const wf = doc.createElement("script");
+    const loader = doc.createElement("script");
     const first = doc.scripts[0];
     WebFontConfig = {
         classes: false, // don't bother changing the DOM at all, we aren't listening for it
         events: false, // no need for events, not worth the execution
         google: {
             families: ["Source Sans Pro:wght@1,300"], // default font and settings font
-            display: "swap", // not really necessary since the popup doesn't appear until you press a button. but whatever
+            display: "swap", // not really necessary since the popup doesn't appear until you press a button. but it doesn't hurt
         },
     };
     GM_config.updateWFConfig(); // parse user-defined font settings, if any
-    wf.src = "https://cdn.jsdelivr.net/npm/webfontloader@latest/webfontloader.js";
-    wf.async = true; // don't block the rest of the page for this
-    first.parentNode.insertBefore(wf, first);
+    loader.src = "https://cdn.jsdelivr.net/npm/webfontloader@latest/webfontloader.js";
+    loader.async = true; // don't block the rest of the page for this, it won't appear until user interaction anyway
+    first.parentNode.insertBefore(loader, first);
 }
 
-// after getting settings from *monkey storage, memoize their values in options.
+// after getting settings from *monkey storage, memoize their values in a simple js object so referencing them is cheaper
 async function settings() {
     for (const [key, field] of Object.entries(GM_config.fields)) options[key] = field.value;
-    options.fontSize = `${options.fontSizeInt}px`;
 }
 
 async function start() {
