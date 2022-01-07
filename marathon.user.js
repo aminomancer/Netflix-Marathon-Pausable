@@ -10,7 +10,7 @@
 // @name:ru            Netflix Marathon (пауза)
 // @name:hi            नेटफ्लिक्स मैराथन (रोकने योग्य)
 // @namespace          https://github.com/aminomancer
-// @version            5.3.4
+// @version            5.3.5
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:en     A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，可自动跳过 Netflix、Amazon Prime Video、Hulu 和 Disney+ 上的重述、介绍、字幕和广告，并单击“下一集”提示。 可自定义的热键来暂停/恢复自动跳过功能。 Alt + N 用于设置。
@@ -373,15 +373,18 @@ const methods = {
                     // skip intro, skip recap, skip credits, etc.
                     this.clk(store);
                 else if ((store = this.qry(`button[data-gv2elementkey="playNext"]`))) {
-                    // next episode
-                    const spans = this.qryAll("span", store);
-                    if (options.promoted || (spans && spans.length > 1)) this.clk(store);
-                    // if there are 2 spans inside the button, it means the countdown number is visible.
-                    // countdown number means it's going to automatically proceed in 10 seconds even if we don't click it,
-                    // which usually happens when watching a series and proceeding to the next episode. so all we do in this case is speed up the process.
-                    // but if there is only 1 span in the button, it means there's no countdown. it won't do anything without user interaction.
-                    // this is the case when watching a film, and disney+ recommends a new title for the user to watch. hence, we read the "promoted" option.
-                    // I looked hard for a cleaner, more future proof way to do this, even prying apart the react components. no such luck.
+                    let skip = false;
+                    const react = this.react(store);
+                    if (react && "return" in react) {
+                        const props = react.return.memoizedProps;
+                        // if we're in a TV series, skip regardless of options.promoted
+                        if (props.asset && props.asset.programType)
+                            skip = props.asset.programType === "episode";
+                    }
+                    // if options.promoted is enabled, we can autoplay disneyplus' recommendations
+                    // after a film or the last episode in a series.
+                    if (options.promoted) skip = true;
+                    if (skip) this.clk(store);
                 }
             }
         } else this.count -= 1;
