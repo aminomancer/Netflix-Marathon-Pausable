@@ -10,7 +10,7 @@
 // @name:ru            Netflix Marathon (пауза)
 // @name:hi            नेटफ्लिक्स मैराथन (रोकने योग्य)
 // @namespace          https://github.com/aminomancer
-// @version            5.3.5
+// @version            5.3.6
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:en     A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，可自动跳过 Netflix、Amazon Prime Video、Hulu 和 Disney+ 上的重述、介绍、字幕和广告，并单击“下一集”提示。 可自定义的热键来暂停/恢复自动跳过功能。 Alt + N 用于设置。
@@ -374,7 +374,7 @@ const methods = {
                     this.clk(store);
                 else if ((store = this.qry(`button[data-gv2elementkey="playNext"]`))) {
                     let skip = false;
-                    const react = this.react(store);
+                    const react = this.react(this.qry(`[data-gv2containerkey="playerUpNext"]`));
                     if (react && "return" in react) {
                         const props = react.return.memoizedProps;
                         // if we're in a TV series, skip regardless of options.promoted
