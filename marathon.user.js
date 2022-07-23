@@ -10,7 +10,7 @@
 // @name:ru            Netflix Marathon (пауза)
 // @name:hi            नेटफ्लिक्स मैराथन (रोकने योग्य)
 // @namespace          https://github.com/aminomancer
-// @version            5.4.0
+// @version            5.4.1
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:en     A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，可自动跳过 Netflix、Amazon Prime Video、Hulu、HBO Max 和 Disney+ 上的重述、介绍、字幕和广告，并单击“下一集”提示。 可自定义的热键来暂停/恢复自动跳过功能。 Alt + N 用于设置。
@@ -1274,6 +1274,7 @@ async function initGMC() {
   font-size: 14px;
   line-height: 1.2;
   transition: 0.2s ease-in-out opacity;
+  color-scheme: dark;
 }
 #Marathon[closed] {
   opacity: 0 !important;
@@ -1340,33 +1341,32 @@ async function initGMC() {
 #Marathon .config_var .field_label:last-child:not(:only-child) {
   padding-inline-start: 6px !important;
 }
-#Marathon:is(button, input, optgroup, select, textarea) {
-  font: inherit;
+#Marathon :is(button, input, optgroup, select, textarea) {
   margin: 0;
+  font: inherit;
+  appearance: revert;
+  box-shadow: none;
+  background: revert;
+  color: revert;
+  border: revert;
+  border-radius: revert;
+  outline: revert;
+  transition: revert;
 }
 #Marathon button {
   text-align: center;
+  cursor: default !important;
 }
 #Marathon input[type="text"] {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  color: inherit;
-  background: hsla(0, 0%, 25%, 50%) !important;
-  border: none;
-  border-radius: 3px;
-  padding: 1px 4px;
+  padding: 0 3px;
   flex-grow: 1;
   height: unset;
-  box-shadow: unset !important;
-  outline: unset;
   box-sizing: initial !important;
   margin: 0 !important;
   font-size: 14px !important;
 }
-#Marathon input[type="text"]:focus {
-  background-color: hsla(0, 0%, 25%, 70%) !important;
-  color: white !important;
+#Marathon input[type="text"][size="1"] {
+  width: 1.5em;
 }
 #Marathon input[type="checkbox"] {
   min-width: 14px;
@@ -1375,12 +1375,6 @@ async function initGMC() {
   border-radius: 2.5px;
   position: static;
   box-sizing: border-box;
-}
-#Marathon:is(select, button, textarea):focus-visible,
-#Marathon input:not([type="file"], [type="image"]):focus-visible,
-#Marathon:is(button, select, input:is([type="checkbox"], [type="color"], [type="radio"])):-moz-focusring {
-  outline-style: auto !important;
-  box-shadow: none !important;
 }
 #Marathon_section_0 {
   gap: 6px 12px;
@@ -1399,35 +1393,38 @@ async function initGMC() {
 }
 #Marathon .saveclose_buttons,
 #Marathon .reset_holder {
+  display: flex;
   margin: 6px 0 0 0;
   padding: 2px 12px;
   min-height: 24px;
-  color: inherit;
-  background: hsla(0, 0%, 25%, 50%);
-  border: none !important;
-  border-radius: 3px;
+  color-scheme: dark;
   padding-inline: 4px;
   font-size: 15px;
   padding-block: 2px;
   flex-grow: 1;
   white-space: nowrap;
 }
-#Marathon .saveclose_buttons:hover,
-#Marathon .reset_holder:hover {
-  background-color: hsla(0, 0%, 25%, 70%) !important;
-  color: white !important;
-}
-#Marathon_saveBtn {
-  padding-inline: 16px 2px !important;
-  background: hsla(0, 0%, 25%, 50%)
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><path fill='hsla(0,0%,97%,.95)' d='M6 14a1 1 0 01-.707-.293l-3-3a1 1 0 011.414-1.414l2.157 2.157 6.316-9.023a1 1 0 011.639 1.146l-7 10a1 1 0 01-.732.427A.863.863 0 016 14z'/></svg>")
-    3.8px 48%/12.5px no-repeat !important;
-}
+#Marathon #Marathon_saveBtn,
 #Marathon .reset_holder {
-  padding-inline: 16px 2px !important;
-  background: hsla(0, 0%, 25%, 50%)
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='hsla(0,0%,97%,.95)' height='16' width='16'><path d='M1 1a1 1 0 011 1v2.4A7 7 0 118 15a7 7 0 01-4.9-2 1 1 0 011.4-1.5 5 5 0 10-1-5.5H6a1 1 0 010 2H1a1 1 0 01-1-1V2a1 1 0 011-1z'/></svg>")
-    4.5px 50%/11px no-repeat !important;
+  padding-inline-start: 0 !important;
+}
+#Marathon_saveBtn::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><path fill='hsla(0,0%,97%,.95)' d='M6 14a1 1 0 01-.707-.293l-3-3a1 1 0 011.414-1.414l2.157 2.157 6.316-9.023a1 1 0 011.639 1.146l-7 10a1 1 0 01-.732.427A.863.863 0 016 14z'/></svg>");
+  background-position:  3px 48%;
+  background-size: 12.5px;
+  background-repeat: no-repeat;
+}
+#Marathon .reset_holder::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='hsla(0,0%,97%,.95)' height='16' width='16'><path d='M1 1a1 1 0 011 1v2.4A7 7 0 118 15a7 7 0 01-4.9-2 1 1 0 011.4-1.5 5 5 0 10-1-5.5H6a1 1 0 010 2H1a1 1 0 01-1-1V2a1 1 0 011-1z'/></svg>");
+  background-position:  4px 50%;
+  background-size: 11px;
+  background-repeat: no-repeat;
 }
 #Marathon .reset {
   color: inherit !important;
@@ -1439,29 +1436,6 @@ async function initGMC() {
   margin: 0 !important;
   white-space: nowrap;
   padding: unset !important;
-}
-#Marathon select {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  color: inherit;
-  border: none;
-  border-radius: 3px;
-  padding-inline: 2px 13px;
-  background: hsla(0, 0%, 25%, 50%)
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='hsla(0,0%,97%,.95)' height='24' viewBox='0 0 24 24' width='24'><path d='M8.12 9.29L12 13.17l3.88-3.88c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-4.59 4.59c-.39.39-1.02.39-1.41 0L6.7 10.7c-.39-.39-.39-1.02 0-1.41.39-.38 1.03-.39 1.42 0z'/></svg>")
-    100% 66%/18px no-repeat !important;
-}
-#Marathon select:is(:hover, :focus) {
-  background-color: hsla(0, 0%, 25%, 70%) !important;
-}
-#Marathon option {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  color: inherit;
-  background: hsl(0, 1%, 17%) !important;
-  border: none;
 }
 #Marathon_pop_var,
 #Marathon_font_var {
