@@ -24,7 +24,7 @@
         ],
         "curly": [
             "error",
-            "multi-or-nest"
+            "multi-line"
         ],
         "camelcase": [
             "error",

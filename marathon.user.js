@@ -10,7 +10,7 @@
 // @name:ru            Netflix Marathon (пауза)
 // @name:hi            नेटफ्लिक्स मैराथन (रोकने योग्य)
 // @namespace          https://github.com/aminomancer
-// @version            5.4.1
+// @version            5.4.2
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:en     A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，可自动跳过 Netflix、Amazon Prime Video、Hulu、HBO Max 和 Disney+ 上的重述、介绍、字幕和广告，并单击“下一集”提示。 可自定义的热键来暂停/恢复自动跳过功能。 Alt + N 用于设置。
@@ -87,12 +87,14 @@ const GMObj = "GM" in win && typeof win.GM === "object" && typeof win.GM.getValu
 const GM4 = GMObj && GM.info.scriptHandler === "Greasemonkey" && GM.info.version.split(".")[0] >= 4;
 let marathon;
 /**
- * pause execution for ms milliseconds
- * @param {int} ms (milliseconds)
+ * pause execution for n milliseconds
+ * @param {Number} ms milliseconds
+ * @returns {Promise} a promise that resolves after n milliseconds
  */
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 /**
- * @param {string} u (a string to test the URL against)
+ * @param {String} u a string to test the URL against
+ * @returns {Boolean} true if the URL matches the string
  */
 const test = u => win.location.href.includes(u);
 const getHost = () => {
@@ -121,15 +123,23 @@ const getHost = () => {
   }
 };
 const site = getHost();
+// some basic localization for the settings menu. just the parts necessary to
+// get to the readme, which has chinese, japanese, and arabic translations
 const l10n = {
-  // some basic localization for the settings menu. just the parts necessary to get to the readme, which has chinese, japanese, and arabic translations
+  /**
+   * get the locale language code (e.g. "en" for English)
+   * @returns {String} the first part of the user's current ISO 639-1 code
+   */
   get lang() {
-    return (
-      this._lang || (this._lang = navigator.language.split("-")[0]) // memoize the language since it's unlikely to change during runtime
-    );
+    // memoize the language since it's unlikely to change during runtime
+    if (!this._lang) this._lang = navigator.language.split("-")[0];
+    return this._lang;
   },
+  /**
+   * get the label for the support button in settings
+   * @returns {String}
+   */
   get text() {
-    // returns the label for the support button in settings
     if (this._text) return this._text;
     switch (this.lang) {
       case "zh":
@@ -158,8 +168,11 @@ const l10n = {
     }
     return this._text;
   },
+  /**
+   * get the tooltip for the support button in settings
+   * @returns {String}
+   */
   get title() {
-    // returns the tooltip for the support button
     if (this._title) return this._title;
     switch (this.lang) {
       case "zh":
@@ -190,7 +203,7 @@ const l10n = {
   },
 };
 const methods = {
-  // contains the site-specific callbacks and various utility functions to shorten and optimize the code
+  // contains the site-specific callbacks and various utility functions
   sites: ["amazon", "disneyplus", "hulu", "hbomax", "netflix"],
   count: 0,
   results: null,
@@ -198,29 +211,35 @@ const methods = {
   nReady: "[data-uia='next-episode-seamless-button']",
   /**
    * getElementsByTagName
-   * @param {string} s (tag name)
+   * @param {String} s tag name to search for
+   * @returns {Array} an array of elements with the given tag name
    */
   byTag: (s, p = doc) => p.getElementsByTagName(s),
   /**
    * getElementById
-   * @param {string} s (element id)
+   * @param {String} s element id to search for
+   * @returns {Element} the element with the given id
    */
   byID: s => doc.getElementById(s),
   /**
    * querySelector
-   * @param {string} s (CSS selector e.g. ".class")
+   * @param {String} s CSS selector e.g. ".class" or "#id"
+   * @returns {Element} the first element matching the given CSS selector
    */
   qry: (s, p = doc) => p.querySelector(s),
   /**
    * querySelectorAll
-   * @param {string} s (CSS selector)
+   * @param {String} s CSS selector e.g. ".class" or "#id"
+   * @returns {Array} an array of elements matching the given CSS selector
    */
   qryAll: (s, p = doc) => p.querySelectorAll(s),
   /**
    * document.evaluate
-   * @param {string} s (node's text content)
-   * @param {string} n (node's tag name. if not passed, then accept any tag)
-   * @param {string} p (node's parent's tag name. this is like saying button>div. if not passed, then just use div, ignoring the node's parent)
+   * @param {String} s node's text content to search for
+   * @param {String} n node's tag name. if not passed, then accept any tag
+   * @param {String} p node's parent's tag name. this is like saying button>div.
+   *                   if not passed, then just ignore the node's parent
+   * @returns {Element} the first element matching the given parameters
    */
   byTxt(s, n = "*", p) {
     return doc.evaluate(
@@ -233,25 +252,30 @@ const methods = {
   },
   /**
    * find react instance given a DOM node
-   * @param {object} d (DOM node)
+   * @param {Object} d usually a DOM node, but can be a react instance
+   * @returns {Object} the react instance
    */
   reactInstance(d) {
-    for (const [key, value] of Object.entries(d || 0))
+    for (const [key, value] of Object.entries(d || 0)) {
       if (key.startsWith("__reactInternalInstance$")) return value;
+    }
     return null;
   },
   /**
    * find react fiber given a DOM node
-   * @param {object} d (DOM node)
+   * @param {Object} d usually a DOM node, but can be a react instance
+   * @returns {Object} the react fiber
    */
   reactFiber(d) {
-    for (const [key, value] of Object.entries(d || 0))
+    for (const [key, value] of Object.entries(d || 0)) {
       if (key.startsWith("__reactFiber$")) return value;
+    }
     return null;
   },
   /**
    * determine if an element is visible (namely the amazon player)
-   * @param {string} s (element id)
+   * @param {String} s element id
+   * @returns {Boolean} true if the element is visible
    */
   isVis(s) {
     try {
@@ -261,41 +285,47 @@ const methods = {
     }
   },
   /**
-   * clicks the passed element and sets the count to 5
-   * @param {object} el (DOM element)
+   * ensure the controller is not paused
+   * @returns {Boolean} true if the controller is not paused
    */
-  clk(el) {
+  get isReady() {
+    return this.controller && this.controller.pauseState === 1;
+  },
+  /**
+   * clicks the passed element and sets the count to 5
+   * @param {Element} el the element to click
+   * @param {Number} [addOnClick] cancel the next n runs if click is successful
+   * @param {Number} [addOnFail] cancel the next n runs if click is unsuccessful
+   */
+  clk(el, { addOnClick = 5, addOnFail = 2 } = {}) {
     try {
       el.click();
-      this.count = 5;
+      this.count = addOnClick;
     } catch (e) {
-      this.count = 2;
+      this.count = addOnFail;
     }
   },
   /**
-   * pass a CSS selector string to locate an element and immediately click it.
-   * a shortcut for this.clk(this.qry("button"))
-   * @param {string} s (CSS selector e.g. ".class")
+   * pass a CSS selector string to locate a react component and invoke its
+   * onPress method. a trick to get around the fact that HBO tries to stop
+   * adblockers and other extensions from invoking Element.click(), etc.
+   * @param {String} s CSS selector e.g. ".class" or "#id"
+   * @param {Number} [addOnClick] cancel the next n runs if click is successful
+   * @param {Number} [addOnFail] cancel the next n runs if click is unsuccessful
    */
-  clkQry(s, p = doc) {
-    this.clk(this.qry(s, p));
-  },
-  /**
-   * pass a CSS selector string to locate a react component and invoke its onPress method.
-   * @param {string} s (CSS selector e.g. ".class")
-   */
-  hboPress(s, p = doc) {
+  hboPress(s, { addOnClick = 5, addOnFail = 2 } = {}) {
     try {
-      this.reactFiber(this.qry(s, p)).return.return.memoizedProps.onPress();
-      this.count = 5;
+      this.reactFiber(this.qry(s)).return.return.memoizedProps.onPress();
+      this.count = addOnClick;
     } catch (e) {
-      this.count = 2;
+      this.count = addOnFail;
     }
   },
   /**
-   * set a bunch of attributes on a node
-   * @param {object} element (a DOM node)
-   * @param {object} attrs (an object containing properties — keys are turned into attributes on the DOM node)
+   * set a bunch of attributes on an element
+   * @param {Element} element the element to set attributes on
+   * @param {Object} attrs an object containing properties — keys are turned
+   *                       into attributes on the element
    */
   maybeSetAttributes(element, attrs) {
     for (const [name, value] of Object.entries(attrs)) {
@@ -304,18 +334,20 @@ const methods = {
     }
   },
   /**
-   * create a DOM node with given parameters
-   * @param {object} aDoc (which doc to create the element in)
-   * @param {string} tag (an HTML tag name, like "button" or "p")
-   * @param {object} props (an object containing attribute name/value pairs, e.g. class: ".bookmark-item")
-   * @returns the created DOM node
+   * create an element with given parameters
+   * @param {Document} aDoc which doc to create the element in
+   * @param {String} tag an HTML tag name, like "button" or "p"
+   * @param {Object} props an object containing attribute name/value pairs, e.g.
+   *                       {class: ".bookmark-item", id: "bookmark-item-1"}
+   * @returns {Element} the created element
    */
   create(aDoc, tag, props) {
     const el = aDoc.createElement(tag);
     this.maybeSetAttributes(el, props);
     return el;
   },
-  // searches for elements that skip stuff. repeated every 300ms. change "rate" in the options if you want to make this more or less frequent.
+  // these are the site-specific callback methods. they search for elements that
+  // skip stuff. when the script is not paused, they are invoked on a timer.
   async amazon() {
     if (this.count === 0) {
       if (this.isVis("dv-web-player")) {
@@ -323,19 +355,20 @@ const methods = {
         if ((store = this.qry(".atvwebplayersdk-nextupcard-button"))) {
           // next episode
           await sleep(400);
-          this.clk(store);
-        } else if ((store = this.qry(".atvwebplayersdk-skipelement-button")))
+          if (this.isReady) this.clk(store);
+        } else if ((store = this.qry(".atvwebplayersdk-skipelement-button"))) {
           // skip various things
           this.clk(store);
-        else if ((store = this.qry(".adSkipButton")))
+        } else if ((store = this.qry(".adSkipButton"))) {
           // skip ad
           this.clk(store);
-        else if ((store = this.qry(".skipElement")))
+        } else if ((store = this.qry(".skipElement"))) {
           //  skip intro
           this.clk(store);
-        else if ((store = this.qry(".fu4rd6c")))
+        } else if ((store = this.qry(".fu4rd6c"))) {
           // skip ad button on some versions of amazon.
           this.clk(store);
+        }
         // else if ((store = this.byTxt("Skip", "div")))
         //     // skip trailers
         //     this.clk(store);
@@ -351,20 +384,20 @@ const methods = {
   async netflix() {
     if (this.count === 0) {
       let store;
-      if (this.qryAll(".skip-credits").length && this.qryAll(".skip-credits-hidden").length === 0) {
-        await sleep(200);
+      if (this.qry(".skip-credits") && !this.qry(".skip-credits-hidden")) {
         try {
-          this.qry(".skip-credits").firstElementChild.click();
-          this.count = 80;
+          await sleep(200);
+          if (this.isReady) {
+            this.qry(".skip-credits").firstElementChild.click();
+            this.count = 80;
+          }
+          await sleep(100);
+          if (this.isReady) {
+            this.qry(".button-nfplayerPlay").click();
+            this.count = 80;
+          }
         } catch (e) {
-          return (this.count -= 1);
-        }
-        await sleep(100);
-        try {
-          this.qry(".button-nfplayerPlay").click();
-          this.count = 80;
-        } catch (e) {
-          return (this.count -= 1);
+          this.count = 0;
         }
       } else if ((store = this.qry(this.nDrain)) || (store = this.qry(this.nReady))) {
         // next episode button
@@ -374,37 +407,38 @@ const methods = {
       } else if (options.promoted && (store = this.qry(".PromotedVideo-actions"))) {
         // promoted video autoplay
         await sleep(700);
-        this.clk(store.firstElementChild);
-      } else if ((store = this.qry(".watch-video--skip-content-button")))
+        if (this.isReady) this.clk(store.firstElementChild);
+      } else if ((store = this.qry(".watch-video--skip-content-button"))) {
         // skip intro, recap, etc. (new netflix UI)
         this.clk(store);
-      else if ((store = this.qry(".watch-video--skip-preplay-button")))
+      } else if ((store = this.qry(".watch-video--skip-preplay-button"))) {
         // not sure what this does but I found this while trying to reverse engineer the source code. please inform me if you know
         this.clk(store);
-      else if ((store = this.qry(".postplay-still-container")))
+      } else if ((store = this.qry(".postplay-still-container"))) {
         // autoplay (old netflix UI)
         this.clk(store);
-      else if ((store = this.qry(".WatchNext-still-container")))
+      } else if ((store = this.qry(".WatchNext-still-container"))) {
         // autoplay (old netflix UI)
         this.clk(store);
+      }
     } else this.count -= 1;
-    return this.count;
   },
   async disneyplus() {
     if (this.count === 0) {
       if (test("disneyplus.com/video/")) {
         let store;
-        if ((store = this.qry(".skip__button")))
+        if ((store = this.qry(".skip__button"))) {
           // skip intro, skip recap, skip credits, etc.
           this.clk(store);
-        else if ((store = this.qry(`button[data-gv2elementkey="playNext"]`))) {
+        } else if ((store = this.qry(`button[data-gv2elementkey="playNext"]`))) {
           let skip = false;
           const react = this.reactInstance(this.qry(`[data-gv2containerkey="playerUpNext"]`));
           if (react && "return" in react) {
             const props = react.return.memoizedProps;
             // if we're in a TV series, skip regardless of options.promoted
-            if (props.asset && props.asset.programType)
+            if (props.asset && props.asset.programType) {
               skip = props.asset.programType === "episode";
+            }
           }
           // if options.promoted is enabled, we can autoplay disneyplus' recommendations
           // after a film or the last episode in a series.
@@ -418,26 +452,31 @@ const methods = {
     if (this.count === 0) {
       if (test("hulu.com/watch/")) {
         const controls = this.qry(".ControlsContainer");
-        if (!controls) return (this.count = 100); // this means the whole video interface is gone for some reason
+        if (!controls) {
+          // this means the whole video interface is gone for some reason
+          this.count = 20;
+          return;
+        }
         const controlReact = this.reactInstance(controls);
-        if (!controlReact) return this.count; // this shouldn't happen unless the page has been broken by addons or something
+        if (!controlReact) return; // this shouldn't happen unless the page has been broken by addons or something
         const controlProps = controlReact.return.memoizedProps;
-        if (!controlProps) return this.count; // this shouldn't happen either
-        if (controlProps.isSkipButtonShown)
+        if (!controlProps) return; // this shouldn't happen either
+        if (controlProps.isSkipButtonShown) {
           // skip intro, skip recap, skip ad, etc.
-          this.clkQry(".SkipButton button");
-        else if (controlProps.isEndCardVisible) {
+          this.clk(this.qry(".SkipButton button"));
+        } else if (controlProps.isEndCardVisible) {
           // next episode
-          if (controlProps.endCardType === "credit" || options.promoted)
-            this.clkQry(".EndCardButton--active");
+          if (controlProps.endCardType === "credit" || options.promoted) {
+            this.clk(this.qry(".EndCardButton--active"));
+          }
         } else if (controlProps.isOverlayVisible) {
           // next episode
-          if (controlProps.endCardType === "legacy" && options.promoted)
-            this.clkQry(".end-card__metadata-area-play-button");
+          if (controlProps.endCardType === "legacy" && options.promoted) {
+            this.clk(this.qry(".end-card__metadata-area-play-button"));
+          }
         }
       }
     } else this.count -= 1;
-    return this.count;
   },
   async hbomax() {
     if (this.count === 0) {
@@ -457,7 +496,7 @@ const methods = {
               this.reactFiber(interactionHandler).return.return.memoizedProps.onMouseMove();
               await sleep(400);
             } finally {
-              this.hboPress(`[data-testid="UpNextButton"]`);
+              if (this.isReady) this.hboPress(`[data-testid="UpNextButton"]`);
             }
           }
         } catch (e) {
@@ -465,21 +504,23 @@ const methods = {
         }
       }
     } else this.count -= 1;
-    return this.count;
   },
 };
 
-// creates an interval for a given callback manager (the methods object)
-// and the various methods for interacting with the interval (pause, resume, etc.)
-// and the popup that shows when the interval has been paused or resumed.
-class Controller {
+// creates an interval for a given callback manager (the methods object) and the
+// various methods for interacting with the interval (pause, resume, etc.) and
+// the popup that shows when the interval has been paused or resumed.
+class MarathonController {
   /**
    * pausable interval utility
-   * @param {object} handler (object containing the site methods)
-   * @param {int} int (how often to repeat the callback)
+   * @param {Object} handler object containing the site methods
+   * @param {Number} int how often to repeat the callback
+   * @return {Object} the controller object
    */
   constructor(handler, int) {
     this.callback = handler[site].bind(handler); // e.g. methods.amazon.bind(methods)
+    handler.controller = this; // for reference in the methods object
+    this.handler = handler; // e.g. methods
     this.int = int; // can be changed in real-time and the next resume() call will use the new value
     this.popup = doc.createElement("div");
     this.text = doc.createTextNode("Marathon: Paused");
@@ -489,21 +530,23 @@ class Controller {
     this.toggle = this.toggler.bind(this);
     this.register("Pause Marathon", true); // initial creation of the menu command
     // if popup is enabled in options, style it
-    if (options.pop) {
-      this.setupPopup();
-      this.updatePopup();
-    }
+    if (options.pop) this.updatePopup();
     this.time = new Date();
-    this.timer = win.setInterval(this.callback, this.int);
+    this.timer = win.setTimeout(() => this.onInterval(), this.int);
     this.pauseState = 1;
     if (options.hotkey || options.hotkey2) this.startCapturing();
-    if (!options[site]) this.pause(); // if the site is disabled then stop the interval. we pause it instead of not starting it in the first place so that the user can re-enable the site and have the interval immediately start working without needing to refresh the page.
+    // if the site is disabled then stop the interval. we pause it instead of
+    // not starting it in the first place so that the user can re-enable the
+    // site and have the interval immediately start working without needing to
+    // refresh the page.
+    if (!options[site]) this.pause();
   }
 
   /**
    * check that the modifier keys pressed match those defined in user settings
-   * @param {object} e (event)
-   * @param {string} d (which key settings to evaluate, ctrlKey or ctrlKey1)
+   * @param {KeyboardEvent} e
+   * @param {String} d which key settings to evaluate, ctrlKey or ctrlKey1
+   * @return {Boolean} true if the keys match, false otherwise
    */
   static modTest(e, d = "") {
     return (
@@ -515,8 +558,8 @@ class Controller {
   }
 
   /**
-   * Controller's event handler. only handles keydown currently but may expand in the future.
-   * @param {object} e (event)
+   * Controller's event handler. only handles keydown currently.
+   * @param {UIEvent} e
    */
   handleEvent(e) {
     switch (e.type) {
@@ -529,20 +572,20 @@ class Controller {
 
   /**
    * implementation for hotkeys and "escape to close"
-   * @param {object} e (KeyboardEvent)
+   * @param {KeyboardEvent} e
    */
   onKeyDown(e) {
     if (e.repeat) return;
     const { code, code2, hotkey, hotkey2 } = options;
     switch (e.code) {
       case code:
-        if (hotkey && Controller.modTest(e)) this.toggle();
+        if (hotkey && MarathonController.modTest(e)) this.toggle();
         else return;
         break;
       case code2:
-        if (hotkey2 && Controller.modTest(e, 2))
+        if (hotkey2 && MarathonController.modTest(e, 2)) {
           GM_config.isOpen ? GM_config.close() : GM_config.open();
-        else return;
+        } else return;
         break;
       case "Escape":
         if (this.onEscape(e)) break;
@@ -557,8 +600,9 @@ class Controller {
 
   /**
    * on pressing the Escape key, close any open popups
-   * @param {object} e (KeyboardEvent)
-   * @returns true if the config menu was open and we closed it. this determines whether the event will propagate any further or be consumed by the menu.
+   * @param {KeyboardEvent} e
+   * @returns true if the config menu was open and we closed it. this determines
+   *          whether the event will bubble any further up the document.
    */
   onEscape(e) {
     let consumed = false;
@@ -578,39 +622,49 @@ class Controller {
     return consumed;
   }
 
+  // invoke the site handler, wait for it to complete, then restart the timer.
+  async onInterval() {
+    try {
+      if (this.pauseState === 1) await this.callback();
+    } finally {
+      this.timer = win.setTimeout(() => this.onInterval(), this.int);
+    }
+  }
+
   /**
    * pause the interval
-   * @param {string} pop (string or null — identifies the caller so we can determine the popup message)
+   * @param {String} msg string or null — determines the popup text
    */
-  pause(pop) {
+  pause(msg) {
     if (this.pauseState !== 1) return;
     this.remainder = this.int - (new Date() - this.time);
-    win.clearInterval(this.timer);
+    win.clearTimeout(this.timer);
     this.pauseState = 2;
     this.register("Resume Marathon"); // update the menu command label
-    this.openPopup(pop);
+    this.openPopup(msg);
   }
 
   /**
    * resume the interval
-   * @param {string} pop (same as pause())
+   * @param {String} msg string or null — determines the popup text
    */
-  async resume(pop) {
+  async resume(msg) {
     if (this.pauseState !== 2) return;
     this.pauseState = 3;
     this.register("Pause Marathon");
-    this.openPopup(pop);
+    this.openPopup(msg);
     await sleep(this.remainder);
     this.run();
   }
 
-  // when we pause, there's usually still time left on the interval. resume() calls this after waiting for the remaining duration. so this is what actually resumes the interval.
+  // when we pause, there's usually still time left on the interval. resume()
+  // calls this after waiting for the remaining duration. so this is what
+  // actually resumes the interval.
   run() {
     if (this.pauseState !== 3) return;
-    this.callback();
     this.time = new Date();
-    this.timer = win.setInterval(this.callback, this.int);
     this.pauseState = 1;
+    this.onInterval();
   }
 
   // toggle the interval on/off.
@@ -629,7 +683,7 @@ class Controller {
 
   /**
    * opens the popup and schedules it to close
-   * @param {string} msg (what the popup should say)
+   * @param {String} msg what the popup should say
    */
   openPopup(msg) {
     // if popup is disabled in options, or no message was sent, do nothing
@@ -648,6 +702,7 @@ class Controller {
 
   // apply the basic popup style and place it in the body
   setupPopup() {
+    if (this.isPopupSetup) return;
     doc.body.insertBefore(this.popup, doc.body.firstElementChild);
     this.popup.appendChild(this.text);
     this.popup.style.cssText = `
@@ -672,10 +727,12 @@ class Controller {
             transition: opacity 0.2s ease-in-out;
             opacity: 0;
             `;
+    this.isPopupSetup = true;
   }
 
   // update the mutable popup attributes
   updatePopup() {
+    this.setupPopup();
     const { style } = this.popup;
     style.fontFamily = options.font;
     style.fontSize = `${options.fontSizeInt}px`;
@@ -684,9 +741,12 @@ class Controller {
   }
 
   /**
-   * register or change the label of the menu command
-   * @param {string} cap (intended caption to display on the menu command)
-   * @param {bool} firstRun (we call this function at startup and every time we pause/unpause. we don't need to register a menu command if this is the startup call, since none exists yet)
+   * register a menu command with the script manager, or update an existing one
+   * @param {String} cap intended caption to display on the menu command
+   * @param {Boolean} firstRun we call this function at startup and every time
+   *                           we pause/unpause. on the first call, we register
+   *                           a command. on subsequent calls, we unregister the
+   *                           previous command and register a new one.
    */
   register(cap, firstRun = false) {
     if (GM4) return; // don't register a menu command if the script manager is greasemonkey 4.0+ since the function doesn't exist
@@ -706,17 +766,6 @@ class Controller {
   // stop listening to key events
   stopCapturing() {
     win.removeEventListener("keydown", this, true);
-  }
-}
-
-// if using greasemonkey 4, remap the GM_* functions to GM.*
-async function checkGM() {
-  if (GM4) {
-    GM_getValue = GM.getValue;
-    GM_setValue = GM.setValue;
-    GM_listValues = GM.listValues;
-    GM_deleteValue = GM.deleteValue;
-    GM_openInTab = GM.openInTab;
   }
 }
 
@@ -780,8 +829,9 @@ function extendGMC() {
     return forgotten;
   };
   /**
-   * remove all the stylesheets generated by GM_config. without this, GM_config keeps adding a new one every time you open it. we could resolve this oversight by overriding GM_config's open() method, but that's a lot of text to duplicate and this isn't expensive. also, deleting superfluous stuff is more satisfying than doing the proper thing and never creating it in the first place.
-   * @param {string} sel (CSS selector; check each stylesheet for this string)
+   * remove all the stylesheets generated by GM_config. without this, GM_config
+   * would keep adding a new sheet every time you open it.
+   * @param {String} sel CSS selector; check each stylesheet for this string
    */
   GM_config.clearSheets = sel => {
     for (const i of [...methods.byTag("style", doc.head)]) {
@@ -790,25 +840,35 @@ function extendGMC() {
           i instanceof HTMLStyleElement &&
           i.sheet.cssRules[0].selectorText &&
           i.sheet.cssRules[0].selectorText.includes(sel)
-        )
+        ) {
           i.remove();
-        // Amazon CSP blocks cross-origin use of method sheet.cssRules so the loop will interrupt on some unrelated stylesheet.
-        // I'd use the optional chaining operator here but it's not enabled by default in chrome. So trycatch statement instead.
-        // eslint-disable-next-line no-empty
-      } catch (e) {}
+        }
+        // Amazon CSP blocks cross-origin use of method sheet.cssRules so the
+        // loop will interrupt on some unrelated stylesheet. I'd use the
+        // optional chaining operator here but it's not enabled by default in
+        // chrome. So trycatch statement instead.
+      } catch (e) {
+        // do nothing
+      }
     }
   };
   /**
-   * remove all the link elements generated by webfontloader.js. the loader has no logic to amend its existing stylesheets and will just keep adding more for every time you call it. since we call it every time the user changes the font settings, it makes sense to delete the previous ones before calling the load method.
-   * @param {string} uri (url or part of url; check each link element's href attribute for this string)
+   * remove all the link elements generated by webfontloader.js. the loader has
+   * no logic to amend its existing stylesheets and will just keep adding more
+   * every time you call it.
+   * @param {String} uri url or part of url; check each link element's href
+   *                     attribute for this string
    */
   GM_config.clearLinks = uri => {
-    for (const i of [...methods.byTag("link", doc.head)])
+    for (const i of [...methods.byTag("link", doc.head)]) {
       if (i instanceof HTMLLinkElement && i.href.includes(uri)) i.remove();
+    }
   };
   /**
-   * return true if any of the fields passed have values that deviate from their default values. we use this to avoid performing operations that are unnecessary when aspects of the user's config are unchanged.
-   * @param {object} fields (an object whose properties are GM_config fields)
+   * return true if any of the fields passed have values that deviate from their
+   * default values. we use this to avoid performing operations that are
+   * unnecessary when aspects of the user's config are unchanged.
+   * @param {Object} fields an object whose properties are GM_config fields
    */
   GM_config.checkNotDefault = fields =>
     !Object.values(fields).every(field => field.value === field.default);
@@ -822,11 +882,8 @@ function extendGMC() {
   };
 }
 
-/**
- * set up the GM_config settings GUI
- */
+// set up the GM_config settings GUI
 async function initGMC() {
-  await checkGM();
   const frame = doc.createElement("div");
   const sitesFieldLabel = methods.create(doc, "div", {
     class: "field_label",
@@ -1468,8 +1525,16 @@ async function settings() {
 }
 
 async function start() {
+  // if using greasemonkey 4, remap the GM_* functions to GM.*
+  if (GM4) {
+    GM_getValue = GM.getValue;
+    GM_setValue = GM.setValue;
+    GM_listValues = GM.listValues;
+    GM_deleteValue = GM.deleteValue;
+    GM_openInTab = GM.openInTab;
+  }
   await initGMC(); // wait for GM_config
-  marathon = new Controller(methods, options.rate); // create the interval controller, event listeners, etc.
+  marathon = new MarathonController(methods, options.rate); // create the interval controller, event listeners, etc.
   attachWebFont(); // load the font sheet
 }
 
