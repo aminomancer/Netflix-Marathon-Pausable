@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name               Netflix Marathon (Pausable)
 // @name:en            Netflix Marathon (Pausable)
-// @name:zh-CN         网飞马拉松赛（可暫停）
-// @name:zh-TW         网飞马拉松赛（可暫停）
+// @name:zh-CN         Netflix 马拉松（可暂停）
+// @name:zh-TW         Netflix 馬拉松（可暫停）
 // @name:ja            Netflix Marathon（一時停止できます）
 // @name:ko            Netflix 마라톤(일시 중지 가능)
 // @name:ar            ماراثون Netflix (يمكن إيقافه مؤقتًا)
@@ -10,17 +10,17 @@
 // @name:ru            Netflix Marathon (пауза)
 // @name:hi            नेटफ्लिक्स मैराथन (रोकने योग्य)
 // @namespace          https://github.com/aminomancer
-// @version            5.4.3
-// @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
-// @description:en     A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
-// @description:zh-CN  一个可配置的脚本，可自动跳过 Netflix、Amazon Prime Video、Hulu、HBO Max 和 Disney+ 上的重述、介绍、字幕和广告，并单击“下一集”提示。 可自定义的热键来暂停/恢复自动跳过功能。 Alt + N 用于设置。
-// @description:zh-TW  一个可配置的脚本，可自动跳过 Netflix、Amazon Prime Video、Hulu、HBO Max 和 Disney+ 上的重述、介绍、字幕和广告，并单击“下一集”提示。 可自定义的热键来暂停/恢复自动跳过功能。 Alt + N 用于设置。
-// @description:ja     要約、イントロ、クレジット、広告を自動的にスキップし、Netflix、Amazon Prime Video、Hulu、HBO Max、Disney +の「次のエピソード」のプロンプトをクリックする構成可能なスクリプト。 自動スキップ機能を一時停止/再開するためのカスタマイズ可能なホットキー。 Alt + Nで設定します。
-// @description:ko     요약, 소개, 크레딧 및 광고를 자동으로 건너뛰고 Netflix, Amazon Prime Video, Hulu, HBO Max 및 Disney+에서 "다음 에피소드" 프롬프트를 클릭하는 구성 가능한 스크립트입니다. 자동 건너뛰기 기능을 일시 중지/재개하는 사용자 지정 가능한 단축키입니다. Alt + N은 설정입니다.
-// @description:ar     برنامج نصي قابل للتكوين يتخطى الملخصات والمقدمات والاعتمادات والإعلانات تلقائيًا وينقر على "الحلقة التالية" على Netflix و Amazon Prime Video و Hulu و HBO Max و Disney +. مفتاح التشغيل السريع القابل للتخصيص لإيقاف / استئناف وظيفة التخطي التلقائي. Alt + N للإعدادات.
-// @description:de     Ein konfigurierbares Skript, das automatisch Zusammenfassungen, Vorspänne, Abspänne und Werbung überspringt und bei Netflix, Amazon Prime Video, Hulu, HBO Max und Disney+ auf die Aufforderung "nächste Episode" klickt. Anpassbarer Hotkey zum Anhalten/Fortsetzen der Auto-Skipping-Funktion. Alt + N für Einstellungen.
-// @description:ru     Настраиваемый сценарий, который автоматически пропускает резюме, вступление, титры и рекламу, а также нажимает подсказки «следующий выпуск» на Netflix, Amazon Prime Video, Hulu, HBO Max и Disney +. Настраиваемая горячая клавиша для приостановки / возобновления функции автоматического пропуска. Alt + N для настроек.
-// @description:hi     एक विन्यास योग्य स्क्रिप्ट जो स्वचालित रूप से पुनर्कथन, परिचय, क्रेडिट और विज्ञापनों को छोड़ देती है, और नेटफ्लिक्स, अमेज़ॅन प्राइम वीडियो, हुलु, एचबीओ मैक्स और डिज़नी + पर "अगला एपिसोड" पर क्लिक करती है। ऑटो-स्किपिंग कार्यक्षमता को रोकने/फिर से शुरू करने के लिए अनुकूलन योग्य हॉटकी। सेटिंग्स के लिए Alt + N।
+// @version            5.4.4
+// @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
+// @description:en     A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
+// @description:zh-CN  一个可配置的脚本，可自动跳过重述、介绍、演职员表和广告，并点击 Netflix、Amazon Prime Video、Hulu、HBO Max、Starz 和 Disney+ 上的“下一集”提示。 可自定义的热键暂停/恢复自动跳过功能。 Alt + N 进行设置。
+// @description:zh-TW  一個可配置的腳本，可自動跳過重述、介紹、演職員表和廣告，並點擊 Netflix、Amazon Prime Video、Hulu、HBO Max、Starz 和 Disney+ 上的“下一集”提示。 可自定義的熱鍵暫停/恢復自動跳過功能。 Alt + N 進行設置。
+// @description:ja     要約、イントロ、クレジット、広告を自動的にスキップし、Netflix、Amazon Prime Video、Hulu、HBO Max、Starz、Disney +の「次のエピソード」のプロンプトをクリックする構成可能なスクリプト。 自動スキップ機能を一時停止/再開するためのカスタマイズ可能なホットキー。 Alt + Nで設定します。
+// @description:ko     요약, 소개, 크레딧 및 광고를 자동으로 건너뛰고 Netflix, Amazon Prime Video, Hulu, HBO Max, Starz 및 Disney+에서 "다음 에피소드" 프롬프트를 클릭하는 구성 가능한 스크립트입니다. 자동 건너뛰기 기능을 일시 중지/재개하는 사용자 지정 가능한 단축키입니다. Alt + N은 설정입니다.
+// @description:ar     برنامج نصي قابل للتكوين يتخطى الملخصات والمقدمات والاعتمادات والإعلانات تلقائيًا وينقر على "الحلقة التالية" على Netflix و Amazon Prime Video و Hulu و HBO Max و Starz و Disney +. مفتاح التشغيل السريع القابل للتخصيص لإيقاف / استئناف وظيفة التخطي التلقائي. Alt + N للإعدادات.
+// @description:de     Ein konfigurierbares Skript, das automatisch Zusammenfassungen, Vorspänne, Abspänne und Werbung überspringt und bei Netflix, Amazon Prime Video, Hulu, HBO Max, Starz und Disney+ auf die Aufforderung "nächste Episode" klickt. Anpassbarer Hotkey zum Anhalten/Fortsetzen der Auto-Skipping-Funktion. Alt + N für Einstellungen.
+// @description:ru     Настраиваемый сценарий, который автоматически пропускает резюме, вступление, титры и рекламу, а также нажимает подсказки «следующий выпуск» на Netflix, Amazon Prime Video, Hulu, HBO Max, Starz и Disney +. Настраиваемая горячая клавиша для приостановки / возобновления функции автоматического пропуска. Alt + N для настроек.
+// @description:hi     एक विन्यास योग्य स्क्रिप्ट जो स्वचालित रूप से रिकैप, इंट्रो, क्रेडिट और विज्ञापनों को छोड़ देती है, और नेटफ्लिक्स, अमेज़ॅन प्राइम वीडियो, हुलु, एचबीओ मैक्स, स्टारज़ और डिज़नी + पर "अगला एपिसोड" पर क्लिक करती है। ऑटो-स्किपिंग कार्यक्षमता को रोकने/फिर से शुरू करने के लिए अनुकूलन योग्य हॉटकी। ऑल्ट + एन सेटिंग्स के लिए।
 // @author             aminomancer
 // @homepageURL        https://github.com/aminomancer/Netflix-Marathon-Pausable
 // @supportURL         https://github.com/aminomancer/Netflix-Marathon-Pausable
@@ -52,6 +52,7 @@
 // @match              http*://play.hbomax.com/*
 // @match              http*://*.netflix.com/*
 // @match              http*://*.primevideo.com/*
+// @match              http*://*.starz.com/*
 // @require            https://greasyfork.org/scripts/420683-gm-config-sizzle/code/GM_config_sizzle.js?version=894369
 // @grant              GM_registerMenuCommand
 // @grant              GM_unregisterMenuCommand
@@ -108,6 +109,7 @@ const getHost = () => {
         case "hulu":
         case "hbomax":
         case "netflix":
+        case "starz":
           return true;
         default:
           return false;
@@ -204,7 +206,7 @@ const l10n = {
 };
 const methods = {
   // contains the site-specific callbacks and various utility functions
-  sites: ["amazon", "disneyplus", "hulu", "hbomax", "netflix"],
+  sites: ["amazon", "disneyplus", "hulu", "hbomax", "netflix", "starz"],
   count: 0,
   results: null,
   nDrain: "[data-uia='next-episode-seamless-button-draining']",
@@ -501,6 +503,18 @@ const methods = {
           }
         } catch (e) {
           this.count = 10;
+        }
+      }
+    } else this.count -= 1;
+  },
+  async starz() {
+    if (this.count === 0) {
+      if (test("/play/")) {
+        let store = this.byTag("starz-player")[0];
+        if (!store) return;
+        if ((store = this.qry(".auto-roll-component.open .next-feature-image"))) {
+          // next episode - this is the only one I know of
+          this.clk(store);
         }
       }
     } else this.count -= 1;
@@ -939,6 +953,12 @@ async function initGMC() {
         title: "Uncheck if you don't use HBO Max",
         default: true,
       },
+      starz: {
+        type: "checkbox",
+        label: "Starz",
+        title: "Uncheck if you don't use Starz",
+        default: true,
+      },
       rate: {
         label: "Interval Rate",
         title: "Time (in milliseconds) between checks for skip buttons",
@@ -1224,6 +1244,7 @@ async function initGMC() {
             options.disneyplus !== f.disneyplus.value ||
             options.hulu !== f.hulu.value ||
             options.hbomax !== f.hbomax.value ||
+            options.starz !== f.starz.value ||
             options.promoted !== f.promoted.value
           ) {
             // if the memoized setting for the current site doesn't match the new setting for that site...
@@ -1293,12 +1314,12 @@ async function initGMC() {
             blurTo = methods.qry(".addFocus");
             break;
           case "hbomax":
-            blurTo = doc.body;
+          case "starz":
             break;
           default:
             return;
         }
-        blurTo = blurTo || doc.documentElement;
+        blurTo = blurTo || doc.body;
         blurTo.focus();
       },
     },
@@ -1340,6 +1361,7 @@ async function initGMC() {
 #Marathon * {
   font-family: Source Sans Pro;
   font-weight: 300;
+  text-transform: revert;
 }
 #Marathon_wrapper {
   display: flex;
@@ -1409,6 +1431,9 @@ async function initGMC() {
   border-radius: revert;
   outline: revert;
   transition: revert;
+  height: revert;
+  width: revert;
+  padding: revert;
 }
 #Marathon button {
   text-align: center;
