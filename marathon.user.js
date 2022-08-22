@@ -10,7 +10,7 @@
 // @name:ru            Netflix Marathon (пауза)
 // @name:hi            नेटफ्लिक्स मैराथन (रोकने योग्य)
 // @namespace          https://github.com/aminomancer
-// @version            5.4.4
+// @version            5.4.5
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:en     A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，可自动跳过重述、介绍、演职员表和广告，并点击 Netflix、Amazon Prime Video、Hulu、HBO Max、Starz 和 Disney+ 上的“下一集”提示。 可自定义的热键暂停/恢复自动跳过功能。 Alt + N 进行设置。
@@ -548,7 +548,7 @@ class MarathonController {
     this.time = new Date();
     this.timer = win.setTimeout(() => this.onInterval(), this.int);
     this.pauseState = 1;
-    if (options.hotkey || options.hotkey2) this.startCapturing();
+    this.startCapturing();
     // if the site is disabled then stop the interval. we pause it instead of
     // not starting it in the first place so that the user can re-enable the
     // site and have the interval immediately start working without needing to
@@ -585,7 +585,7 @@ class MarathonController {
   }
 
   /**
-   * implementation for hotkeys and "escape to close"
+   * implementation for hotkeys
    * @param {KeyboardEvent} e
    */
   onKeyDown(e) {
@@ -601,39 +601,12 @@ class MarathonController {
           GM_config.isOpen ? GM_config.close() : GM_config.open();
         } else return;
         break;
-      case "Escape":
-        if (this.onEscape(e)) break;
-        else return;
       default:
         return;
     }
-    e.stopImmediatePropagation();
     e.preventDefault();
     e.stopPropagation();
-  }
-
-  /**
-   * on pressing the Escape key, close any open popups
-   * @param {KeyboardEvent} e
-   * @returns true if the config menu was open and we closed it. this determines
-   *          whether the event will bubble any further up the document.
-   */
-  onEscape(e) {
-    let consumed = false;
-    if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return consumed;
-    // hide the settings menu
-    if (GM_config.isOpen) {
-      GM_config.close();
-      consumed = true;
-    }
-    // hide the pause/resume popup
-    if (options.pop) {
-      const { style } = this.popup;
-      win.clearTimeout(this.fading);
-      style.transitionDuration = "0.5s";
-      style.opacity = "0";
-    }
-    return consumed;
+    e.stopImmediatePropagation();
   }
 
   // invoke the site handler, wait for it to complete, then restart the timer.
@@ -719,28 +692,7 @@ class MarathonController {
     if (this.isPopupSetup) return;
     doc.body.insertBefore(this.popup, doc.body.firstElementChild);
     this.popup.appendChild(this.text);
-    this.popup.style.cssText = `
-            position: fixed;
-            top: 50%;
-            right: 3%;
-            transform: translateY(-50%);
-            z-index: 2147483646;
-            background-color: hsla(0, 0%, 6%, 0.8);
-            background-image: url("https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/texture/noise-512x512.png");
-            background-repeat: repeat;
-            background-size: auto;
-            background-attachment: local;
-            -webkit-backdrop-filter: blur(7px);
-            backdrop-filter: blur(7px);
-            color: hsla(0, 0%, 97%, 0.95);
-            padding: 17px 19px;
-            line-height: 1em;
-            border-radius: 5px;
-            pointer-events: none;
-            letter-spacing: 1px;
-            transition: opacity 0.2s ease-in-out;
-            opacity: 0;
-            `;
+    this.popup.style.cssText = `position:fixed;top:50%;right:3%;transform:translateY(-50%);z-index:2147483646;background-color:hsla(0,0%,6%,.8);background-image:url("https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/texture/noise-512x512.png");background-repeat:repeat;background-size:auto;background-attachment:local;-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);color:hsla(0,0%,97%,.95);padding:17px 19px;line-height:1em;border-radius:5px;pointer-events:none;letter-spacing:1px;transition:opacity .2s ease-in-out;opacity:0;`;
     this.isPopupSetup = true;
   }
 
@@ -774,12 +726,18 @@ class MarathonController {
 
   // start listening to key events
   startCapturing() {
-    win.addEventListener("keydown", this, true);
+    if (!this.capturing && (options.hotkey || options.hotkey2)) {
+      win.addEventListener("keydown", this, true);
+      this.capturing = true;
+    }
   }
 
   // stop listening to key events
   stopCapturing() {
-    win.removeEventListener("keydown", this, true);
+    if (this.capturing) {
+      win.removeEventListener("keydown", this, true);
+      this.capturing = false;
+    }
   }
 }
 
@@ -894,6 +852,8 @@ function extendGMC() {
       }`;
     }
   };
+  // prettier-ignore
+  GM_config.specialKeys = ["Unidentified","Alt","AltGraph","CapsLock","Control","Fn","FnLock","Hyper","Meta","NumLock","ScrollLock","Shift","Super","Symbol","SymbolLock","AllCandidates","Alphanumeric","CodeInput","Compose","Convert","Dead","FinalMode","GroupFirst","GroupLast","GroupNext","GroupPrevious","ModeChange","NextCandidate","NonConvert","PreviousCandidate","Process","SingleCandidate","HangulMode","HanjaMode","JunjaMode","Eisu","Hankaku","Hiragana","HiraganaKatakana","KanaMode","KanjiMode","Katakana","Romaji","Zenkaku","ZenkakuHankaku"];
 }
 
 // set up the GM_config settings GUI
@@ -917,6 +877,29 @@ async function initGMC() {
   );
   GM_config.error = false; // this switch tells us if the user input an invalid value for a setting so we won't close the GUI when they try to save.
   extendGMC();
+  window.addEventListener(
+    "keydown",
+    e => {
+      switch (e.code) {
+        case "Escape":
+          if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return;
+          break;
+        case options.code2:
+          if (!options.hotkey2 || !MarathonController.modTest(e, 2)) return;
+          break;
+        default:
+          return;
+      }
+      // hide the settings menu
+      if (GM_config.isOpen && !GM_config.capturing) {
+        GM_config.close();
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+      }
+    },
+    true
+  );
   // initialize the GUI
   GM_config.init({
     id: "Marathon",
@@ -980,12 +963,70 @@ async function initGMC() {
         title: "Which keyboard key to use (click Support for a list of key codes)",
         type: "text",
         section: "Pause/Resume Hotkey",
-        size: 6,
+        size: 4,
         default: "F7",
+      },
+      capture: {
+        label: "Record keys",
+        title: "Press desired key combination and press Enter",
+        type: "button",
+        size: 1,
+        click: () => {
+          const { code, capture, ctrlKey, altKey, shiftKey, metaKey } = GM_config.fields;
+          if (GM_config.capturing || capture.node.disabled) return;
+          code.settings.initialValue = code.node.value;
+          ctrlKey.settings.initialChecked = ctrlKey.node.checked;
+          altKey.settings.initialChecked = altKey.node.checked;
+          shiftKey.settings.initialChecked = shiftKey.node.checked;
+          metaKey.settings.initialChecked = metaKey.node.checked;
+          GM_config.capturing = true;
+          capture.node.disabled = true;
+          GM_config.frame.setAttribute("capturing", "true");
+          code.node.focus();
+          code.node.addEventListener("keydown", capture.settings.keydown);
+          window.addEventListener("keydown", capture.settings.keydown, true);
+          marathon.openPopup("Press desired hotkey then Enter (Esc to cancel)");
+        },
+        keydown: e => {
+          const { code, capture, ctrlKey, altKey, shiftKey, metaKey } = GM_config.fields;
+          if (GM_config.specialKeys.includes(e.key)) return;
+          switch (e.key) {
+            case "Enter":
+              break;
+            case "Escape":
+              code.node.value = code.settings.initialValue;
+              ctrlKey.node.checked = ctrlKey.settings.initialChecked;
+              altKey.node.checked = altKey.settings.initialChecked;
+              shiftKey.node.checked = shiftKey.settings.initialChecked;
+              metaKey.node.checked = metaKey.settings.initialChecked;
+              break;
+            default:
+              e.preventDefault();
+              e.stopPropagation();
+              e.stopImmediatePropagation();
+              if (e.repeat) return;
+              code.node.value = e.code;
+              ctrlKey.node.checked = e.ctrlKey;
+              altKey.node.checked = e.altKey;
+              shiftKey.node.checked = e.shiftKey;
+              metaKey.node.checked = e.metaKey;
+              return;
+          }
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          if (e.repeat) return;
+          GM_config.capturing = false;
+          capture.node.disabled = false;
+          GM_config.frame.removeAttribute("capturing");
+          code.node.focus();
+          code.node.removeEventListener("keydown", capture.settings.keydown);
+          window.removeEventListener("keydown", capture.settings.keydown, true);
+        },
       },
       hotkey: {
         type: "checkbox",
-        label: "Enable toggle hotkey",
+        label: "Enable",
         title: "Uncheck to disable the pause/resume shortcut",
         default: true,
       },
@@ -1018,12 +1059,70 @@ async function initGMC() {
         title: "Which keyboard key to use (click Support for a list of key codes)",
         type: "text",
         section: "Settings Hotkey",
-        size: 6,
+        size: 4,
         default: "KeyN",
+      },
+      capture2: {
+        label: "Record keys",
+        title: "Press desired key combination and press Enter",
+        type: "button",
+        size: 1,
+        click: () => {
+          const { code2, capture2, ctrlKey2, altKey2, shiftKey2, metaKey2 } = GM_config.fields;
+          if (GM_config.capturing || capture2.node.disabled) return;
+          code2.settings.initialValue = code2.node.value;
+          ctrlKey2.settings.initialChecked = ctrlKey2.node.checked;
+          altKey2.settings.initialChecked = altKey2.node.checked;
+          shiftKey2.settings.initialChecked = shiftKey2.node.checked;
+          metaKey2.settings.initialChecked = metaKey2.node.checked;
+          GM_config.capturing = true;
+          capture2.node.disabled = true;
+          GM_config.frame.setAttribute("capturing", "true");
+          code2.node.focus();
+          code2.node.addEventListener("keydown", capture2.settings.keydown);
+          window.addEventListener("keydown", capture2.settings.keydown, true);
+          marathon.openPopup("Press desired hotkey then Enter (Esc to cancel)");
+        },
+        keydown: e => {
+          const { code2, capture2, ctrlKey2, altKey2, shiftKey2, metaKey2 } = GM_config.fields;
+          if (GM_config.specialKeys.includes(e.key)) return;
+          switch (e.key) {
+            case "Enter":
+              break;
+            case "Escape":
+              code2.node.value = code2.settings.initialValue;
+              ctrlKey2.node.checked = ctrlKey2.settings.initialChecked;
+              altKey2.node.checked = altKey2.settings.initialChecked;
+              shiftKey2.node.checked = shiftKey2.settings.initialChecked;
+              metaKey2.node.checked = metaKey2.settings.initialChecked;
+              break;
+            default:
+              e.preventDefault();
+              e.stopPropagation();
+              e.stopImmediatePropagation();
+              if (e.repeat) return;
+              code2.node.value = e.code;
+              ctrlKey2.node.checked = e.ctrlKey;
+              altKey2.node.checked = e.altKey;
+              shiftKey2.node.checked = e.shiftKey;
+              metaKey2.node.checked = e.metaKey;
+              return;
+          }
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          if (e.repeat) return;
+          GM_config.capturing = false;
+          capture2.node.disabled = false;
+          GM_config.frame.removeAttribute("capturing");
+          code2.node.focus();
+          code2.node.removeEventListener("keydown", capture2.settings.keydown);
+          window.removeEventListener("keydown", capture2.settings.keydown, true);
+        },
       },
       hotkey2: {
         type: "checkbox",
-        label: "Enable settings hotkey",
+        label: "Enable",
         title: "Uncheck to disable the keyboard shortcut",
         default: true,
       },
@@ -1170,21 +1269,12 @@ async function initGMC() {
           let hotkeyMsg = false;
           let doResetPopup = false;
           let doReloadWF = false;
-          // close the settings menu upon save (provided none of the inputs is invalid)
-          this.close();
           // handle changes to any hotkey-related settings
           for (const [key, field] of Object.entries(this.hotkeyFields)) {
             const tempKey = field.value;
             // if the memoized setting doesn't match the new value...
             if (options[key] !== tempKey) {
               options[key] = tempKey; // update it
-              if (key === "hotkey" || key === "hotkey2") {
-                // if the enable hotkey setting was changed, either stop or start the keydown listener
-                options.hotkey || options.hotkey2 // if either of these settings is true, we need the event listener
-                  ? marathon.startCapturing()
-                  : marathon.stopCapturing();
-                // if both are false then there's no need to listen to keydown at all
-              }
               hotkeyMsg = true;
             }
           }
@@ -1259,11 +1349,14 @@ async function initGMC() {
             if (message) message = "Settings";
             else message = "Site Settings"; // otherwise make it specific to site settings.
           }
+          // close the settings menu upon save (provided none of the inputs is invalid)
+          this.close();
           if (message) marathon.openPopup(`Updated ${message}`); // finally open a popup with whatever message we gave.
         }
         return (this.error = false);
       },
       open() {
+        marathon.stopCapturing();
         // add a label to the "Run on" checkboxes
         methods.byID("Marathon_section_header_0").after(sitesFieldLabel);
         // put the checkboxes in a container so we can ensure it doesn't wrap
@@ -1321,6 +1414,7 @@ async function initGMC() {
         }
         blurTo = blurTo || doc.body;
         blurTo.focus();
+        marathon.startCapturing();
       },
     },
     frame, // using an in-content element has its problems e.g. we're affected by amazon's god-awful stylesheets, but using an iframe makes animation a lot more clunky and i want the panel to be kinda spry and light
@@ -1362,6 +1456,9 @@ async function initGMC() {
   font-family: Source Sans Pro;
   font-weight: 300;
   text-transform: revert;
+}
+#Marathon[capturing] * {
+  pointer-events: none;
 }
 #Marathon_wrapper {
   display: flex;
