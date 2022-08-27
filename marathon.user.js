@@ -10,9 +10,9 @@
 // @name:ru            Netflix Marathon (пауза)
 // @name:hi            नेटफ्लिक्स मैराथन (रोकने योग्य)
 // @namespace          https://github.com/aminomancer
-// @version            5.4.5
-// @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
-// @description:en     A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
+// @version            5.5.5
+// @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, Disney+, and Hotstar. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
+// @description:en     A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, Disney+, and Hotstar. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，可自动跳过重述、介绍、演职员表和广告，并点击 Netflix、Amazon Prime Video、Hulu、HBO Max、Starz 和 Disney+ 上的“下一集”提示。 可自定义的热键暂停/恢复自动跳过功能。 Alt + N 进行设置。
 // @description:zh-TW  一個可配置的腳本，可自動跳過重述、介紹、演職員表和廣告，並點擊 Netflix、Amazon Prime Video、Hulu、HBO Max、Starz 和 Disney+ 上的“下一集”提示。 可自定義的熱鍵暫停/恢復自動跳過功能。 Alt + N 進行設置。
 // @description:ja     要約、イントロ、クレジット、広告を自動的にスキップし、Netflix、Amazon Prime Video、Hulu、HBO Max、Starz、Disney +の「次のエピソード」のプロンプトをクリックする構成可能なスクリプト。 自動スキップ機能を一時停止/再開するためのカスタマイズ可能なホットキー。 Alt + Nで設定します。
@@ -24,7 +24,6 @@
 // @author             aminomancer
 // @homepageURL        https://github.com/aminomancer/Netflix-Marathon-Pausable
 // @supportURL         https://github.com/aminomancer/Netflix-Marathon-Pausable
-// @downloadURL        https://greasyfork.org/scripts/420475-netflix-marathon-pausable/code/Netflix%20Marathon%20(Pausable).user.js
 // @icon               https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/icon-small.svg
 // @match              http*://*.amazon.ae/*
 // @match              http*://*.amazon.ca/*
@@ -48,6 +47,7 @@
 // @match              http*://*.amazon.sg/*
 // @match              http*://*.amazon.tr/*
 // @match              http*://*.disneyplus.com/*
+// @match              http*://*.hotstar.com/*
 // @match              http*://*.hulu.com/*
 // @match              http*://play.hbomax.com/*
 // @match              http*://*.netflix.com/*
@@ -106,6 +106,7 @@ const getHost = () => {
         case "amazon":
         case "primevideo":
         case "disneyplus":
+        case "hotstar":
         case "hulu":
         case "hbomax":
         case "netflix":
@@ -206,7 +207,7 @@ const l10n = {
 };
 const methods = {
   // contains the site-specific callbacks and various utility functions
-  sites: ["amazon", "disneyplus", "hulu", "hbomax", "netflix", "starz"],
+  sites: ["amazon", "disneyplus", "hotstar", "hulu", "hbomax", "netflix", "starz"],
   count: 0,
   results: null,
   nDrain: "[data-uia='next-episode-seamless-button-draining']",
@@ -432,7 +433,8 @@ const methods = {
         if ((store = this.qry(".skip__button"))) {
           // skip intro, skip recap, skip credits, etc.
           this.clk(store);
-        } else if ((store = this.qry(`button[data-testid="up-next-play-button"]`))) {
+        } 
+        else if ((store = this.qry(`button[data-testid="up-next-play-button"]`))) {
           let skip = false;
           const react = this.reactInstance(this.qry(`[data-gv2containerkey="playerUpNext"]`));
           if (react && "return" in react) {
@@ -446,6 +448,21 @@ const methods = {
           // after a film or the last episode in a series.
           if (options.promoted) skip = true;
           if (skip) this.clk(store);
+        }
+      }
+    } else this.count -= 1;
+  },
+  async hotstar() {
+    if (this.count === 0) {
+      if (test("hotstar.com/id/")) {
+        let store;
+        if ((store = this.qry(".binge-btn-wrapper.show-btn .binge-btn.primary.medium"))) {
+          // skip intro, skip recap.
+          this.clk(store);
+        }
+        if ((store = this.qry(".binge-btn-wrapper.show-btn .binge-btn.secondary.filler"))) {
+          // skip outro or next episode immediately.
+          this.clk(store);
         }
       }
     } else this.count -= 1;
@@ -924,6 +941,12 @@ async function initGMC() {
         title: "Uncheck if you don't use Disney+",
         default: true,
       },
+      hotstar: {
+        type: "checkbox",
+        label: "Hotstar",
+        title: "Uncheck if you don't use Hotstar",
+        default: true,
+      },
       hulu: {
         type: "checkbox",
         label: "Hulu",
@@ -1332,6 +1355,7 @@ async function initGMC() {
             options.netflix !== f.netflix.value ||
             options.amazon !== f.amazon.value ||
             options.disneyplus !== f.disneyplus.value ||
+            options.hotstar !== f.hotstar.value ||
             options.hulu !== f.hulu.value ||
             options.hbomax !== f.hbomax.value ||
             options.starz !== f.starz.value ||
@@ -1403,6 +1427,7 @@ async function initGMC() {
           case "disneyplus":
             blurTo = methods.qry(".btm-media-client-element");
             break;
+          case "hotstar":
           case "hulu":
             blurTo = methods.qry(".addFocus");
             break;

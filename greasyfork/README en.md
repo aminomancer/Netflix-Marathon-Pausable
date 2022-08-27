@@ -6,7 +6,7 @@
     </center>
 </h1>
 
-A configurable userscript that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, and Disney+. Requires a userscript manager like [Violentmonkey](https://violentmonkey.github.io/) or [Tampermonkey](https://www.tampermonkey.net/). Greasemonkey is fully supported too, but not recommended. If I get any requests I'll consider turning it into a webextension addon.
+A configurable userscript that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, Disney+, Hotstar. Requires a userscript manager like [Violentmonkey](https://violentmonkey.github.io/) or [Tampermonkey](https://www.tampermonkey.net/). Greasemonkey is fully supported too, but not recommended. If I get any requests I'll consider turning it into a webextension addon.
 
 This script works by querying the document for elements that skip through the video. Normally it does this constantly, even when you might want to watch the credits or something. So I thought it'd be nice to add a toggle to disable/enable the searching, on the fly, without needing to reload the website. By default, the hotkey is Ctrl+F7. It pauses the interval, meaning it won't skip anything while paused. Hitting the hotkey again resumes the interval. It also adds 2 buttons to your addon's popup menu or context menu, depending on the addon you use.
 
@@ -27,6 +27,7 @@ Forked from [Netflix Marathon](https://greasyfork.org/en/scripts/30029-netflix-m
 | **Run&#160;on&#160;Amazon** | true | boolean | Enable skipping on Amazon. |
 | **Run&#160;on&#160;Netflix** | true | boolean | And so on... |
 | **Run&#160;on&#160;Disney+** | true | boolean | |
+| **Run&#160;on&#160;Hotstar** | true | boolean | |
 | **Run&#160;on&#160;Hulu** | true | boolean | |
 | **Run&#160;on&#160;HBO Max** | true | boolean | |
 | **Run&#160;on&#160;Starz** | true | boolean | |
