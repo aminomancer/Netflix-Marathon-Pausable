@@ -1,91 +1,86 @@
 {
-    "env": {
-        "browser": true,
-        "es2021": true
-    },
-    "extends": [
-        "airbnb-base",
-        "prettier"
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "extends": ["airbnb-base", "prettier"],
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "script"
+  },
+  "rules": {
+    "indent": "off",
+    "max-len": "off",
+    "quotes": [
+      "error",
+      "double",
+      {
+        "avoidEscape": true,
+        "allowTemplateLiterals": true
+      }
     ],
-    "parserOptions": {
-        "ecmaVersion": "latest",
-        "sourceType": "module"
-    },
-    "rules": {
-        "indent": "off",
-        "max-len": "off",
-        "quotes": [
-            "error",
-            "double",
-            {
-                "avoidEscape": true,
-                "allowTemplateLiterals": true
-            }
-        ],
-        "curly": [
-            "error",
-            "multi-line"
-        ],
-        "camelcase": [
-            "error",
-            {
-                "properties": "never",
-                "ignoreDestructuring": false,
-                "ignoreGlobals": true
-            }
-        ],
-        "max-classes-per-file": "off",
-        "no-cond-assign": [
-            "error",
-            "except-parens"
-        ],
-        "no-unused-vars": [
-            "error",
-            {
-                "vars": "local",
-                "args": "after-used"
-            }
-        ],
-        "no-use-before-define": [
-            "error",
-            {
-                "functions": false,
-                "classes": false
-            }
-        ],
-        "no-fallthrough": [
-            "error",
-            {
-                "commentPattern": "break[\\s\\w]*omitted"
-            }
-        ],
-        "no-unused-expressions": [
-            "error",
-            {
-                "allowTernary": true,
-                "allowTaggedTemplates": true
-            }
-        ],
-        "default-param-last": "off",
-        "no-promise-executor-return": "off",
-        "no-param-reassign": "off",
-        "no-return-assign": "off",
-        "prefer-destructuring": "off",
-        "no-underscore-dangle": "off",
-        "no-restricted-syntax": [
-            "error",
-            {
-                "selector": "ForInStatement",
-                "message": "for..in loops iterate over the entire prototype chain, which is virtually never what you want. Use Object.{keys,values,entries}, and iterate over the resulting array."
-            },
-            {
-                "selector": "LabeledStatement",
-                "message": "Labels are a form of GOTO; using them makes code confusing and hard to maintain and understand."
-            },
-            {
-                "selector": "WithStatement",
-                "message": "`with` is disallowed in strict mode because it makes code impossible to predict and optimize."
-            }
-        ]
-    }
+    "curly": ["error", "multi-line"],
+    "camelcase": [
+      "error",
+      {
+        "properties": "never",
+        "ignoreDestructuring": false,
+        "ignoreGlobals": true
+      }
+    ],
+    "max-classes-per-file": "off",
+    "no-cond-assign": ["error", "except-parens"],
+    "no-unused-vars": [
+      "error",
+      {
+        "vars": "local",
+        "args": "after-used"
+      }
+    ],
+    "no-use-before-define": [
+      "error",
+      {
+        "functions": false,
+        "classes": false
+      }
+    ],
+    "no-fallthrough": [
+      "error",
+      {
+        // The eslint rule doesn't allow for case-insensitive regex option.
+        // The following pattern allows for a dash between "fall through" as
+        // well as alternate spelling of "fall thru". The pattern also allows
+        // for an optional "s" at the end of "fall" ("falls through").
+        "commentPattern": "[Ff][Aa][Ll][Ll][Ss]?[\\s-]?([Tt][Hh][Rr][Oo][Uu][Gg][Hh]|[Tt][Hh][Rr][Uu])"
+      }
+    ],
+    "no-unused-expressions": [
+      "error",
+      {
+        "allowTernary": true,
+        "allowTaggedTemplates": true
+      }
+    ],
+    "default-param-last": "off",
+    "no-promise-executor-return": "off",
+    "no-param-reassign": "off",
+    "no-return-assign": "off",
+    "prefer-destructuring": "off",
+    "no-underscore-dangle": "off",
+    "no-restricted-syntax": [
+      "error",
+      {
+        "selector": "ForInStatement",
+        "message": "for..in loops iterate over the entire prototype chain, which is virtually never what you want. Use Object.{keys,values,entries}, and iterate over the resulting array."
+      },
+      {
+        "selector": "LabeledStatement",
+        "message": "Labels are a form of GOTO; using them makes code confusing and hard to maintain and understand."
+      },
+      {
+        "selector": "WithStatement",
+        "message": "`with` is disallowed in strict mode because it makes code impossible to predict and optimize."
+      }
+    ]
+  }
 }

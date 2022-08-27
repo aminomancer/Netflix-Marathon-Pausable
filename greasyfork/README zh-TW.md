@@ -6,7 +6,7 @@
     </center>
 </h1>
 
-这是一个用于流式传输电影和电视节目的 JavaScript 文件。 它适用于 Netflix、Amazon Prime Video、Hulu、HBO Max、Starz 和 Disney+。 它会自动跳过重述、介绍、信用和广告。 它还单击“下一集”提示。 因此，您不必浪费时间单击这些按钮。 需要像 [Violentmonkey](https://violentmonkey.github.io/) 或 [Tampermonkey](https://www.tampermonkey.net/) 這樣的用戶腳本管理器。 Greasemonkey 也完全支持，但不推薦。 如果我收到任何請求，我會考慮將其轉換為 webextension 插件。
+这是一个用于流式传输电影和电视节目的 JavaScript 文件。 它适用于 Netflix、Amazon Prime Video、Hulu、HBO Max、Starz、Disney+ 和 Hotstar。 它会自动跳过重述、介绍、信用和广告。 它还单击“下一集”提示。 因此，您不必浪费时间单击这些按钮。 需要像 [Violentmonkey](https://violentmonkey.github.io/) 或 [Tampermonkey](https://www.tampermonkey.net/) 這樣的用戶腳本管理器。 Greasemonkey 也完全支持，但不推薦。 如果我收到任何請求，我會考慮將其轉換為 webextension 插件。
 
 此腳本通過在文檔中查詢跳過視頻的元素來工作。 通常它會不斷地執行此操作，即使您可能想觀看演職員表或其他內容。 所以我認為添加一個切換來禁用/啟用搜索會很好，無需重新加載網站。 默認情況下，熱鍵是 Ctrl+F7。 它暫停間隔，這意味著它在暫停時不會跳過任何內容。 再次按下熱鍵可恢復間隔。 它還會在插件的彈出菜單或上下文菜單中添加 2 個按鈕，具體取決於您使用的插件。
 
@@ -27,6 +27,7 @@
 | **Run&#160;on&#160;Amazon** | true | boolean | 在亞馬遜上啟用跳過。 |
 | **Run&#160;on&#160;Netflix** | true | boolean | 網飛 |
 | **Run&#160;on&#160;Disney+** | true | boolean | 迪士尼+ |
+| **Run&#160;on&#160;Hotstar** | true | boolean | 明星 |
 | **Run&#160;on&#160;Hulu** | true | boolean | 葫蘆 |
 | **Run&#160;on&#160;HBO Max** | true | boolean | HBO 最大 |
 | **Run&#160;on&#160;Starz** | true | boolean | 斯塔茲 |
