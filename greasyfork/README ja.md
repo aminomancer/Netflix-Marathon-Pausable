@@ -6,7 +6,7 @@
     </center>
 </h1>
 
-これは、映画やテレビ番組をストリーミングするためのJavaScriptファイルです。 Netflix、Amazon Prime Video、Hulu、HBO Max、Starz、Disney +で動作します。 要約、紹介、クレジット、および広告を自動的にスキップします。 また、「次のエピソード」のプロンプトをクリックします。 したがって、これらのボタンをクリックするのに時間を無駄にする必要はありません。 [Violentmonkey](https://violentmonkey.github.io/)や[Tampermonkey](https://www.tampermonkey.net/)などのユーザースクリプトマネージャーが必要です。 Greasemonkeyも完全にサポートされていますが、お勧めしません。 リクエストがあれば、それをwebextensionアドオンに変えることを検討します。 
+これは、映画やテレビ番組をストリーミングするためのJavaScriptファイルです。 Netflix、Amazon Prime Video、Hulu、HBO Max、Starz、Disney +、Hotstarで動作します。 要約、紹介、クレジット、および広告を自動的にスキップします。 また、「次のエピソード」のプロンプトをクリックします。 したがって、これらのボタンをクリックするのに時間を無駄にする必要はありません。 [Violentmonkey](https://violentmonkey.github.io/)や[Tampermonkey](https://www.tampermonkey.net/)などのユーザースクリプトマネージャーが必要です。 Greasemonkeyも完全にサポートされていますが、お勧めしません。 リクエストがあれば、それをwebextensionアドオンに変えることを検討します。 
 
 このスクリプトは、ビデオをスキップする要素についてドキュメントにクエリを実行することで機能します。通常、これは常に実行されますが、突然映画のクレジットを見たいと思った場合はイライラする可能性があります。そのため、ウェブサイトをリロードせずに、その場で検索を無効/有効にするトグルを追加するとよいと思いました。デフォルトでは、ホットキーはCtrl + F7です。間隔を一時停止します。つまり、一時停止中は何もスキップしません。ホットキーをもう一度押すと、間隔が再開されます。また、使用するアドオンに応じて、アドオンのポップアップメニューまたはコンテキストメニューに2つのボタンが追加されます。
 
@@ -27,6 +27,7 @@ Forked from [Netflix Marathon](https://greasyfork.org/en/scripts/30029-netflix-m
 | **Run&#160;on&#160;Amazon** | true | boolean | Amazonでスキップを有効にします。 |
 | **Run&#160;on&#160;Netflix** | true | boolean | 等々... |
 | **Run&#160;on&#160;Disney+** | true | boolean | |
+| **Run&#160;on&#160;Hotstar** | true | boolean | |
 | **Run&#160;on&#160;Hulu** | true | boolean | |
 | **Run&#160;on&#160;HBO Max** | true | boolean | |
 | **Run&#160;on&#160;Starz** | true | boolean | |
