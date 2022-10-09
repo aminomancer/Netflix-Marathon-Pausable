@@ -10,7 +10,7 @@
 // @name:ru            Netflix Marathon (пауза)
 // @name:hi            नेटफ्लिक्स मैराथन (रोकने योग्य)
 // @namespace          https://github.com/aminomancer
-// @version            5.5.6
+// @version            5.5.7
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, Disney+, and Hotstar. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:en     A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, Disney+, and Hotstar. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，可自动跳过重述、介绍、演职员表和广告，并点击 Netflix、Amazon Prime Video、Hulu、HBO Max、Starz、Disney+ 和 Hotstar 上的“下一集”提示。 可自定义的热键暂停/恢复自动跳过功能。 Alt + N 进行设置。
@@ -48,6 +48,7 @@
 // @match              http*://*.amazon.sg/*
 // @match              http*://*.amazon.tr/*
 // @match              http*://*.disneyplus.com/*
+// @match              http*://*.starplus.com/*
 // @match              http*://play.hbomax.com/*
 // @match              http*://*.hotstar.com/*
 // @match              http*://*.hulu.com/*
@@ -107,6 +108,7 @@ const getHost = () => {
         case "amazon":
         case "primevideo":
         case "disneyplus":
+        case "starplus":
         case "hotstar":
         case "hulu":
         case "hbomax":
@@ -122,6 +124,9 @@ const getHost = () => {
     case "amazon":
     case "primevideo":
       return "amazon";
+    case "disneyplus":
+    case "starplus":
+      return "disneyplus";
     default:
       return host;
   }
@@ -208,7 +213,7 @@ const l10n = {
 };
 const methods = {
   // contains the site-specific callbacks and various utility functions
-  sites: ["amazon", "disneyplus", "hotstar", "hulu", "hbomax", "netflix", "starz"],
+  sites: ["amazon", "disneyplus", "starplus", "hotstar", "hulu", "hbomax", "netflix", "starz"],
   count: 0,
   results: null,
   nDrain: "[data-uia='next-episode-seamless-button-draining']",
@@ -429,7 +434,7 @@ const methods = {
   },
   async disneyplus() {
     if (this.count === 0) {
-      if (test("disneyplus.com/video/")) {
+      if (test("disneyplus.com/video/") || test("starplus.com/video/")) {
         let store;
         if ((store = this.qry(".skip__button"))) {
           // skip intro, skip recap, skip credits, etc.
