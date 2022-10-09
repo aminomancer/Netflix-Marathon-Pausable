@@ -945,12 +945,6 @@ async function initGMC() {
         title: "Uncheck if you don't use Disney+",
         default: true,
       },
-      starplus: {
-        type: "checkbox",
-        label: "Star+",
-        title: "Uncheck if you don't use Star+",
-        default: true,
-      },
       hotstar: {
         type: "checkbox",
         label: "Hotstar",
