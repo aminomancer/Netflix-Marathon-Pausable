@@ -1,0 +1,24 @@
+{
+  "eslint.validate": ["javascript"],
+  "prettier.printWidth": 80,
+  "rewrap.wrappingColumn": 80,
+  "editor.rulers": [72, 80],
+  "[git-commit]": { "editor.rulers": [50, 72], "rewrap.wrappingColumn": 72 },
+  "editor.formatOnPaste": false,
+  "editor.formatOnType": false,
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "file",
+  "[javascript][javascriptreact][typescript][typescriptreact]": {
+    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
+    "editor.codeActionsOnSave": {}
+  },
+  "[json][jsonc]": {
+    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+  },
+  "[html]": { "editor.defaultFormatter": "rvest.vs-code-prettier-eslint" },
+  "[yaml]": { "editor.defaultFormatter": "rvest.vs-code-prettier-eslint" },
+  "[css][sass][scss][less]": {
+    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+  },
+  "[markdown]": { "editor.defaultFormatter": "rvest.vs-code-prettier-eslint" }
+}

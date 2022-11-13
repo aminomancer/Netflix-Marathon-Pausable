@@ -18,33 +18,32 @@ Forked from [Netflix Marathon](https://greasyfork.org/en/scripts/30029-netflix-m
 
 <small>Settings are permanently stored in your addon's local storage, to ensure they persist through script updates. You can change them by going to Netflix or Amazon and hitting Alt + N, or by clicking the menu command via your addon's toolbar button. These are the settings, and a brief description of their functionality:</small>
 
-| Option | Default value | Type | Description |
-|-|-|-|-|
-| **Interval&#160;Rate** | 300 | integer | Interval rate in milliseconds — How often to check for the elements we want to click. Increase if you're running this on a mega-potato? |
-| **Autoplay&#160;promoted&#160;videos** | false | boolean | After the final credits of a film or the last episode of a series, Netflix recommends a trending or similar movie/series. Enable this if you want it to automatically start. |
-| **Run&#160;on&#160;Amazon** | true | boolean | Enable skipping on Amazon. |
-| **Run&#160;on&#160;Netflix** | true | boolean | And so on... |
-| **Run&#160;on&#160;Disney+** | true | boolean | |
-| **Run&#160;on&#160;Hotstar** | true | boolean | |
-| **Run&#160;on&#160;Hulu** | true | boolean | |
-| **Run&#160;on&#160;HBO Max** | true | boolean | |
-| **Run&#160;on&#160;Starz** | true | boolean | |
-| **Hotkey&#160;code**&#160;(pause/resume) | F7 | string | Physical key, e.g. `KeyF` for the F key. This is `event.code`, NOT `event.keyCode`. [Use this tool](https://keycode.info) or [see the full list here](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code/code_values). |
-| **Enable toggle hotkey** | true | boolean | Enable pausing/resuming with a hotkey. |
-| **Hotkey&#160;code**&#160;(settings) | KeyN | string | Physical key, e.g. `Digit9` for the number 9. |
-| **Enable settings hotkey** | true | boolean | Enable opening the settings panel with a hotkey. |
-| **Ctrl&#160;key** | true | boolean | The next four settings are for modifier keys. If you don't want to use a modifier key, uncheck all four of these. If you want to use multiple, check all the modifier keys you want. |
-| **Alt&#160;key** | false | boolean |  |
-| **Shift&#160;key** | false | boolean |  |
-| **Meta&#160;key** | false | boolean | [Depends on browser and OS.](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/metaKey) |
-| **Enable&#160;popup** | true | boolean | Whether to show pause/resume popups. |
-| **Popup&#160;duration** | 3000 | integer | How long to leave the popup open for. |
-| **Use&#160;Google&#160;Fonts** | true | boolean | Whether to grab the font from Google Fonts. |
-| **Popup&#160;font** | Source&#160;Sans&#160;Pro | string | Font to use for the popup. If it's not locally installed on your PC, then it must be available on [Google Fonts](https://fonts.google.com/) and **`Use Google Fonts`** must be checked. |
-| **Font&#160;size**&#160;(px) | 24 | integer | Font size in pixels. |
-| **Font&#160;weight** | 300 | integer | Font weight, in multiples of 100 between 100 and 900. (bigger is thicker) |
-| **Italic** | false | boolean | Whether the font should be italic or not. |
-
+| Option                                   | Default value             | Type    | Description                                                                                                                                                                                                                             |
+| ---------------------------------------- | ------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Interval&#160;Rate**                   | 300                       | integer | Interval rate in milliseconds — How often to check for the elements we want to click. Increase if you're running this on a mega-potato?                                                                                                 |
+| **Autoplay&#160;promoted&#160;videos**   | false                     | boolean | After the final credits of a film or the last episode of a series, Netflix recommends a trending or similar movie/series. Enable this if you want it to automatically start.                                                            |
+| **Run&#160;on&#160;Amazon**              | true                      | boolean | Enable skipping on Amazon.                                                                                                                                                                                                              |
+| **Run&#160;on&#160;Netflix**             | true                      | boolean | And so on...                                                                                                                                                                                                                            |
+| **Run&#160;on&#160;Disney+**             | true                      | boolean |                                                                                                                                                                                                                                         |
+| **Run&#160;on&#160;Hotstar**             | true                      | boolean |                                                                                                                                                                                                                                         |
+| **Run&#160;on&#160;Hulu**                | true                      | boolean |                                                                                                                                                                                                                                         |
+| **Run&#160;on&#160;HBO Max**             | true                      | boolean |                                                                                                                                                                                                                                         |
+| **Run&#160;on&#160;Starz**               | true                      | boolean |                                                                                                                                                                                                                                         |
+| **Hotkey&#160;code**&#160;(pause/resume) | F7                        | string  | Physical key, e.g. `KeyF` for the F key. This is `event.code`, NOT `event.keyCode`. [Use this tool](https://keycode.info) or [see the full list here](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code/code_values). |
+| **Enable toggle hotkey**                 | true                      | boolean | Enable pausing/resuming with a hotkey.                                                                                                                                                                                                  |
+| **Hotkey&#160;code**&#160;(settings)     | KeyN                      | string  | Physical key, e.g. `Digit9` for the number 9.                                                                                                                                                                                           |
+| **Enable settings hotkey**               | true                      | boolean | Enable opening the settings panel with a hotkey.                                                                                                                                                                                        |
+| **Ctrl&#160;key**                        | true                      | boolean | The next four settings are for modifier keys. If you don't want to use a modifier key, uncheck all four of these. If you want to use multiple, check all the modifier keys you want.                                                    |
+| **Alt&#160;key**                         | false                     | boolean |                                                                                                                                                                                                                                         |
+| **Shift&#160;key**                       | false                     | boolean |                                                                                                                                                                                                                                         |
+| **Meta&#160;key**                        | false                     | boolean | [Depends on browser and OS.](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/metaKey)                                                                                                                                    |
+| **Enable&#160;popup**                    | true                      | boolean | Whether to show pause/resume popups.                                                                                                                                                                                                    |
+| **Popup&#160;duration**                  | 3000                      | integer | How long to leave the popup open for.                                                                                                                                                                                                   |
+| **Use&#160;Google&#160;Fonts**           | true                      | boolean | Whether to grab the font from Google Fonts.                                                                                                                                                                                             |
+| **Popup&#160;font**                      | Source&#160;Sans&#160;Pro | string  | Font to use for the popup. If it's not locally installed on your PC, then it must be available on [Google Fonts](https://fonts.google.com/) and **`Use Google Fonts`** must be checked.                                                 |
+| **Font&#160;size**&#160;(px)             | 24                        | integer | Font size in pixels.                                                                                                                                                                                                                    |
+| **Font&#160;weight**                     | 300                       | integer | Font weight, in multiples of 100 between 100 and 900. (bigger is thicker)                                                                                                                                                               |
+| **Italic**                               | false                     | boolean | Whether the font should be italic or not.                                                                                                                                                                                               |
 
 <br>
 <img src="settings-blur.webp" width=40% />

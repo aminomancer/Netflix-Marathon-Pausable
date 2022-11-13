@@ -70,24 +70,25 @@
 // @grant              GM.openInTab
 // ==/UserScript==
 
-/* global GM,
-GM_registerMenuCommand,
-GM_unregisterMenuCommand,
-GM_getValue:writable,
-GM_setValue:writable,
-GM_deleteValue:writable,
-GM_listValues:writable,
-GM_openInTab:writable,
-WebFontConfig:writable,
-GM_config,
-WebFont */
+/* global GM, GM_registerMenuCommand, GM_unregisterMenuCommand,
+GM_getValue:writable, GM_setValue:writable, GM_deleteValue:writable,
+GM_listValues:writable, GM_openInTab:writable, WebFontConfig:writable,
+GM_config, WebFont */
 const options = {}; // where settings are stored during runtime
 const win = window;
 const doc = document;
 // check whether the GM object exists so we can use the right GM API functions
-const GMObj = "GM" in win && typeof win.GM === "object" && typeof win.GM.getValue === "function";
+const GMObj =
+  "GM" in win &&
+  typeof win.GM === "object" &&
+  typeof win.GM.getValue === "function";
 // check if the script handler is GM4, since if it is, we can't add a menu command
-const GM4 = GMObj && GM.info.scriptHandler === "Greasemonkey" && GM.info.version.split(".")[0] >= 4;
+const GM4 =
+  GMObj &&
+  GM.info.scriptHandler === "Greasemonkey" &&
+  GM.info.version.split(".")[0] >= 4;
+const cdnAddress =
+  "https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest";
 let marathon;
 /**
  * pause execution for n milliseconds
@@ -213,7 +214,16 @@ const l10n = {
 };
 const methods = {
   // contains the site-specific callbacks and various utility functions
-  sites: ["amazon", "disneyplus", "starplus", "hotstar", "hulu", "hbomax", "netflix", "starz"],
+  sites: [
+    "amazon",
+    "disneyplus",
+    "starplus",
+    "hotstar",
+    "hulu",
+    "hbomax",
+    "netflix",
+    "starz",
+  ],
   count: 0,
   results: null,
   nDrain: "[data-uia='next-episode-seamless-button-draining']",
@@ -388,7 +398,9 @@ const methods = {
         //     // skip recap
         //     this.clk(store);
       }
-    } else this.count -= 1;
+    } else {
+      this.count -= 1;
+    }
   },
   async netflix() {
     if (this.count === 0) {
@@ -408,12 +420,18 @@ const methods = {
         } catch (e) {
           this.count = 0;
         }
-      } else if ((store = this.qry(this.nDrain)) || (store = this.qry(this.nReady))) {
+      } else if (
+        (store = this.qry(this.nDrain)) ||
+        (store = this.qry(this.nReady))
+      ) {
         // next episode button
         const react = this.reactInstance(store);
         if (react && react.memoizedProps.onClick) react.memoizedProps.onClick();
         this.count = 5;
-      } else if (options.promoted && (store = this.qry(".PromotedVideo-actions"))) {
+      } else if (
+        options.promoted &&
+        (store = this.qry(".PromotedVideo-actions"))
+      ) {
         // promoted video autoplay
         await sleep(700);
         if (this.isReady) this.clk(store.firstElementChild);
@@ -430,7 +448,9 @@ const methods = {
         // autoplay (old netflix UI)
         this.clk(store);
       }
-    } else this.count -= 1;
+    } else {
+      this.count -= 1;
+    }
   },
   async disneyplus() {
     if (this.count === 0) {
@@ -439,9 +459,13 @@ const methods = {
         if ((store = this.qry(".skip__button"))) {
           // skip intro, skip recap, skip credits, etc.
           this.clk(store);
-        } else if ((store = this.qry(`button[data-testid="up-next-play-button"]`))) {
+        } else if (
+          (store = this.qry('button[data-testid="up-next-play-button"]'))
+        ) {
           let skip = false;
-          const react = this.reactInstance(this.qry(`[data-gv2containerkey="playerUpNext"]`));
+          const react = this.reactInstance(
+            this.qry('[data-gv2containerkey="playerUpNext"]')
+          );
           if (react && "return" in react) {
             const props = react.return.memoizedProps;
             // if we're in a TV series, skip regardless of options.promoted
@@ -455,21 +479,33 @@ const methods = {
           if (skip) this.clk(store);
         }
       }
-    } else this.count -= 1;
+    } else {
+      this.count -= 1;
+    }
   },
   async hotstar() {
     if (this.count === 0) {
       if (test("/id/")) {
         let store;
-        if ((store = this.qry(".binge-btn-wrapper.show-btn .binge-btn.primary.medium"))) {
+        if (
+          (store = this.qry(
+            ".binge-btn-wrapper.show-btn .binge-btn.primary.medium"
+          ))
+        ) {
           // skip intro, skip recap.
           this.clk(store);
-        } else if ((store = this.qry(".binge-btn-wrapper.show-btn .binge-btn.secondary.filler"))) {
+        } else if (
+          (store = this.qry(
+            ".binge-btn-wrapper.show-btn .binge-btn.secondary.filler"
+          ))
+        ) {
           // skip outro or next episode immediately.
           this.clk(store);
         }
       }
-    } else this.count -= 1;
+    } else {
+      this.count -= 1;
+    }
   },
   async hulu() {
     if (this.count === 0) {
@@ -499,7 +535,9 @@ const methods = {
           }
         }
       }
-    } else this.count -= 1;
+    } else {
+      this.count -= 1;
+    }
   },
   async hbomax() {
     if (this.count === 0) {
@@ -511,34 +549,43 @@ const methods = {
           const uiData = player._uiManager._uiState.uiData;
           if (uiData.activeSkipAnnotation) {
             // skip intro, skip recap, skip ad, etc.
-            this.hboPress(`[data-testid="SkipButton"]`);
+            this.hboPress('[data-testid="SkipButton"]');
           } else if (uiData.activeNextEpisodeInfo) {
             // next episode
             try {
-              const interactionHandler = viewHandle.parentElement.lastElementChild;
-              this.reactFiber(interactionHandler).return.return.memoizedProps.onMouseMove();
+              const interactionHandler =
+                viewHandle.parentElement.lastElementChild;
+              this.reactFiber(
+                interactionHandler
+              ).return.return.memoizedProps.onMouseMove();
               await sleep(400);
             } finally {
-              if (this.isReady) this.hboPress(`[data-testid="UpNextButton"]`);
+              if (this.isReady) this.hboPress('[data-testid="UpNextButton"]');
             }
           }
         } catch (e) {
           this.count = 10;
         }
       }
-    } else this.count -= 1;
+    } else {
+      this.count -= 1;
+    }
   },
   async starz() {
     if (this.count === 0) {
       if (test("/play/")) {
         let store = this.byTag("starz-player")[0];
         if (!store) return;
-        if ((store = this.qry(".auto-roll-component.open .next-feature-image"))) {
+        if (
+          (store = this.qry(".auto-roll-component.open .next-feature-image"))
+        ) {
           // next episode - this is the only one I know of
           this.clk(store);
         }
       }
-    } else this.count -= 1;
+    } else {
+      this.count -= 1;
+    }
   },
 };
 
@@ -620,7 +667,9 @@ class MarathonController {
       case code2:
         if (hotkey2 && MarathonController.modTest(e, 2)) {
           GM_config.isOpen ? GM_config.close() : GM_config.open();
-        } else return;
+        } else {
+          return;
+        }
         break;
       default:
         return;
@@ -713,7 +762,7 @@ class MarathonController {
     if (this.isPopupSetup) return;
     doc.body.insertBefore(this.popup, doc.body.firstElementChild);
     this.popup.appendChild(this.text);
-    this.popup.style.cssText = `position:fixed;top:50%;right:3%;transform:translateY(-50%);z-index:2147483646;background-color:hsla(0,0%,6%,.8);background-image:url("https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/texture/noise-512x512.png");background-repeat:repeat;background-size:auto;background-attachment:local;-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);color:hsla(0,0%,97%,.95);padding:17px 19px;line-height:1em;border-radius:5px;pointer-events:none;letter-spacing:1px;transition:opacity .2s ease-in-out;opacity:0;`;
+    this.popup.style.cssText = `position:fixed;top:50%;right:3%;transform:translateY(-50%);z-index:2147483646;background-color:hsla(0,0%,6%,.8);background-image:url("${cdnAddress}/texture/noise-512x512.png");background-repeat:repeat;background-size:auto;background-attachment:local;-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);color:hsla(0,0%,97%,.95);padding:17px 19px;line-height:1em;border-radius:5px;pointer-events:none;letter-spacing:1px;transition:opacity .2s ease-in-out;opacity:0;`;
     this.isPopupSetup = true;
   }
 
@@ -811,7 +860,9 @@ function extendGMC() {
             this.error = true;
             values[id] = field.value;
           }
-        } else forgotten[id] = value;
+        } else {
+          forgotten[id] = value;
+        }
       }
     }
     try {
@@ -868,9 +919,9 @@ function extendGMC() {
   // if webfont is enabled and any of the fields that affect webfont are non-default, (font, italic, fontWeight) then change the webfont config
   GM_config.updateWFConfig = function updateWFConfig() {
     if (options.webfont && this.checkNotDefault(this.webFontFields)) {
-      WebFontConfig.google.families[1] = `${options.font}:${options.italic ? "ital," : ""}wght@1,${
-        options.fontWeight
-      }`;
+      WebFontConfig.google.families[1] = `${options.font}:${
+        options.italic ? "ital," : ""
+      }wght@1,${options.fontWeight}`;
     }
   };
   // prettier-ignore
@@ -894,7 +945,9 @@ async function initGMC() {
   frame.appendChild(supportBtn);
   resetBtn.addEventListener("click", () => GM_config.reset());
   supportBtn.addEventListener("click", () =>
-    GM_openInTab("https://greasyfork.org/scripts/420475-netflix-marathon-pausable")
+    GM_openInTab(
+      "https://greasyfork.org/scripts/420475-netflix-marathon-pausable"
+    )
   );
   GM_config.error = false; // this switch tells us if the user input an invalid value for a setting so we won't close the GUI when they try to save.
   extendGMC();
@@ -987,7 +1040,8 @@ async function initGMC() {
       },
       code: {
         label: "Hotkey code",
-        title: "Which keyboard key to use (click Support for a list of key codes)",
+        title:
+          "Which keyboard key to use (click Support for a list of key codes)",
         type: "text",
         section: "Pause/Resume Hotkey",
         size: 4,
@@ -999,7 +1053,8 @@ async function initGMC() {
         type: "button",
         size: 1,
         click: () => {
-          const { code, capture, ctrlKey, altKey, shiftKey, metaKey } = GM_config.fields;
+          const { code, capture, ctrlKey, altKey, shiftKey, metaKey } =
+            GM_config.fields;
           if (GM_config.capturing || capture.node.disabled) return;
           code.settings.initialValue = code.node.value;
           ctrlKey.settings.initialChecked = ctrlKey.node.checked;
@@ -1015,7 +1070,8 @@ async function initGMC() {
           marathon.openPopup("Press desired hotkey then Enter (Esc to cancel)");
         },
         keydown: e => {
-          const { code, capture, ctrlKey, altKey, shiftKey, metaKey } = GM_config.fields;
+          const { code, capture, ctrlKey, altKey, shiftKey, metaKey } =
+            GM_config.fields;
           if (GM_config.specialKeys.includes(e.key)) return;
           switch (e.key) {
             case "Enter":
@@ -1083,7 +1139,8 @@ async function initGMC() {
       },
       code2: {
         label: "Hotkey code",
-        title: "Which keyboard key to use (click Support for a list of key codes)",
+        title:
+          "Which keyboard key to use (click Support for a list of key codes)",
         type: "text",
         section: "Settings Hotkey",
         size: 4,
@@ -1095,7 +1152,8 @@ async function initGMC() {
         type: "button",
         size: 1,
         click: () => {
-          const { code2, capture2, ctrlKey2, altKey2, shiftKey2, metaKey2 } = GM_config.fields;
+          const { code2, capture2, ctrlKey2, altKey2, shiftKey2, metaKey2 } =
+            GM_config.fields;
           if (GM_config.capturing || capture2.node.disabled) return;
           code2.settings.initialValue = code2.node.value;
           ctrlKey2.settings.initialChecked = ctrlKey2.node.checked;
@@ -1111,7 +1169,8 @@ async function initGMC() {
           marathon.openPopup("Press desired hotkey then Enter (Esc to cancel)");
         },
         keydown: e => {
-          const { code2, capture2, ctrlKey2, altKey2, shiftKey2, metaKey2 } = GM_config.fields;
+          const { code2, capture2, ctrlKey2, altKey2, shiftKey2, metaKey2 } =
+            GM_config.fields;
           if (GM_config.specialKeys.includes(e.key)) return;
           switch (e.key) {
             case "Enter":
@@ -1144,7 +1203,11 @@ async function initGMC() {
           GM_config.frame.removeAttribute("capturing");
           code2.node.focus();
           code2.node.removeEventListener("keydown", capture2.settings.keydown);
-          window.removeEventListener("keydown", capture2.settings.keydown, true);
+          window.removeEventListener(
+            "keydown",
+            capture2.settings.keydown,
+            true
+          );
         },
       },
       hotkey2: {
@@ -1186,7 +1249,8 @@ async function initGMC() {
       },
       popDur: {
         label: "Popup duration",
-        title: "How long (in milliseconds) the popup should stay open before fading away",
+        title:
+          "How long (in milliseconds) the popup should stay open before fading away",
         type: "int",
         size: 4,
         min: 500,
@@ -1196,7 +1260,8 @@ async function initGMC() {
       webfont: {
         type: "checkbox",
         label: "Use Google Fonts",
-        title: "If the font you want is not locally installed, this must be checked",
+        title:
+          "If the font you want is not locally installed, this must be checked",
         default: true,
       },
       font: {
@@ -1217,9 +1282,20 @@ async function initGMC() {
       },
       fontWeight: {
         label: "Font weight",
-        title: "Boldness of the popup text, measured in multiples of 100 from 100-900",
+        title:
+          "Boldness of the popup text, measured in multiples of 100 from 100-900",
         type: "select",
-        options: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+        options: [
+          "100",
+          "200",
+          "300",
+          "400",
+          "500",
+          "600",
+          "700",
+          "800",
+          "900",
+        ],
         default: 300,
       },
       italic: {
@@ -1273,7 +1349,9 @@ async function initGMC() {
             if (key === "fontSize" && typeof oldVal === "string") {
               const newVal = Number(oldVal.match(/\d+/g)[0]);
               this.set("fontSizeInt", newVal);
-            } else this.set(key, oldVal);
+            } else {
+              this.set(key, oldVal);
+            }
             GM_deleteValue(key); // get rid of the old setting so we don't have to do this again.
           }
         }
@@ -1348,9 +1426,10 @@ async function initGMC() {
             marathon.pause(); // stop the current interval
             marathon.int = newInt; // update the rate
             if (options[site]) marathon.resume(); // if the site we're currently on is enabled, start the interval with the new rate
-            if (message.includes("&")) message = "Settings";
-            // if we already set it to Hotkey & Popup then reset it to something general so it's not so long
-            else {
+            if (message.includes("&")) {
+              message = "Settings";
+            } else {
+              // if we already set it to Hotkey & Popup then reset it to something general so it's not so long
               if (message) message += " & "; // otherwise if it's set to either Hotkey *or* Popup, set it to e.g. Hotkey & Interval
               message += "Interval"; // otherwise just set it to Interval
             }
@@ -1392,7 +1471,10 @@ async function initGMC() {
           1,
           2 + methods.sites.length
         );
-        const container = sites[0].parentElement.insertBefore(doc.createElement("div"), sites[0]);
+        const container = sites[0].parentElement.insertBefore(
+          doc.createElement("div"),
+          sites[0]
+        );
         container.className = "grid_container";
         sites.forEach(div => container.appendChild(div));
         // add a support button, make the reset link an actual button. we could do this by editing the prototype but again, it'd be a lot of duplicate code.
@@ -1414,7 +1496,10 @@ async function initGMC() {
         const closeBtn = methods.byID("Marathon_closeBtn");
         closeBtn.after(supportBtn); // move it to the end.
         closeBtn.textContent = "Cancel"; // change the text from "Close" to "Cancel" so it's clear that this will discard changes to settings
-        const firstField = methods.qry(`.config_var [id^="Marathon_field_"]`, frame);
+        const firstField = methods.qry(
+          '.config_var [id^="Marathon_field_"]',
+          frame
+        );
         if (firstField) firstField.focus();
       },
       close() {
@@ -1422,7 +1507,7 @@ async function initGMC() {
         switch (site) {
           case "netflix": {
             const mountPoint = methods.byID("appMountPoint");
-            blurTo = methods.qry(`[tabindex]`, mountPoint) || mountPoint;
+            blurTo = methods.qry("[tabindex]", mountPoint) || mountPoint;
             break;
           }
           case "amazon":
@@ -1455,7 +1540,7 @@ async function initGMC() {
   top: 50% !important;
   left: 0 !important;
   background-color: hsla(0, 0%, 5.1%, 0.91);
-  background-image: url("https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/texture/noise-512x512.png");
+  background-image: url("${cdnAddress}/texture/noise-512x512.png");
   background-repeat: repeat;
   background-size: auto;
   background-attachment: local;
@@ -1664,14 +1749,17 @@ function attachWebFont() {
     },
   };
   GM_config.updateWFConfig(); // parse user-defined font settings, if any
-  loader.src = "https://cdn.jsdelivr.net/npm/webfontloader@latest/webfontloader.js";
+  loader.src =
+    "https://cdn.jsdelivr.net/npm/webfontloader@latest/webfontloader.js";
   loader.async = true; // don't block the rest of the page for this, it won't appear until user interaction anyway
   first.parentNode.insertBefore(loader, first);
 }
 
 // after getting settings from *monkey storage, memoize their values in a simple js object so referencing them is cheaper
 async function settings() {
-  for (const [key, field] of Object.entries(GM_config.fields)) options[key] = field.value;
+  for (const [key, field] of Object.entries(GM_config.fields)) {
+    options[key] = field.value;
+  }
 }
 
 async function start() {

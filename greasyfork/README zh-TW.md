@@ -20,33 +20,32 @@
 
 <small>設置永久存儲在插件的本地存儲中，以確保它們通過腳本更新持續存在。 您可以通過訪問 Netflix 或 Amazon 並按 Alt + N 或通過插件的工具欄按鈕單擊菜單命令來更改它們。 這些是設置，及其功能的簡要說明：</small>
 
-| 選項 | 默認值 | 類型 | 說明 |
-|-|-|-|-|
-| **Interval&#160;Rate** | 300 | integer | 以毫秒為單位的間隔率——檢查我們想要點擊的元素的頻率。 如果您的計算機是一個巨大的土豆，請增加。 |
-| **Autoplay&#160;promoted&#160;videos** | false | boolean | 在電影的最終演職員表或系列的最後一集之後，Netflix 會推薦熱門或類似的電影/系列。 如果您希望它自動啟動，請啟用此選項。 |
-| **Run&#160;on&#160;Amazon** | true | boolean | 在亞馬遜上啟用跳過。 |
-| **Run&#160;on&#160;Netflix** | true | boolean | 網飛 |
-| **Run&#160;on&#160;Disney+** | true | boolean | 迪士尼+ |
-| **Run&#160;on&#160;Hotstar** | true | boolean | 明星 |
-| **Run&#160;on&#160;Hulu** | true | boolean | 葫蘆 |
-| **Run&#160;on&#160;HBO Max** | true | boolean | HBO 最大 |
-| **Run&#160;on&#160;Starz** | true | boolean | 斯塔茲 |
-| **Hotkey&#160;code**&#160;（暂停/恢复） | F7 | string | 物理鍵，例如 `KeyF` 表示 F 鍵。 這是`event.code`，而不是`event.keyCode`。 [使用此工具](https://keycode.info) 或 [在此處查看完整列表](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code/code_values)。 |
-| **Enable toggle hotkey** | true | boolean | 使用熱鍵啟用暫停/恢復。 |
-| **Hotkey&#160;code**&#160;（设置） | KeyN | string | 物理鍵，例如 `Digit9` 代表數字 9。 |
-| **Enable settings hotkey** | true | boolean | 啟用使用熱鍵打開設置面板。 |
-| **Ctrl&#160;key** | true | boolean | 接下來的四個設置用於修飾鍵。 如果您不想使用修飾鍵，請取消選中所有這四個。 如果要使用多個，請檢查所需的所有修飾鍵。 |
-| **Alt&#160;key** | false | boolean |  |
-| **Shift&#160;key** | false | boolean |  |
-| **Meta&#160;key** | false | boolean | [取決於瀏覽器和操作系統。](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/metaKey) |
-| **Enable&#160;popup** | true | boolean | 是否顯示暫停/恢復彈出窗口。 |
-| **Popup&#160;duration** | 3000 | integer | 將彈出窗口打開多長時間。 |
-| **Use&#160;Google&#160;Fonts** | true | boolean | 是否從 Google Fonts 抓取字體。 |
-| **Popup&#160;font** | Source&#160;Sans&#160;Pro | string | 用於彈出窗口的字體。 如果它沒有本地安裝在您的 PC 上，那麼它必須在 [Google Fonts](https://fonts.google.com/) 上可用，並且必須選中 **`Use Google Fonts`**。 |
-| **Font&#160;size**&#160;(px) | 24 | integer | 字體大小（以像素為單位）。 |
-| **Font&#160;weight** | 300 | integer | 字體粗細，100 到 900 之間的 100 的倍數。（數字越大越粗） |
-| **Italic** | false | boolean | 字體是否應該是斜體。 |
-
+| 選項                                    | 默認值                    | 類型    | 說明                                                                                                                                                                                                                    |
+| --------------------------------------- | ------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Interval&#160;Rate**                  | 300                       | integer | 以毫秒為單位的間隔率——檢查我們想要點擊的元素的頻率。 如果您的計算機是一個巨大的土豆，請增加。                                                                                                                           |
+| **Autoplay&#160;promoted&#160;videos**  | false                     | boolean | 在電影的最終演職員表或系列的最後一集之後，Netflix 會推薦熱門或類似的電影/系列。 如果您希望它自動啟動，請啟用此選項。                                                                                                    |
+| **Run&#160;on&#160;Amazon**             | true                      | boolean | 在亞馬遜上啟用跳過。                                                                                                                                                                                                    |
+| **Run&#160;on&#160;Netflix**            | true                      | boolean | 網飛                                                                                                                                                                                                                    |
+| **Run&#160;on&#160;Disney+**            | true                      | boolean | 迪士尼+                                                                                                                                                                                                                 |
+| **Run&#160;on&#160;Hotstar**            | true                      | boolean | 明星                                                                                                                                                                                                                    |
+| **Run&#160;on&#160;Hulu**               | true                      | boolean | 葫蘆                                                                                                                                                                                                                    |
+| **Run&#160;on&#160;HBO Max**            | true                      | boolean | HBO 最大                                                                                                                                                                                                                |
+| **Run&#160;on&#160;Starz**              | true                      | boolean | 斯塔茲                                                                                                                                                                                                                  |
+| **Hotkey&#160;code**&#160;（暂停/恢复） | F7                        | string  | 物理鍵，例如 `KeyF` 表示 F 鍵。 這是`event.code`，而不是`event.keyCode`。 [使用此工具](https://keycode.info) 或 [在此處查看完整列表](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code/code_values)。 |
+| **Enable toggle hotkey**                | true                      | boolean | 使用熱鍵啟用暫停/恢復。                                                                                                                                                                                                 |
+| **Hotkey&#160;code**&#160;（设置）      | KeyN                      | string  | 物理鍵，例如 `Digit9` 代表數字 9。                                                                                                                                                                                      |
+| **Enable settings hotkey**              | true                      | boolean | 啟用使用熱鍵打開設置面板。                                                                                                                                                                                              |
+| **Ctrl&#160;key**                       | true                      | boolean | 接下來的四個設置用於修飾鍵。 如果您不想使用修飾鍵，請取消選中所有這四個。 如果要使用多個，請檢查所需的所有修飾鍵。                                                                                                      |
+| **Alt&#160;key**                        | false                     | boolean |                                                                                                                                                                                                                         |
+| **Shift&#160;key**                      | false                     | boolean |                                                                                                                                                                                                                         |
+| **Meta&#160;key**                       | false                     | boolean | [取決於瀏覽器和操作系統。](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/metaKey)                                                                                                                      |
+| **Enable&#160;popup**                   | true                      | boolean | 是否顯示暫停/恢復彈出窗口。                                                                                                                                                                                             |
+| **Popup&#160;duration**                 | 3000                      | integer | 將彈出窗口打開多長時間。                                                                                                                                                                                                |
+| **Use&#160;Google&#160;Fonts**          | true                      | boolean | 是否從 Google Fonts 抓取字體。                                                                                                                                                                                          |
+| **Popup&#160;font**                     | Source&#160;Sans&#160;Pro | string  | 用於彈出窗口的字體。 如果它沒有本地安裝在您的 PC 上，那麼它必須在 [Google Fonts](https://fonts.google.com/) 上可用，並且必須選中 **`Use Google Fonts`**。                                                               |
+| **Font&#160;size**&#160;(px)            | 24                        | integer | 字體大小（以像素為單位）。                                                                                                                                                                                              |
+| **Font&#160;weight**                    | 300                       | integer | 字體粗細，100 到 900 之間的 100 的倍數。（數字越大越粗）                                                                                                                                                                |
+| **Italic**                              | false                     | boolean | 字體是否應該是斜體。                                                                                                                                                                                                    |
 
 <br>
 <img src="https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/settings-blur.webp" width=400 />
@@ -66,7 +65,7 @@
 5.  如果沒有顯示 WebRender，請返回 <code>about:config</code>，然後搜索 <code>gfx.webrender.all</code> 並將其切換為 true。<br>
 
 6.  然後搜索 <code>dom.webgpu.enabled</code> 並確保它設置為 false。<br>
-<br>
+    <br>
 
 當您重新啟動 Firefox 時，支持頁面現在應該為“合成”部分顯示 WebRender。 如果您按照這些步驟操作，但仍然沒有顯示 WebRender，那麼它可能與您的圖形驅動程序、操作系統、硬件或 Firefox 版本不兼容。 在台式機上應該是極不可能的。 但是哦，好吧，這畢竟只是一個視覺效果。
 

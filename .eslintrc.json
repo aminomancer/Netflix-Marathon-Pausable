@@ -1,49 +1,39 @@
 {
-  "env": {
-    "browser": true,
-    "es2021": true
-  },
-  "extends": ["airbnb-base", "prettier"],
-  "parserOptions": {
-    "ecmaVersion": "latest",
-    "sourceType": "script"
-  },
+  "env": { "browser": true, "es2021": true },
+  "extends": [
+    "eslint:recommended",
+    "airbnb-base",
+    "plugin:prettier/recommended"
+  ],
+  "parserOptions": { "ecmaVersion": "latest", "sourceType": "script" },
   "rules": {
-    "indent": "off",
-    "max-len": "off",
-    "quotes": [
-      "error",
-      "double",
-      {
-        "avoidEscape": true,
-        "allowTemplateLiterals": true
-      }
-    ],
-    "curly": ["error", "multi-line"],
     "camelcase": [
       "error",
       {
-        "properties": "never",
         "ignoreDestructuring": false,
-        "ignoreGlobals": true
+        "ignoreGlobals": true,
+        "ignoreImports": true,
+        "properties": "always"
       }
     ],
+    "curly": [
+      // You're not supposed to use this rule with prettier, but in my experience
+      // it works just fine with prettier-eslint and the following settings:
+      "error",
+      "multi-line",
+      "consistent"
+    ],
+    "default-param-last": "off",
+    "eqeqeq": ["error", "smart"],
+    "indent": "off",
     "max-classes-per-file": "off",
+    "max-len": "off",
+    "new-cap": ["error", { "capIsNew": false }],
     "no-cond-assign": ["error", "except-parens"],
-    "no-unused-vars": [
-      "error",
-      {
-        "vars": "local",
-        "args": "after-used"
-      }
-    ],
-    "no-use-before-define": [
-      "error",
-      {
-        "functions": false,
-        "classes": false
-      }
-    ],
+    "no-confusing-arrow": ["error", { "allowParens": false }],
+    "no-console": "off",
+    "no-empty": ["error", { "allowEmptyCatch": true }],
+    "no-eval": "error",
     "no-fallthrough": [
       "error",
       {
@@ -54,33 +44,25 @@
         "commentPattern": "[Ff][Aa][Ll][Ll][Ss]?[\\s-]?([Tt][Hh][Rr][Oo][Uu][Gg][Hh]|[Tt][Hh][Rr][Uu])"
       }
     ],
+    "no-implied-eval": "error",
+    "no-param-reassign": "off",
+    "no-promise-executor-return": "off",
+    "no-restricted-syntax": ["error", "SequenceExpression"],
+    "no-return-assign": "off",
+    "no-shadow": "off",
+    "no-underscore-dangle": "off",
     "no-unused-expressions": [
       "error",
-      {
-        "allowTernary": true,
-        "allowTaggedTemplates": true
-      }
+      { "allowTaggedTemplates": true, "allowTernary": true }
     ],
-    "default-param-last": "off",
-    "no-promise-executor-return": "off",
-    "no-param-reassign": "off",
-    "no-return-assign": "off",
+    "no-unused-vars": ["error", { "args": "after-used", "vars": "local" }],
+    "no-use-before-define": ["error", { "classes": false, "functions": false }],
     "prefer-destructuring": "off",
-    "no-underscore-dangle": "off",
-    "no-restricted-syntax": [
+    "prettier/prettier": ["error", {}, { "usePrettierrc": true }],
+    "quotes": [
       "error",
-      {
-        "selector": "ForInStatement",
-        "message": "for..in loops iterate over the entire prototype chain, which is virtually never what you want. Use Object.{keys,values,entries}, and iterate over the resulting array."
-      },
-      {
-        "selector": "LabeledStatement",
-        "message": "Labels are a form of GOTO; using them makes code confusing and hard to maintain and understand."
-      },
-      {
-        "selector": "WithStatement",
-        "message": "`with` is disallowed in strict mode because it makes code impossible to predict and optimize."
-      }
+      "double",
+      { "allowTemplateLiterals": false, "avoidEscape": true }
     ]
   }
 }
