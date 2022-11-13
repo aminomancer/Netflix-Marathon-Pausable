@@ -1,0 +1,7 @@
+# .git-blame-ignore-revs
+
+# Run this command to always ignore formatting commits in `git blame`
+# git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# 9fcf579: Formatting/linting update. …
+9fcf57944a1d4f6603d26ffb27e2f12b195e4951
