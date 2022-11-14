@@ -10,7 +10,7 @@
 // @name:ru            Netflix Marathon (пауза)
 // @name:hi            नेटफ्लिक्स मैराथन (रोकने योग्य)
 // @namespace          https://github.com/aminomancer
-// @version            5.5.9
+// @version            5.6.0
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, Disney+, and Hotstar. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:en     A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, Disney+, and Hotstar. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，可自动跳过重述、介绍、演职员表和广告，并点击 Netflix、Amazon Prime Video、Hulu、HBO Max、Starz、Disney+ 和 Hotstar 上的“下一集”提示。 可自定义的热键暂停/恢复自动跳过功能。 Alt + N 进行设置。
@@ -739,22 +739,39 @@ class MarathonController {
   }
 
   /**
-   * opens the popup and schedules it to close
+   * opens the popup (and optionally schedules it to close)
    * @param {String} msg what the popup should say
+   * @param {Boolean} [stayOpen] whether to keep the popup open until dismissed
+   * @returns {closedPromise|hide|null} if !stayOpen, returns a promise that
+   *          resolves when the popup fades out. if stayOpen, returns a function
+   *          that can be called to hide the popup, which returns a closing
+   *          promise. returns null if popups are disabled or msg is not passed.
    */
-  openPopup(msg) {
+  openPopup(msg, stayOpen = false) {
     // if popup is disabled in options, or no message was sent, do nothing
-    if (msg === undefined || !options.pop) return;
+    if (msg === undefined || !options.pop) return null;
     const { style } = this.popup;
     this.popup.textContent = `Marathon: ${msg}`;
     style.transitionDuration = "0.2s";
     style.opacity = "1";
     win.clearTimeout(this.fading); // clear any existing fade timeout since we're about to set a new one
-    // schedule the popup to fade into oblivion
-    this.fading = win.setTimeout(() => {
+
+    /** @typedef {Promise<undefined>} */
+    const closedPromise = new Promise(resolve =>
+      this.popup.addEventListener("transitionend", resolve, { once: true })
+    );
+
+    /** @typedef {function():closedPromise} */
+    const hide = () => {
       style.transitionDuration = "1s";
       style.opacity = "0";
-    }, options.popDur);
+      return closedPromise;
+    };
+    if (stayOpen) return hide;
+
+    // schedule the popup to fade into oblivion
+    this.fading = win.setTimeout(hide, options.popDur);
+    return closedPromise;
   }
 
   // apply the basic popup style and place it in the body
@@ -1067,7 +1084,10 @@ async function initGMC() {
           code.node.focus();
           code.node.addEventListener("keydown", capture.settings.keydown);
           window.addEventListener("keydown", capture.settings.keydown, true);
-          marathon.openPopup("Press desired hotkey then Enter (Esc to cancel)");
+          GM_config.dismissPopup = marathon.openPopup(
+            "Press desired hotkey then Enter (Esc to cancel)",
+            true
+          );
         },
         keydown: e => {
           const { code, capture, ctrlKey, altKey, shiftKey, metaKey } =
@@ -1103,6 +1123,9 @@ async function initGMC() {
           capture.node.disabled = false;
           GM_config.frame.removeAttribute("capturing");
           code.node.focus();
+          if (GM_config.dismissPopup) {
+            GM_config.dismissPopup().then(() => delete GM_config.dismissPopup);
+          }
           code.node.removeEventListener("keydown", capture.settings.keydown);
           window.removeEventListener("keydown", capture.settings.keydown, true);
         },
@@ -1166,7 +1189,10 @@ async function initGMC() {
           code2.node.focus();
           code2.node.addEventListener("keydown", capture2.settings.keydown);
           window.addEventListener("keydown", capture2.settings.keydown, true);
-          marathon.openPopup("Press desired hotkey then Enter (Esc to cancel)");
+          GM_config.dismissPopup = marathon.openPopup(
+            "Press desired hotkey then Enter (Esc to cancel)",
+            true
+          );
         },
         keydown: e => {
           const { code2, capture2, ctrlKey2, altKey2, shiftKey2, metaKey2 } =
@@ -1202,6 +1228,9 @@ async function initGMC() {
           capture2.node.disabled = false;
           GM_config.frame.removeAttribute("capturing");
           code2.node.focus();
+          if (GM_config.dismissPopup) {
+            GM_config.dismissPopup().then(() => delete GM_config.dismissPopup);
+          }
           code2.node.removeEventListener("keydown", capture2.settings.keydown);
           window.removeEventListener(
             "keydown",
@@ -1464,19 +1493,31 @@ async function initGMC() {
       },
       open() {
         marathon.stopCapturing();
-        // add a label to the "Run on" checkboxes
-        methods.byID("Marathon_section_header_0").after(sitesFieldLabel);
-        // put the checkboxes in a container so we can ensure it doesn't wrap
-        const sites = [...methods.byID("Marathon_section_0").children].slice(
-          1,
-          2 + methods.sites.length
-        );
-        const container = sites[0].parentElement.insertBefore(
-          doc.createElement("div"),
-          sites[0]
-        );
-        container.className = "grid_container";
-        sites.forEach(div => container.appendChild(div));
+        // put the checkboxes in a container so we can control their layout
+        const grid = methods.create(doc, "div", {
+          class: "grid_container",
+        });
+        methods.byID("Marathon_section_header_0").after(grid);
+        // add the subheader to the grid container
+        grid.appendChild(sitesFieldLabel);
+        // add each site checkbox to the grid container
+        methods.sites.forEach(site => {
+          const field = GM_config.fields[site];
+          if (!field) return;
+          const { wrapper } = field;
+          if (wrapper instanceof HTMLElement) grid.appendChild(wrapper);
+        });
+        // stretch the header to fill the entire first row when the number of
+        // site checkboxes + the subheader is not a multiple of 4. there are
+        // currently 7 checkboxes, so we can get an even 4x2 grid by including
+        // the "Run on:" subheader in the first cell (0, 0, top left) and the
+        // site checkboxes in the subsequent cells. but when the number of site
+        // checkboxes is 8 for example, it would become a 4x3 grid with the
+        // third row having 3 unfilled cells. so at that point it would look
+        // better to fill the entire first row with the subheader and let the 8
+        // checkboxes fill the remaining rows.
+        if (grid.children.length % 4) grid.classList.add("stretch_header");
+
         // add a support button, make the reset link an actual button. we could do this by editing the prototype but again, it'd be a lot of duplicate code.
         const resetLink = methods.byID("Marathon_resetLink"); // the ugly reset link that comes with GM_config
         methods.maybeSetAttributes(resetBtn, {
@@ -1599,21 +1640,18 @@ async function initGMC() {
   text-align: left !important;
   flex-basis: 100%;
 }
-#Marathon .horizontal_container {
-  display: flex;
-  flex-flow: row nowrap;
-  column-gap: 10px;
-}
 #Marathon .grid_container {
   display: grid;
-  grid-template-areas: "head head head head";
   grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 6px 8px;
   flex-grow: 1;
   padding-bottom: 3px;
 }
-#Marathon .grid_container > .field_label {
-  // grid-area: head;
+#Marathon .grid_container.stretch_header {
+  grid-template-areas: "head head head head";
+}
+#Marathon .grid_container.stretch_header > .field_label {
+  grid-area: head;
   margin-bottom: -2px !important;
 }
 #Marathon .config_var {
