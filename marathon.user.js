@@ -10,7 +10,7 @@
 // @name:ru            Netflix Marathon (пауза)
 // @name:hi            नेटफ्लिक्स मैराथन (रोकने योग्य)
 // @namespace          https://github.com/aminomancer
-// @version            5.6.0
+// @version            5.6.1
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, Disney+, and Hotstar. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:en     A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, Disney+, and Hotstar. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，可自动跳过重述、介绍、演职员表和广告，并点击 Netflix、Amazon Prime Video、Hulu、HBO Max、Starz、Disney+ 和 Hotstar 上的“下一集”提示。 可自定义的热键暂停/恢复自动跳过功能。 Alt + N 进行设置。
@@ -61,6 +61,7 @@
 // @grant              GM_setValue
 // @grant              GM_getValue
 // @grant              GM_deleteValue
+// @grant              GM_addValueChangeListener
 // @grant              GM_listValues
 // @grant              GM_openInTab
 // @grant              GM.setValue
@@ -72,8 +73,8 @@
 
 /* global GM, GM_registerMenuCommand, GM_unregisterMenuCommand,
 GM_getValue:writable, GM_setValue:writable, GM_deleteValue:writable,
-GM_listValues:writable, GM_openInTab:writable, WebFontConfig:writable,
-GM_config, WebFont */
+GM_addValueChangeListener, GM_removeValueChangeListener, GM_listValues:writable,
+GM_openInTab:writable, WebFontConfig:writable, GM_config, WebFont */
 const options = {}; // where settings are stored during runtime
 const win = window;
 const doc = document;
@@ -371,7 +372,14 @@ const methods = {
     if (this.count === 0) {
       if (this.isVis("dv-web-player")) {
         let store; // memoize the element when we check for its existence so we don't have to evaluate the DOM twice.
-        if ((store = this.qry(".atvwebplayersdk-nextupcard-button"))) {
+        if (
+          (store = this.qry(".atvwebplayersdk-nextupcard-button")) &&
+          // If the next up card is an episode, click it. Otherwise, it's
+          // probably a movie promo, in which case we only click it if the user
+          // has enabled the promoted setting.
+          (this.qry(".atvwebplayersdk-nextupcard-episode", store) ||
+            options.promoted)
+        ) {
           // next episode
           await sleep(400);
           if (this.isReady) this.clk(store);
@@ -608,21 +616,31 @@ class MarathonController {
     this.text = doc.createTextNode("Marathon: Paused");
     this.remainder = 0; // how much time is remaining on the interval when we pause it
     this.fading = null; // 3 second timeout (by default), after which the popup fades
-    this.pauseState = 0; //  0: idle, 1: running, 2: paused, 3: resumed
     this.toggle = this.toggler.bind(this);
-    this.register("Pause Marathon", true); // initial creation of the menu command
+    this.registerCommand("Pause Marathon", true); // initial creation of the menu command
+    GM_addValueChangeListener("Marathon:paused", this.onPauseChange.bind(this));
     // if popup is enabled in options, style it
     if (options.pop) this.updatePopup();
     this.time = new Date();
-    this.timer = win.setTimeout(() => this.onInterval(), this.int);
-    this.pauseState = 1;
+    switch (this.pauseState) {
+      case MarathonController.STATES.RUNNING:
+        this.timer = win.setTimeout(() => this.onInterval(), this.int);
+        break;
+      case MarathonController.STATES.PAUSED:
+        this.registerCommand("Resume Marathon"); // update the menu command label
+        this.remainder = this.int - (new Date() - this.time);
+        break;
+      default:
+        this.pauseState = MarathonController.STATES.RUNNING;
+    }
     this.startCapturing();
-    // if the site is disabled then stop the interval. we pause it instead of
-    // not starting it in the first place so that the user can re-enable the
-    // site and have the interval immediately start working without needing to
-    // refresh the page.
-    if (!options[site]) this.pause();
   }
+
+  static STATES = {
+    IDLE: 0,
+    RUNNING: 1,
+    PAUSED: 2,
+  };
 
   /**
    * check that the modifier keys pressed match those defined in user settings
@@ -681,8 +699,11 @@ class MarathonController {
 
   // invoke the site handler, wait for it to complete, then restart the timer.
   async onInterval() {
+    if (!options[site]) return;
     try {
-      if (this.pauseState === 1) await this.callback();
+      if (this.pauseState === MarathonController.STATES.RUNNING) {
+        await this.callback();
+      }
     } finally {
       this.timer = win.setTimeout(() => this.onInterval(), this.int);
     }
@@ -693,12 +714,10 @@ class MarathonController {
    * @param {String} msg string or null — determines the popup text
    */
   pause(msg) {
-    if (this.pauseState !== 1) return;
-    this.remainder = this.int - (new Date() - this.time);
-    win.clearTimeout(this.timer);
-    this.pauseState = 2;
-    this.register("Resume Marathon"); // update the menu command label
-    this.openPopup(msg);
+    if (this.pauseState === MarathonController.STATES.RUNNING) {
+      this.pauseState = MarathonController.STATES.PAUSED;
+      this.openPopup(msg);
+    }
   }
 
   /**
@@ -706,32 +725,56 @@ class MarathonController {
    * @param {String} msg string or null — determines the popup text
    */
   async resume(msg) {
-    if (this.pauseState !== 2) return;
-    this.pauseState = 3;
-    this.register("Pause Marathon");
-    this.openPopup(msg);
-    await sleep(this.remainder);
-    this.run();
+    if (this.pauseState === MarathonController.STATES.PAUSED) {
+      this.pauseState = MarathonController.STATES.RUNNING;
+      this.openPopup(msg);
+    }
   }
 
-  // when we pause, there's usually still time left on the interval. resume()
-  // calls this after waiting for the remaining duration. so this is what
-  // actually resumes the interval.
-  run() {
-    if (this.pauseState !== 3) return;
-    this.time = new Date();
-    this.pauseState = 1;
-    this.onInterval();
+  /**
+   * Control the interval in response to changes to the pause state
+   * @param {string} name value name e.g. "Marathon:paused"
+   * @param {number|undefined} oldValue
+   * @param {number|undefined} newValue
+   */
+  async onPauseChange(name, oldValue, newValue) {
+    if (oldValue === newValue || !options[site]) return;
+    switch (newValue) {
+      case MarathonController.STATES.RUNNING:
+        if (oldValue === MarathonController.STATES.PAUSED) {
+          this.registerCommand("Pause Marathon");
+          await sleep(this.remainder);
+          this.time = new Date();
+          this.onInterval();
+        } else {
+          this.timer = win.setTimeout(() => this.onInterval(), this.int);
+        }
+        break;
+      case MarathonController.STATES.PAUSED:
+        this.registerCommand("Resume Marathon"); // update the menu command label
+        this.remainder = this.int - (new Date() - this.time);
+        win.clearTimeout(this.timer);
+        break;
+      default:
+    }
+  }
+
+  get pauseState() {
+    return GM_getValue("Marathon:paused", MarathonController.STATES.IDLE);
+  }
+
+  set pauseState(state) {
+    GM_setValue("Marathon:paused", state);
   }
 
   // toggle the interval on/off.
   toggler() {
     if (!options[site]) return; // disable the pause/resume toggle when the site is disabled
     switch (this.pauseState) {
-      case 1:
+      case MarathonController.STATES.RUNNING:
         this.pause("Paused"); // passing "Paused" tells openPopup to use the "Marathon: Paused" message
         break;
-      case 2:
+      case MarathonController.STATES.PAUSED:
         this.resume("Resumed"); // passing "Resumed" => "Marathon: Resumed" message
         break;
       default:
@@ -801,7 +844,7 @@ class MarathonController {
    *                           a command. on subsequent calls, we unregister the
    *                           previous command and register a new one.
    */
-  register(cap, firstRun = false) {
+  registerCommand(cap, firstRun = false) {
     if (GM4) return; // don't register a menu command if the script manager is greasemonkey 4.0+ since the function doesn't exist
     if (!firstRun) GM_unregisterMenuCommand(this.caption); // this is how we switch the menu command from play to pause. we'd prefer to just have a single menu command and use a variable to determine its label and callback behavior, but the API doesn't support that afaik.
     // don't register the pause/unpause menu command if the site is currently disabled
@@ -1052,7 +1095,7 @@ async function initGMC() {
         type: "checkbox",
         label: "Autoplay promoted videos",
         title:
-          "After the final credits of a film or the last episode of a series, Netflix and Disney+ recommend a trending or similar movie/series. Check this if you want to automatically start playing the site's recommendation at the end of the credits",
+          "After the final credits of a film or the last episode of a series, some sites recommend a trending or similar movie/series. Check this if you want to automatically start playing the site's recommendation at the end of the credits",
         default: false,
       },
       code: {
@@ -1336,8 +1379,6 @@ async function initGMC() {
     },
     events: {
       init() {
-        // determine if user has any orphaned script settings
-        const migrateKeys = GM_listValues().filter(key => key !== "Marathon");
         const f = this.fields;
         // all the fields that affect the pause/resume hotkey
         this.hotkeyFields = {
@@ -1370,20 +1411,6 @@ async function initGMC() {
           fontWeight: f.fontWeight,
           italic: f.italic,
         };
-        // this exists to migrate user settings from the old system (multiple objects) to the new system (one JSON object with multiple keys)
-        if (migrateKeys.length) {
-          for (const key of migrateKeys) {
-            const oldVal = GM_getValue(key);
-            // fontSize used to be a string setting, now it's an integer setting fontSizeInt. need to convert it first
-            if (key === "fontSize" && typeof oldVal === "string") {
-              const newVal = Number(oldVal.match(/\d+/g)[0]);
-              this.set("fontSizeInt", newVal);
-            } else {
-              this.set(key, oldVal);
-            }
-            GM_deleteValue(key); // get rid of the old setting so we don't have to do this again.
-          }
-        }
         this.save(); // we need this to save the default values on first load
         // for all addons except greasemonkey 4, we can add a menu command
         if (!GM4) {
@@ -1452,9 +1479,7 @@ async function initGMC() {
           const newInt = f.rate.value;
           if (options.rate !== newInt) {
             options.rate = newInt;
-            marathon.pause(); // stop the current interval
             marathon.int = newInt; // update the rate
-            if (options[site]) marathon.resume(); // if the site we're currently on is enabled, start the interval with the new rate
             if (message.includes("&")) {
               message = "Settings";
             } else {
@@ -1473,13 +1498,7 @@ async function initGMC() {
             options.starz !== f.starz.value ||
             options.promoted !== f.promoted.value
           ) {
-            // if the memoized setting for the current site doesn't match the new setting for that site...
-            if (options[site] !== f[site].value) {
-              options[site] = f[site].value; // make them match...
-              f[site].value // and stop or start the interval accordingly
-                ? marathon.resume()
-                : marathon.pause();
-            }
+            options[site] = f[site].value;
             options.promoted = f.promoted.value;
             // if we already changed other types of settings then set the message to something general
             if (message) message = "Settings";
@@ -1683,7 +1702,8 @@ async function initGMC() {
   width: revert;
   padding: revert;
 }
-#Marathon button {
+#Marathon button,
+#Marathon input[type="button"] {
   text-align: center;
   cursor: default !important;
 }
@@ -1777,7 +1797,6 @@ async function initGMC() {
 // load webfontloader and create the base config (to be changed by GM_config)
 function attachWebFont() {
   const loader = doc.createElement("script");
-  const first = doc.scripts[0];
   WebFontConfig = {
     classes: false, // don't bother changing the DOM at all, we aren't listening for it
     events: false, // no need for events, not worth the execution
@@ -1790,7 +1809,7 @@ function attachWebFont() {
   loader.src =
     "https://cdn.jsdelivr.net/npm/webfontloader@latest/webfontloader.js";
   loader.async = true; // don't block the rest of the page for this, it won't appear until user interaction anyway
-  first.parentNode.insertBefore(loader, first);
+  document.head.prepend(loader);
 }
 
 // after getting settings from *monkey storage, memoize their values in a simple js object so referencing them is cheaper

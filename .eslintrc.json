@@ -16,6 +16,7 @@
         "properties": "always"
       }
     ],
+    "class-methods-use-this": "off",
     "curly": [
       // You're not supposed to use this rule with prettier, but in my experience
       // it works just fine with prettier-eslint and the following settings:
