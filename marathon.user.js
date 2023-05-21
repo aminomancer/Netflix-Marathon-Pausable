@@ -26,6 +26,7 @@
 // @supportURL         https://github.com/aminomancer/Netflix-Marathon-Pausable
 // @downloadURL        https://greasyfork.org/scripts/420475-netflix-marathon-pausable/code/Netflix%20Marathon%20(Pausable).user.js
 // @icon               https://cdn.jsdelivr.net/gh/aminomancer/Netflix-Marathon-Pausable@latest/icon-small.svg
+// @license            CC-BY-NC-SA-4.0
 // @match              http*://*.amazon.ae/*
 // @match              http*://*.amazon.ca/*
 // @match              http*://*.amazon.cn/*
