@@ -1,6 +1,6 @@
 {
   "name": "netflix-marathon-pausable",
-  "version": "5.1.0",
+  "version": "5.6.1",
   "description": "A configurable script that automatically skips recaps, intros, credits, and ads, and clicks \"next episode\" prompts on Netflix, Amazon Prime Video, and Disney+. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.",
   "main": "marathon.user.js",
   "scripts": {
@@ -21,7 +21,7 @@
     "disney-plus"
   ],
   "author": "aminomancer",
-  "license": "MIT",
+  "license": "CC-BY-NC-SA-4.0",
   "bugs": {
     "url": "https://github.com/aminomancer/Netflix-Marathon-Pausable/issues"
   },
