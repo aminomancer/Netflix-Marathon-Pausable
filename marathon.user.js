@@ -10,7 +10,7 @@
 // @name:ru            Netflix Marathon (пауза)
 // @name:hi            नेटफ्लिक्स मैराथन (रोकने योग्य)
 // @namespace          https://github.com/aminomancer
-// @version            5.7.0
+// @version            5.7.1
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, Disney+, and Hotstar. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:en     A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, Disney+, and Hotstar. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，可自动跳过重述、介绍、演职员表和广告，并点击 Netflix、Amazon Prime Video、Hulu、HBO Max、Starz、Disney+ 和 Hotstar 上的“下一集”提示。 可自定义的热键暂停/恢复自动跳过功能。 Alt + N 进行设置。
@@ -57,6 +57,8 @@
 // @match              http*://*.netflix.com/*
 // @match              http*://*.primevideo.com/*
 // @match              http*://*.starz.com/*
+// @match              http*://*.starz.ca/*
+// @match              http*://*.starzplay.com/*
 // @require            https://greasyfork.org/scripts/420683-gm-config-sizzle/code/GM_config_sizzle.js?version=894369
 // @grant              GM_registerMenuCommand
 // @grant              GM_unregisterMenuCommand
@@ -119,6 +121,7 @@ const getHost = () => {
         case "max":
         case "netflix":
         case "starz":
+        case "starzplay":
           return true;
         default:
           return false;
@@ -133,6 +136,8 @@ const getHost = () => {
       return "disneyplus";
     case "max":
       return "hbomax";
+    case "starzplay":
+      return "starz";
     default:
       return host;
   }
