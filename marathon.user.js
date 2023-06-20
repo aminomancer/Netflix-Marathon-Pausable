@@ -10,7 +10,7 @@
 // @name:ru            Netflix Marathon (пауза)
 // @name:hi            नेटफ्लिक्स मैराथन (रोकने योग्य)
 // @namespace          https://github.com/aminomancer
-// @version            5.6.1
+// @version            5.7.0
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, Disney+, and Hotstar. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:en     A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, Disney+, and Hotstar. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，可自动跳过重述、介绍、演职员表和广告，并点击 Netflix、Amazon Prime Video、Hulu、HBO Max、Starz、Disney+ 和 Hotstar 上的“下一集”提示。 可自定义的热键暂停/恢复自动跳过功能。 Alt + N 进行设置。
@@ -51,6 +51,7 @@
 // @match              http*://*.disneyplus.com/*
 // @match              http*://*.starplus.com/*
 // @match              http*://play.hbomax.com/*
+// @match              http*://play.max.com/*
 // @match              http*://*.hotstar.com/*
 // @match              http*://*.hulu.com/*
 // @match              http*://*.netflix.com/*
@@ -115,6 +116,7 @@ const getHost = () => {
         case "hotstar":
         case "hulu":
         case "hbomax":
+        case "max":
         case "netflix":
         case "starz":
           return true;
@@ -123,13 +125,14 @@ const getHost = () => {
       }
     })
     .join();
+  // aliases for some sites
   switch (host) {
-    case "amazon":
     case "primevideo":
       return "amazon";
-    case "disneyplus":
     case "starplus":
       return "disneyplus";
+    case "max":
+      return "hbomax";
     default:
       return host;
   }
@@ -219,7 +222,6 @@ const methods = {
   sites: [
     "amazon",
     "disneyplus",
-    "starplus",
     "hotstar",
     "hulu",
     "hbomax",
@@ -294,13 +296,18 @@ const methods = {
     return null;
   },
   /**
-   * determine if an element is visible (namely the amazon player)
-   * @param {String} s element id
+   * determine if an element is visible
+   * @param {Element} el the element to check
    * @returns {Boolean} true if the element is visible
    */
-  isVis(s) {
+  isVisible(el) {
     try {
-      return !!this.byID(s).offsetParent;
+      const { visibility, display } = getComputedStyle(el);
+      return !!(
+        el.offsetParent &&
+        !["hidden", "collapse"].includes(visibility) &&
+        display !== "none"
+      );
     } catch (e) {
       return false;
     }
@@ -330,13 +337,24 @@ const methods = {
    * pass a CSS selector string to locate a react component and invoke its
    * onPress method. a trick to get around the fact that HBO tries to stop
    * adblockers and other extensions from invoking Element.click(), etc.
-   * @param {String} s CSS selector e.g. ".class" or "#id"
+   * @param {Element|String} s element or CSS selector string
    * @param {Number} [addOnClick] cancel the next n runs if click is successful
    * @param {Number} [addOnFail] cancel the next n runs if click is unsuccessful
    */
   hboPress(s, { addOnClick = 5, addOnFail = 2 } = {}) {
+    if (typeof s === "string") s = this.qry(s);
     try {
-      this.reactFiber(this.qry(s)).return.return.memoizedProps.onPress();
+      this.reactFiber(s).return.return.memoizedProps.onPress();
+      this.count = addOnClick;
+    } catch (e) {
+      this.count = addOnFail;
+    }
+  },
+  /** Same as above but for play.max.com */
+  maxPress(s, { addOnClick = 5, addOnFail = 2 } = {}) {
+    if (typeof s === "string") s = this.qry(s);
+    try {
+      this.reactFiber(s).return.memoizedProps.onClick();
       this.count = addOnClick;
     } catch (e) {
       this.count = addOnFail;
@@ -371,7 +389,7 @@ const methods = {
   // skip stuff. when the script is not paused, they are invoked on a timer.
   async amazon() {
     if (this.count === 0) {
-      if (this.isVis("dv-web-player")) {
+      if (this.byID("dv-web-player").offsetParent) {
         let store; // memoize the element when we check for its existence so we don't have to evaluate the DOM twice.
         if (
           (store = this.qry(".atvwebplayersdk-nextupcard-button")) &&
@@ -550,7 +568,52 @@ const methods = {
   },
   async hbomax() {
     if (this.count === 0) {
-      if (test("/player/")) {
+      if (test("play.max.com/video/watch/")) {
+        const overlay = this.qry("#overlay-root");
+        if (!overlay) {
+          // this means the whole video interface is gone for some reason
+          this.count = 20;
+          return;
+        }
+        let store = this.qry('[data-testid="skip"]', overlay);
+        if (
+          this.isVisible(store) &&
+          (store = this.qry(
+            'button[data-testid="player-ux-skip-button"]',
+            store
+          ))
+        ) {
+          // skip intro, skip recap, skip ad, etc.
+          this.maxPress(store);
+        } else if (
+          this.isVisible(
+            (store = this.qry('[data-testid="up_next"]', overlay))
+          ) &&
+          (store = this.qry(
+            'button[data-testid="player-ux-up-next-button"]',
+            store
+          ))
+        ) {
+          // next episode
+          try {
+            const fiber = this.reactFiber(store.parentElement);
+            const { nextEpisode } = fiber.return.return.memoizedProps;
+            if (
+              nextEpisode &&
+              (nextEpisode.episodeNumber || // tv series
+                (options.promoted && nextEpisode.id)) // promoted film/series
+            ) {
+              this.maxPress(store);
+            }
+          } catch (error) {}
+        }
+        // TODO - see if you can reproduce actual ads, where skip/seek controls
+        // are disabled. account has ads disabled so can't test. if you check
+        // the source code in the debugger, there's a requestSkip() method
+        // that's disabled for ads, but it should be possible to call the
+        // underlying mediator.skip() method instead, assuming we can get a
+        // reference to any of this stuff.
+      } else if (test("/player/")) {
         try {
           const viewHandle = this.byID("rn-video");
           const fiber = this.reactFiber(viewHandle);
