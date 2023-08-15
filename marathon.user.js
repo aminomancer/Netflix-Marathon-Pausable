@@ -10,7 +10,7 @@
 // @name:ru            Netflix Marathon (пауза)
 // @name:hi            नेटफ्लिक्स मैराथन (रोकने योग्य)
 // @namespace          https://github.com/aminomancer
-// @version            5.7.4
+// @version            5.7.5
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, Disney+, and Hotstar. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:en     A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, Disney+, and Hotstar. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，可自动跳过重述、介绍、演职员表和广告，并点击 Netflix、Amazon Prime Video、Hulu、HBO Max、Starz、Disney+ 和 Hotstar 上的“下一集”提示。 可自定义的热键暂停/恢复自动跳过功能。 Alt + N 进行设置。
@@ -556,16 +556,19 @@ const methods = {
         if (controlProps.isSkipButtonShown) {
           // skip intro, skip recap, skip ad, etc.
           this.clk(this.qry(".SkipButton button"));
-        } else if (controlProps.isEndCardVisible) {
+        } else if (
+          controlProps.isEndCardVisible &&
+          controlProps.endCardType !== "none"
+        ) {
           // next episode
-          if (controlProps.endCardType === "credit" || options.promoted) {
-            this.clk(this.qry(".EndCardButton--active"));
-          }
-        } else if (controlProps.isOverlayVisible) {
-          // next episode
-          if (controlProps.endCardType === "legacy" && options.promoted) {
-            this.clk(this.qry(".end-card__metadata-area-play-button"));
-          }
+          this.clk(this.qry(".EndCardButton--active"));
+        } else if (
+          controlProps.isOverlayVisible &&
+          controlProps.endCardType === "legacy" &&
+          options.promoted
+        ) {
+          // autoplay promoted title
+          this.clk(this.qry(".end-card__metadata-area-play-button"));
         }
       }
     } else {
@@ -611,7 +614,7 @@ const methods = {
             ) {
               this.maxPress(store);
             }
-          } catch (error) {}
+          } catch (e) {}
         }
         // TODO - see if you can reproduce actual ads, where skip/seek controls
         // are disabled. account has ads disabled so can't test. if you check
@@ -724,15 +727,15 @@ class MarathonController {
   /**
    * check that the modifier keys pressed match those defined in user settings
    * @param {KeyboardEvent} e
-   * @param {String} d which key settings to evaluate, ctrlKey or ctrlKey1
+   * @param {String} i which key settings to evaluate, ctrlKey or ctrlKey2
    * @return {Boolean} true if the keys match, false otherwise
    */
-  static modTest(e, d = "") {
+  static modTest(e, i = "") {
     return (
-      e.ctrlKey === options[`ctrlKey${d}`] &&
-      e.altKey === options[`altKey${d}`] &&
-      e.shiftKey === options[`shiftKey${d}`] &&
-      e.metaKey === options[`metaKey${d}`]
+      e.ctrlKey === options[`ctrlKey${i}`] &&
+      e.altKey === options[`altKey${i}`] &&
+      e.shiftKey === options[`shiftKey${i}`] &&
+      e.metaKey === options[`metaKey${i}`]
     );
   }
 
@@ -1030,9 +1033,7 @@ function extendGMC() {
         // loop will interrupt on some unrelated stylesheet. I'd use the
         // optional chaining operator here but it's not enabled by default in
         // chrome. So trycatch statement instead.
-      } catch (e) {
-        // do nothing
-      }
+      } catch (e) {}
     }
   };
   /**
@@ -1088,7 +1089,7 @@ async function initGMC() {
       "https://greasyfork.org/scripts/420475-netflix-marathon-pausable"
     )
   );
-  GM_config.error = false; // this switch tells us if the user input an invalid value for a setting so we won't close the GUI when they try to save.
+  GM_config.error = false; // this flag tells us if the user input an invalid value for a setting so we won't close the GUI when they try to save.
   extendGMC();
   window.addEventListener(
     "keydown",
@@ -1113,6 +1114,78 @@ async function initGMC() {
     },
     true
   );
+  const makeCaptureCallbacks = (i = "") => ({
+    click: () => {
+      const {
+        [`code${i}`]: code,
+        [`capture${i}`]: capture,
+        [`ctrlKey${i}`]: ctrlKey,
+        [`altKey${i}`]: altKey,
+        [`shiftKey${i}`]: shiftKey,
+        [`metaKey${i}`]: metaKey,
+      } = GM_config.fields;
+      if (GM_config.capturing || capture.node.disabled) return;
+      code.settings.initialValue = code.node.value;
+      for (const key of [ctrlKey, altKey, shiftKey, metaKey]) {
+        key.settings.initialChecked = key.node.checked;
+      }
+      GM_config.capturing = true;
+      capture.node.disabled = true;
+      GM_config.frame.setAttribute("capturing", "true");
+      code.node.focus();
+      code.node.addEventListener("keydown", capture.settings.keydown);
+      window.addEventListener("keydown", capture.settings.keydown, true);
+      GM_config.dismissPopup = marathon.openPopup(
+        "Press desired hotkey then Enter (Esc to cancel)",
+        true
+      );
+    },
+    keydown: e => {
+      const {
+        [`code${i}`]: code,
+        [`capture${i}`]: capture,
+        [`ctrlKey${i}`]: ctrlKey,
+        [`altKey${i}`]: altKey,
+        [`shiftKey${i}`]: shiftKey,
+        [`metaKey${i}`]: metaKey,
+      } = GM_config.fields;
+      if (GM_config.specialKeys.includes(e.key)) return;
+      switch (e.key) {
+        case "Enter":
+          break;
+        case "Escape":
+          code.node.value = code.settings.initialValue;
+          for (const key of [ctrlKey, altKey, shiftKey, metaKey]) {
+            key.node.checked = key.settings.initialChecked;
+          }
+          break;
+        default:
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          if (e.repeat) return;
+          code.node.value = e.code;
+          ctrlKey.node.checked = e.ctrlKey;
+          altKey.node.checked = e.altKey;
+          shiftKey.node.checked = e.shiftKey;
+          metaKey.node.checked = e.metaKey;
+          return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      if (e.repeat) return;
+      GM_config.capturing = false;
+      capture.node.disabled = false;
+      GM_config.frame.removeAttribute("capturing");
+      code.node.focus();
+      if (GM_config.dismissPopup) {
+        GM_config.dismissPopup().then(() => delete GM_config.dismissPopup);
+      }
+      code.node.removeEventListener("keydown", capture.settings.keydown);
+      window.removeEventListener("keydown", capture.settings.keydown, true);
+    },
+  });
   // initialize the GUI
   GM_config.init({
     id: "Marathon",
@@ -1191,66 +1264,7 @@ async function initGMC() {
         title: "Press desired key combination and press Enter",
         type: "button",
         size: 1,
-        click: () => {
-          const { code, capture, ctrlKey, altKey, shiftKey, metaKey } =
-            GM_config.fields;
-          if (GM_config.capturing || capture.node.disabled) return;
-          code.settings.initialValue = code.node.value;
-          ctrlKey.settings.initialChecked = ctrlKey.node.checked;
-          altKey.settings.initialChecked = altKey.node.checked;
-          shiftKey.settings.initialChecked = shiftKey.node.checked;
-          metaKey.settings.initialChecked = metaKey.node.checked;
-          GM_config.capturing = true;
-          capture.node.disabled = true;
-          GM_config.frame.setAttribute("capturing", "true");
-          code.node.focus();
-          code.node.addEventListener("keydown", capture.settings.keydown);
-          window.addEventListener("keydown", capture.settings.keydown, true);
-          GM_config.dismissPopup = marathon.openPopup(
-            "Press desired hotkey then Enter (Esc to cancel)",
-            true
-          );
-        },
-        keydown: e => {
-          const { code, capture, ctrlKey, altKey, shiftKey, metaKey } =
-            GM_config.fields;
-          if (GM_config.specialKeys.includes(e.key)) return;
-          switch (e.key) {
-            case "Enter":
-              break;
-            case "Escape":
-              code.node.value = code.settings.initialValue;
-              ctrlKey.node.checked = ctrlKey.settings.initialChecked;
-              altKey.node.checked = altKey.settings.initialChecked;
-              shiftKey.node.checked = shiftKey.settings.initialChecked;
-              metaKey.node.checked = metaKey.settings.initialChecked;
-              break;
-            default:
-              e.preventDefault();
-              e.stopPropagation();
-              e.stopImmediatePropagation();
-              if (e.repeat) return;
-              code.node.value = e.code;
-              ctrlKey.node.checked = e.ctrlKey;
-              altKey.node.checked = e.altKey;
-              shiftKey.node.checked = e.shiftKey;
-              metaKey.node.checked = e.metaKey;
-              return;
-          }
-          e.preventDefault();
-          e.stopPropagation();
-          e.stopImmediatePropagation();
-          if (e.repeat) return;
-          GM_config.capturing = false;
-          capture.node.disabled = false;
-          GM_config.frame.removeAttribute("capturing");
-          code.node.focus();
-          if (GM_config.dismissPopup) {
-            GM_config.dismissPopup().then(() => delete GM_config.dismissPopup);
-          }
-          code.node.removeEventListener("keydown", capture.settings.keydown);
-          window.removeEventListener("keydown", capture.settings.keydown, true);
-        },
+        ...makeCaptureCallbacks(),
       },
       hotkey: {
         type: "checkbox",
@@ -1296,70 +1310,7 @@ async function initGMC() {
         title: "Press desired key combination and press Enter",
         type: "button",
         size: 1,
-        click: () => {
-          const { code2, capture2, ctrlKey2, altKey2, shiftKey2, metaKey2 } =
-            GM_config.fields;
-          if (GM_config.capturing || capture2.node.disabled) return;
-          code2.settings.initialValue = code2.node.value;
-          ctrlKey2.settings.initialChecked = ctrlKey2.node.checked;
-          altKey2.settings.initialChecked = altKey2.node.checked;
-          shiftKey2.settings.initialChecked = shiftKey2.node.checked;
-          metaKey2.settings.initialChecked = metaKey2.node.checked;
-          GM_config.capturing = true;
-          capture2.node.disabled = true;
-          GM_config.frame.setAttribute("capturing", "true");
-          code2.node.focus();
-          code2.node.addEventListener("keydown", capture2.settings.keydown);
-          window.addEventListener("keydown", capture2.settings.keydown, true);
-          GM_config.dismissPopup = marathon.openPopup(
-            "Press desired hotkey then Enter (Esc to cancel)",
-            true
-          );
-        },
-        keydown: e => {
-          const { code2, capture2, ctrlKey2, altKey2, shiftKey2, metaKey2 } =
-            GM_config.fields;
-          if (GM_config.specialKeys.includes(e.key)) return;
-          switch (e.key) {
-            case "Enter":
-              break;
-            case "Escape":
-              code2.node.value = code2.settings.initialValue;
-              ctrlKey2.node.checked = ctrlKey2.settings.initialChecked;
-              altKey2.node.checked = altKey2.settings.initialChecked;
-              shiftKey2.node.checked = shiftKey2.settings.initialChecked;
-              metaKey2.node.checked = metaKey2.settings.initialChecked;
-              break;
-            default:
-              e.preventDefault();
-              e.stopPropagation();
-              e.stopImmediatePropagation();
-              if (e.repeat) return;
-              code2.node.value = e.code;
-              ctrlKey2.node.checked = e.ctrlKey;
-              altKey2.node.checked = e.altKey;
-              shiftKey2.node.checked = e.shiftKey;
-              metaKey2.node.checked = e.metaKey;
-              return;
-          }
-          e.preventDefault();
-          e.stopPropagation();
-          e.stopImmediatePropagation();
-          if (e.repeat) return;
-          GM_config.capturing = false;
-          capture2.node.disabled = false;
-          GM_config.frame.removeAttribute("capturing");
-          code2.node.focus();
-          if (GM_config.dismissPopup) {
-            GM_config.dismissPopup().then(() => delete GM_config.dismissPopup);
-          }
-          code2.node.removeEventListener("keydown", capture2.settings.keydown);
-          window.removeEventListener(
-            "keydown",
-            capture2.settings.keydown,
-            true
-          );
-        },
+        ...makeCaptureCallbacks(2),
       },
       hotkey2: {
         type: "checkbox",
@@ -1497,8 +1448,11 @@ async function initGMC() {
             if (!this.isOpen) this.open();
           });
         }
-        // memoize the settings
-        settings();
+        // after getting settings from *monkey storage, memoize their values in
+        // a simple js object so referencing them is cheaper.
+        for (const [key, field] of Object.entries(this.fields)) {
+          options[key] = field.value;
+        }
       },
       save() {
         if (this.isOpen) {
@@ -1598,12 +1552,13 @@ async function initGMC() {
         methods.byID("Marathon_section_header_0").after(grid);
         // add the subheader to the grid container
         grid.appendChild(sitesFieldLabel);
-        // add each site checkbox to the grid container
+        // move each site checkbox to the grid container
         methods.sites.forEach(site => {
-          const field = GM_config.fields[site];
-          if (!field) return;
-          const { wrapper } = field;
-          if (wrapper instanceof HTMLElement) grid.appendChild(wrapper);
+          const field = this.fields[site];
+          if (field) {
+            const { wrapper } = field;
+            if (wrapper instanceof HTMLElement) grid.appendChild(wrapper);
+          }
         });
         // stretch the header to fill the entire first row when the number of
         // site checkboxes + the subheader is not a multiple of 4. there are
@@ -1889,13 +1844,6 @@ function attachWebFont() {
     "https://cdn.jsdelivr.net/npm/webfontloader@latest/webfontloader.js";
   loader.async = true; // don't block the rest of the page for this, it won't appear until user interaction anyway
   document.head.prepend(loader);
-}
-
-// after getting settings from *monkey storage, memoize their values in a simple js object so referencing them is cheaper
-async function settings() {
-  for (const [key, field] of Object.entries(GM_config.fields)) {
-    options[key] = field.value;
-  }
 }
 
 async function start() {
