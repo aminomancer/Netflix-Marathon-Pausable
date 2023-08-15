@@ -80,16 +80,9 @@ GM_getValue:writable, GM_setValue:writable, GM_deleteValue:writable,
 GM_addValueChangeListener, GM_removeValueChangeListener, GM_listValues:writable,
 GM_openInTab:writable, WebFontConfig:writable, GM_config, WebFont */
 const options = {}; // where settings are stored during runtime
-const win = window;
-const doc = document;
-// check whether the GM object exists so we can use the right GM API functions
-const GMObj =
-  "GM" in win &&
-  typeof win.GM === "object" &&
-  typeof win.GM.getValue === "function";
 // check if the script handler is GM4, since if it is, we can't add a menu command
 const GM4 =
-  GMObj &&
+  typeof window.GM?.getValue === "function" &&
   GM.info.scriptHandler === "Greasemonkey" &&
   GM.info.version.split(".")[0] >= 4;
 const cdnAddress =
@@ -105,9 +98,9 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
  * @param {String} u a string to test the URL against
  * @returns {Boolean} true if the URL matches the string
  */
-const test = u => win.location.href.includes(u);
+const test = u => window.location.href.includes(u);
 const getHost = () => {
-  const urlParts = win.location.hostname.split(".");
+  const urlParts = window.location.hostname.split(".");
   const host = urlParts
     .filter(part => {
       switch (part) {
@@ -233,58 +226,44 @@ const methods = {
     "netflix",
     "starz",
   ],
-  count: 0,
-  results: null,
-  nDrain: "[data-uia='next-episode-seamless-button-draining']",
-  nReady: "[data-uia='next-episode-seamless-button']",
+  // how many times to skip the site callback before checking for elements
+  // again. if this is 0, the callback will run when the interval fires. if an
+  // element is found, we add 5 to this value to skip the callback for 5 more
+  // intervals, since after pressing a button, there usually won't be anything
+  // else to skip for a while. if an element is not found, we start subtracting
+  // from this value until it reaches 0 and the callback can run again.
+  skips: 0,
   /**
    * getElementsByTagName
    * @param {String} s tag name to search for
    * @returns {Array} an array of elements with the given tag name
    */
-  byTag: (s, p = doc) => p.getElementsByTagName(s),
+  byTag: (s, p = document) => p.getElementsByTagName(s),
   /**
    * getElementById
    * @param {String} s element id to search for
    * @returns {Element} the element with the given id
    */
-  byID: s => doc.getElementById(s),
+  byID: s => document.getElementById(s),
   /**
    * querySelector
    * @param {String} s CSS selector e.g. ".class" or "#id"
    * @returns {Element} the first element matching the given CSS selector
    */
-  qry: (s, p = doc) => p.querySelector(s),
+  qry: (s, p = document) => p.querySelector(s),
   /**
    * querySelectorAll
    * @param {String} s CSS selector e.g. ".class" or "#id"
    * @returns {Array} an array of elements matching the given CSS selector
    */
-  qryAll: (s, p = doc) => p.querySelectorAll(s),
-  /**
-   * document.evaluate
-   * @param {String} s node's text content to search for
-   * @param {String} n node's tag name. if not passed, then accept any tag
-   * @param {String} p node's parent's tag name. this is like saying button>div.
-   *                   if not passed, then just ignore the node's parent
-   * @returns {Element} the first element matching the given parameters
-   */
-  byTxt(s, n = "*", p) {
-    return doc.evaluate(
-      `//${p ? `${p}/child::` : ""}${n}[text()="${s}"]`,
-      doc,
-      null,
-      XPathResult.FIRST_ORDERED_NODE_TYPE,
-      this.results
-    ).singleNodeValue;
-  },
+  qryAll: (s, p = document) => p.querySelectorAll(s),
   /**
    * find react instance given a DOM node
    * @param {Object} d usually a DOM node, but can be a react instance
    * @returns {Object} the react instance
    */
-  reactInstance(d) {
-    for (const [key, value] of Object.entries(d || 0)) {
+  reactInstance(d = 0) {
+    for (const [key, value] of Object.entries(d)) {
       if (key.startsWith("__reactInternalInstance$")) return value;
     }
     return null;
@@ -294,8 +273,8 @@ const methods = {
    * @param {Object} d usually a DOM node, but can be a react instance
    * @returns {Object} the react fiber
    */
-  reactFiber(d) {
-    for (const [key, value] of Object.entries(d || 0)) {
+  reactFiber(d = 0) {
+    for (const [key, value] of Object.entries(d)) {
       if (key.startsWith("__reactFiber$")) return value;
     }
     return null;
@@ -306,6 +285,7 @@ const methods = {
    * @returns {Boolean} true if the element is visible
    */
   isVisible(el) {
+    if (!el) return false;
     try {
       const { visibility, display } = getComputedStyle(el);
       return !!(
@@ -322,20 +302,19 @@ const methods = {
    * @returns {Boolean} true if the controller is not paused
    */
   get isReady() {
-    return this.controller && this.controller.pauseState === 1;
+    return this.controller?.pauseState === 1;
   },
   /**
    * clicks the passed element and sets the count to 5
-   * @param {Element} el the element to click
-   * @param {Number} [addOnClick] cancel the next n runs if click is successful
-   * @param {Number} [addOnFail] cancel the next n runs if click is unsuccessful
+   * @param {Element|String} s element or CSS selector string
    */
-  clk(el, { addOnClick = 5, addOnFail = 2 } = {}) {
+  clk(s, fn = s => s.click()) {
+    if (typeof s === "string") s = this.qry(s);
     try {
-      el.click();
-      this.count = addOnClick;
+      fn(s);
+      this.skips = 5;
     } catch (e) {
-      this.count = addOnFail;
+      this.skips = 2;
     }
   },
   /**
@@ -343,35 +322,21 @@ const methods = {
    * onPress method. a trick to get around the fact that HBO tries to stop
    * adblockers and other extensions from invoking Element.click(), etc.
    * @param {Element|String} s element or CSS selector string
-   * @param {Number} [addOnClick] cancel the next n runs if click is successful
-   * @param {Number} [addOnFail] cancel the next n runs if click is unsuccessful
    */
-  hboPress(s, { addOnClick = 5, addOnFail = 2 } = {}) {
-    if (typeof s === "string") s = this.qry(s);
-    try {
-      this.reactFiber(s).return.return.memoizedProps.onPress();
-      this.count = addOnClick;
-    } catch (e) {
-      this.count = addOnFail;
-    }
+  hboPress(s) {
+    this.clk(s, s => this.reactFiber(s).return.return.memoizedProps.onPress());
   },
   /** Same as above but for play.max.com */
-  maxPress(s, { addOnClick = 5, addOnFail = 2 } = {}) {
-    if (typeof s === "string") s = this.qry(s);
-    try {
-      this.reactFiber(s).return.memoizedProps.onClick();
-      this.count = addOnClick;
-    } catch (e) {
-      this.count = addOnFail;
-    }
+  maxPress(s) {
+    this.clk(s, s => this.reactFiber(s).return.memoizedProps.onClick());
   },
   /**
    * set a bunch of attributes on an element
    * @param {Element} element the element to set attributes on
-   * @param {Object} attrs an object containing properties — keys are turned
-   *                       into attributes on the element
+   * @param {{[key: string]: string|void}} attrs key/value pairs for attributes.
+   *   if the value is undefined, the attribute is removed.
    */
-  maybeSetAttributes(element, attrs) {
+  maybeSetAttributes(element, attrs = 0) {
     for (const [name, value] of Object.entries(attrs)) {
       if (value === undefined) element.removeAttribute(name);
       else element.setAttribute(name, value);
@@ -379,302 +344,288 @@ const methods = {
   },
   /**
    * create an element with given parameters
-   * @param {Document} aDoc which doc to create the element in
+   * @param {Document} doc which doc to create the element in
    * @param {String} tag an HTML tag name, like "button" or "p"
    * @param {Object} props an object containing attribute name/value pairs, e.g.
-   *                       {class: ".bookmark-item", id: "bookmark-item-1"}
+   *   {class: ".bookmark-item", id: "bookmark-item-1"}
    * @returns {Element} the created element
    */
-  create(aDoc, tag, props) {
-    const el = aDoc.createElement(tag);
+  create(doc, tag, props) {
+    const el = doc.createElement(tag);
     this.maybeSetAttributes(el, props);
     return el;
   },
   // these are the site-specific callback methods. they search for elements that
   // skip stuff. when the script is not paused, they are invoked on a timer.
-  async amazon() {
-    if (this.count === 0) {
-      const player = this.byID("dv-web-player");
-      if (player && player.offsetParent) {
-        let store; // memoize the element when we check for its existence so we don't have to evaluate the DOM twice.
-        if (
-          (store = this.qry(".atvwebplayersdk-nextupcard-button")) &&
-          // If the next up card is an episode, click it. Otherwise, it's
-          // probably a movie promo, in which case we only click it if the user
-          // has enabled the promoted setting.
-          (this.qry(".atvwebplayersdk-nextupcard-episode", store) ||
-            options.promoted)
-        ) {
-          // next episode
-          await sleep(400);
-          if (this.isReady) this.clk(store);
-        } else if ((store = this.qry(".atvwebplayersdk-skipelement-button"))) {
-          // skip various things
-          this.clk(store);
-        } else if ((store = this.qry(".adSkipButton"))) {
-          // skip ad
-          this.clk(store);
-        } else if ((store = this.qry(".skipElement"))) {
-          //  skip intro
-          this.clk(store);
-        } else if ((store = this.qry(".fu4rd6c"))) {
-          // skip ad button on some versions of amazon.
-          this.clk(store);
-        }
-        // else if ((store = this.byTxt("Skip", "div")))
-        //     // skip trailers
-        //     this.clk(store);
-        // else if ((store = this.byTxt("Skip Intro", "button", "div")))
-        //     // skip intro
-        //     this.clk(store);
-        // else if ((store = this.byTxt("Skip Recap", "button", "div")))
-        //     // skip recap
-        //     this.clk(store);
-      }
-    } else {
-      this.count -= 1;
+  amazon() {
+    if (this.skips !== 0) {
+      this.skips -= 1;
+      return;
+    }
+    if (!this.byID("dv-web-player")?.offsetParent) {
+      return;
+    }
+    // memoize the element when we check for its existence so we don't have to
+    // evaluate the DOM twice.
+    let store;
+    if (
+      (store = this.qry(".atvwebplayersdk-nextupcard-button")) &&
+      // if the next up card is an episode, click it. otherwise, it's probably a
+      // movie promo, in which case we only click it if the user has enabled the
+      // promoted setting.
+      (this.qry(".atvwebplayersdk-nextupcard-episode", store) ||
+        options.promoted)
+    ) {
+      this.clk(store);
+      return;
+    }
+    if ((store = this.qry(".atvwebplayersdk-skipelement-button"))) {
+      // skip various things
+      this.clk(store);
+      return;
+    }
+    if ((store = this.qry(".adSkipButton"))) {
+      // skip ad
+      this.clk(store);
+      return;
+    }
+    if ((store = this.qry(".skipElement"))) {
+      // skip intro
+      this.clk(store);
+      return;
+    }
+    if ((store = this.qry(".fu4rd6c"))) {
+      // skip ad button on some versions of amazon.
+      this.clk(store);
     }
   },
-  async netflix() {
-    if (this.count === 0) {
-      let store;
-      if (this.qry(".skip-credits") && !this.qry(".skip-credits-hidden")) {
-        try {
-          await sleep(200);
-          if (this.isReady) {
-            this.qry(".skip-credits").firstElementChild.click();
-            this.count = 80;
-          }
-          await sleep(100);
-          if (this.isReady) {
-            this.qry(".button-nfplayerPlay").click();
-            this.count = 80;
-          }
-        } catch (e) {
-          this.count = 0;
-        }
-      } else if (
-        (store = this.qry(this.nDrain)) ||
-        (store = this.qry(this.nReady))
-      ) {
-        // next episode button
-        const react = this.reactInstance(store);
-        if (react && react.memoizedProps.onClick) react.memoizedProps.onClick();
-        this.count = 5;
-      } else if (
-        options.promoted &&
-        (store = this.qry(".PromotedVideo-actions"))
-      ) {
-        // promoted video autoplay
-        await sleep(700);
-        if (this.isReady) this.clk(store.firstElementChild);
-      } else if ((store = this.qry(".watch-video--skip-content-button"))) {
-        // skip intro, recap, etc. (new netflix UI)
-        this.clk(store);
-      } else if ((store = this.qry(".watch-video--skip-preplay-button"))) {
-        // not sure what this does but I found this while trying to reverse engineer the source code. please inform me if you know
-        this.clk(store);
-      } else if ((store = this.qry(".postplay-still-container"))) {
-        // autoplay (old netflix UI)
-        this.clk(store);
-      } else if ((store = this.qry(".WatchNext-still-container"))) {
-        // autoplay (old netflix UI)
-        this.clk(store);
-      }
-    } else {
-      this.count -= 1;
+  netflix() {
+    if (this.skips !== 0) {
+      this.skips -= 1;
+      return;
+    }
+    let store;
+    if (
+      (store = this.qry(
+        "[data-uia='next-episode-seamless-button-draining'], [data-uia='next-episode-seamless-button']"
+      ))
+    ) {
+      // next episode button
+      this.reactInstance(store)?.memoizedProps.onClick?.();
+      this.skips = 5;
+      return;
+    }
+    if (
+      options.promoted &&
+      (store = this.qry(".PromotedVideo-actions")?.firstElementChild)
+    ) {
+      // promoted video autoplay
+      this.clk(store);
+      return;
+    }
+    if ((store = this.qry(".watch-video--skip-content-button"))) {
+      // skip intro, recap, etc.
+      this.clk(store);
+      return;
+    }
+    if ((store = this.qry(".watch-video--skip-preplay-button"))) {
+      // not sure what this does but I found this while trying to reverse
+      // engineer the source code. please inform me if you know
+      this.clk(store);
     }
   },
-  async disneyplus() {
-    if (this.count === 0) {
-      if (test("/video/")) {
-        let store;
-        if ((store = this.qry(".skip__button"))) {
-          // skip intro, skip recap, skip credits, etc.
-          this.clk(store);
-        } else if (
-          (store = this.qry('button[data-testid="up-next-play-button"]'))
-        ) {
-          let skip = false;
-          const react = this.reactInstance(
-            this.qry('[data-gv2containerkey="playerUpNext"]')
-          );
-          if (react && "return" in react) {
-            const props = react.return.memoizedProps;
-            // if we're in a TV series, skip regardless of options.promoted
-            if (props.asset && props.asset.programType) {
-              skip = props.asset.programType === "episode";
-            }
-          }
-          // if options.promoted is enabled, we can autoplay disneyplus' recommendations
-          // after a film or the last episode in a series.
-          if (options.promoted) skip = true;
-          if (skip) this.clk(store);
-        }
+  disneyplus() {
+    if (this.skips !== 0) {
+      this.skips -= 1;
+      return;
+    }
+    if (!test("/video/")) return;
+    let store;
+    if ((store = this.qry(".skip__button"))) {
+      // skip intro, skip recap, skip credits, etc.
+      this.clk(store);
+      return;
+    }
+    if ((store = this.qry('button[data-testid="up-next-play-button"]'))) {
+      let skip = false;
+      // if options.promoted is enabled, we can autoplay disneyplus'
+      // recommendations after a film or the last episode in a series.
+      if (options.promoted) {
+        skip = true;
+      } else {
+        const react = this.reactInstance(
+          this.qry('[data-gv2containerkey="playerUpNext"]')
+        );
+        // if we're in a TV series, skip regardless of options.promoted
+        skip = react?.return?.memoizedProps?.asset?.programType === "episode";
       }
-    } else {
-      this.count -= 1;
+      if (skip) this.clk(store);
+      // if we're not skipping, don't search again for a while since the buttons
+      // are unlikely to change during a promoted title display.
+      else this.skips = 5;
     }
   },
-  async hotstar() {
-    if (this.count === 0) {
-      if (test("/id/")) {
-        let store;
-        if (
-          (store = this.qry(
-            ".binge-btn-wrapper.show-btn .binge-btn.primary.medium"
-          ))
-        ) {
-          // skip intro, skip recap.
-          this.clk(store);
-        } else if (
-          (store = this.qry(
-            ".binge-btn-wrapper.show-btn .binge-btn.secondary.filler"
-          ))
-        ) {
-          // skip outro or next episode immediately.
-          this.clk(store);
-        }
-      }
-    } else {
-      this.count -= 1;
+  hotstar() {
+    if (this.skips !== 0) {
+      this.skips -= 1;
+      return;
+    }
+    if (!test("/id/")) return;
+    let store;
+    if (
+      (store = this.qry(
+        ".binge-btn-wrapper.show-btn .binge-btn.primary.medium"
+      ))
+    ) {
+      // skip intro, skip recap.
+      this.clk(store);
+      return;
+    }
+    if (
+      (store = this.qry(
+        ".binge-btn-wrapper.show-btn .binge-btn.secondary.filler"
+      ))
+    ) {
+      // skip outro or next episode immediately.
+      this.clk(store);
     }
   },
-  async hulu() {
-    if (this.count === 0) {
-      if (test("/watch/")) {
-        const controls = this.qry(".ControlsContainer");
-        if (!controls) {
-          // this means the whole video interface is gone for some reason
-          this.count = 20;
-          return;
-        }
-        const controlReact = this.reactInstance(controls);
-        if (!controlReact) return; // this shouldn't happen unless the page has been broken by addons or something
-        const controlProps = controlReact.return.memoizedProps;
-        if (!controlProps) return; // this shouldn't happen either
-        if (controlProps.isSkipButtonShown) {
-          // skip intro, skip recap, skip ad, etc.
-          this.clk(this.qry(".SkipButton button"));
-        } else if (
-          controlProps.isEndCardVisible &&
-          controlProps.endCardType !== "none"
-        ) {
-          // next episode
-          this.clk(this.qry(".EndCardButton--active"));
-        } else if (
-          controlProps.isOverlayVisible &&
-          controlProps.endCardType === "legacy" &&
-          options.promoted
-        ) {
-          // autoplay promoted title
-          this.clk(this.qry(".end-card__metadata-area-play-button"));
-        }
-      }
-    } else {
-      this.count -= 1;
+  hulu() {
+    if (this.skips !== 0) {
+      this.skips -= 1;
+      return;
+    }
+    if (!test("/watch/")) return;
+    const controls = this.qry(".ControlsContainer");
+    if (!controls) {
+      // this means the whole video interface is gone for some reason
+      this.skips = 10;
+      return;
+    }
+    const controlProps = this.reactInstance(controls)?.return?.memoizedProps;
+    if (!controlProps) return; // this shouldn't happen either
+    if (controlProps.isSkipButtonShown) {
+      // skip intro, skip recap, skip ad, etc.
+      this.clk(this.qry(".SkipButton button"));
+      return;
+    }
+    if (controlProps.isEndCardVisible && controlProps.endCardType !== "none") {
+      // next episode
+      this.clk(this.qry(".EndCardButton"));
+      return;
+    }
+    if (
+      controlProps.isOverlayVisible &&
+      controlProps.endCardType === "legacy" &&
+      options.promoted
+    ) {
+      // autoplay promoted title
+      this.clk(this.qry(".end-card__metadata-area-play-button"));
     }
   },
   async hbomax() {
-    if (this.count === 0) {
-      if (test("play.max.com/video/watch/")) {
-        const overlay = this.qry("#overlay-root");
-        if (!overlay) {
-          // this means the whole video interface is gone for some reason
-          this.count = 20;
+    if (this.skips !== 0) {
+      this.skips -= 1;
+      return;
+    }
+    if (test("play.max.com/video/watch/")) {
+      const overlay = this.qry("#overlay-root");
+      if (!overlay) {
+        // this means the whole video interface is gone for some reason
+        this.skips = 10;
+        return;
+      }
+      let store;
+      if (
+        this.isVisible((store = this.qry('[data-testid="skip"]', overlay))) &&
+        (store = this.qry('button[data-testid="player-ux-skip-button"]', store))
+      ) {
+        // skip intro, skip recap, skip ad, etc.
+        this.maxPress(store);
+        return;
+      }
+      if (
+        this.isVisible(
+          (store = this.qry('[data-testid="up_next"]', overlay))
+        ) &&
+        (store = this.qry(
+          'button[data-testid="player-ux-up-next-button"]',
+          store
+        ))
+      ) {
+        // next episode
+        const fiber = this.reactFiber(store.parentElement);
+        const nextEpisode = fiber?.return?.return?.memoizedProps?.nextEpisode;
+        if (
+          nextEpisode?.episodeNumber || // tv series
+          (options.promoted && nextEpisode?.id) // promoted film/series
+        ) {
+          this.maxPress(store);
           return;
         }
-        let store = this.qry('[data-testid="skip"]', overlay);
-        if (
-          this.isVisible(store) &&
-          (store = this.qry(
-            'button[data-testid="player-ux-skip-button"]',
-            store
-          ))
-        ) {
+      }
+      // TODO - see if you can reproduce actual ads, where skip/seek controls
+      // are disabled. account has ads disabled so can't test. if you check the
+      // source code in the debugger, there's a requestSkip() method that's
+      // disabled for ads, but it should be possible to call the underlying
+      // mediator.skip() method instead, assuming we can get a reference to any
+      // of this stuff.
+      return;
+    }
+    if (test("/player/")) {
+      try {
+        const viewHandle = this.byID("rn-video");
+        const fiber = this.reactFiber(viewHandle);
+        const player = fiber.return.return.memoizedProps.videoPlayer;
+        const uiData = player._uiManager._uiState.uiData;
+        if (uiData.activeSkipAnnotation) {
           // skip intro, skip recap, skip ad, etc.
-          this.maxPress(store);
-        } else if (
-          this.isVisible(
-            (store = this.qry('[data-testid="up_next"]', overlay))
-          ) &&
-          (store = this.qry(
-            'button[data-testid="player-ux-up-next-button"]',
-            store
-          ))
-        ) {
+          this.hboPress('[data-testid="SkipButton"]');
+          return;
+        }
+        if (uiData.activeNextEpisodeInfo) {
           // next episode
           try {
-            const fiber = this.reactFiber(store.parentElement);
-            const { nextEpisode } = fiber.return.return.memoizedProps;
-            if (
-              nextEpisode &&
-              (nextEpisode.episodeNumber || // tv series
-                (options.promoted && nextEpisode.id)) // promoted film/series
-            ) {
-              this.maxPress(store);
-            }
-          } catch (e) {}
-        }
-        // TODO - see if you can reproduce actual ads, where skip/seek controls
-        // are disabled. account has ads disabled so can't test. if you check
-        // the source code in the debugger, there's a requestSkip() method
-        // that's disabled for ads, but it should be possible to call the
-        // underlying mediator.skip() method instead, assuming we can get a
-        // reference to any of this stuff.
-      } else if (test("/player/")) {
-        try {
-          const viewHandle = this.byID("rn-video");
-          const fiber = this.reactFiber(viewHandle);
-          const player = fiber.return.return.memoizedProps.videoPlayer;
-          const uiData = player._uiManager._uiState.uiData;
-          if (uiData.activeSkipAnnotation) {
-            // skip intro, skip recap, skip ad, etc.
-            this.hboPress('[data-testid="SkipButton"]');
-          } else if (uiData.activeNextEpisodeInfo) {
-            // next episode
-            try {
-              const interactionHandler =
-                viewHandle.parentElement.lastElementChild;
-              this.reactFiber(
-                interactionHandler
-              ).return.return.memoizedProps.onMouseMove();
-              await sleep(400);
-            } finally {
-              if (this.isReady) this.hboPress('[data-testid="UpNextButton"]');
-            }
+            const interactionHandler =
+              viewHandle.parentElement.lastElementChild;
+            this.reactFiber(
+              interactionHandler
+            ).return.return.memoizedProps.onMouseMove();
+            await sleep(400);
+          } finally {
+            if (this.isReady) this.hboPress('[data-testid="UpNextButton"]');
           }
-        } catch (e) {
-          this.count = 10;
         }
+      } catch (e) {
+        this.skips = 10;
       }
-    } else {
-      this.count -= 1;
     }
   },
-  async starz() {
-    if (this.count === 0) {
-      if (test("/play/")) {
-        let store = this.byTag("starz-player")[0];
-        if (!store) return;
-        if (
-          (store = this.qry(".auto-roll-component.open .next-feature-image"))
-        ) {
-          // next episode - this is the only one I know of
-          this.clk(store);
-        } else if (this.qry(".preroll-prefix-container")) {
-          // skip to the end of the preroll ad
-          const video = this.qry("starz-video video");
-          video.currentTime = video.duration;
-        } else if (
-          (store = this.qry("starz-termsofuse-banner .close-button"))
-        ) {
-          // skip the terms of use banner since it keeps coming back
-          this.clk(store);
-        }
+  starz() {
+    if (this.skips !== 0) {
+      this.skips -= 1;
+      return;
+    }
+    if (!test("/play/") || !this.byTag("starz-player")[0]) {
+      return;
+    }
+    let store;
+    if ((store = this.qry(".auto-roll-component.open .next-feature-image"))) {
+      // next episode - this is the only one I know of
+      this.clk(store);
+      return;
+    }
+    if (this.qry(".preroll-prefix-container")) {
+      // skip to the end of the preroll ad
+      const video = this.qry("starz-video video");
+      if (video) {
+        video.currentTime = video.duration;
+        return;
       }
-    } else {
-      this.count -= 1;
+    }
+    if ((store = this.qry("starz-termsofuse-banner .close-button"))) {
+      // skip the terms of use banner since it keeps coming back
+      this.clk(store);
     }
   },
 };
@@ -694,26 +645,28 @@ class MarathonController {
     handler.controller = this; // for reference in the methods object
     this.handler = handler; // e.g. methods
     this.int = int; // can be changed in real-time and the next resume() call will use the new value
-    this.popup = doc.createElement("div");
-    this.text = doc.createTextNode("Marathon: Paused");
+    this.popup = document.createElement("div");
+    this.text = document.createTextNode("Marathon: Paused");
     this.remainder = 0; // how much time is remaining on the interval when we pause it
     this.fading = null; // 3 second timeout (by default), after which the popup fades
-    this.toggle = this.toggler.bind(this);
+    this.toggle = this.toggle.bind(this);
+    this.onInterval = this.onInterval.bind(this);
+    this.onPauseChange = this.onPauseChange.bind(this);
     this.registerCommand("Pause Marathon", true); // initial creation of the menu command
-    GM_addValueChangeListener("Marathon:paused", this.onPauseChange.bind(this));
+    GM_addValueChangeListener("Marathon:paused", this.onPauseChange);
     // if popup is enabled in options, style it
     if (options.pop) this.updatePopup();
-    this.time = new Date();
+    this.time = Date.now();
     switch (this.pauseState) {
       case MarathonController.STATES.RUNNING:
-        this.timer = win.setTimeout(() => this.onInterval(), this.int);
+        this.timer = window.setTimeout(this.onInterval, this.int);
         break;
       case MarathonController.STATES.PAUSED:
         this.registerCommand("Resume Marathon"); // update the menu command label
-        this.remainder = this.int - (new Date() - this.time);
+        this.remainder = this.int - (Date.now() - this.time);
         break;
       default:
-        this.pauseState = MarathonController.STATES.RUNNING;
+        GM_setValue("Marathon:paused", MarathonController.STATES.RUNNING);
     }
     this.startCapturing();
   }
@@ -731,11 +684,8 @@ class MarathonController {
    * @return {Boolean} true if the keys match, false otherwise
    */
   static modTest(e, i = "") {
-    return (
-      e.ctrlKey === options[`ctrlKey${i}`] &&
-      e.altKey === options[`altKey${i}`] &&
-      e.shiftKey === options[`shiftKey${i}`] &&
-      e.metaKey === options[`metaKey${i}`]
+    return ["ctrlKey", "altKey", "shiftKey", "metaKey"].every(
+      key => e[key] === options[`${key}${i}`]
     );
   }
 
@@ -787,7 +737,8 @@ class MarathonController {
         await this.callback();
       }
     } finally {
-      this.timer = win.setTimeout(() => this.onInterval(), this.int);
+      window.clearTimeout(this.timer);
+      this.timer = window.setTimeout(this.onInterval, this.int);
     }
   }
 
@@ -797,7 +748,7 @@ class MarathonController {
    */
   pause(msg) {
     if (this.pauseState === MarathonController.STATES.RUNNING) {
-      this.pauseState = MarathonController.STATES.PAUSED;
+      GM_setValue("Marathon:paused", MarathonController.STATES.PAUSED);
       this.openPopup(msg);
     }
   }
@@ -808,49 +759,53 @@ class MarathonController {
    */
   async resume(msg) {
     if (this.pauseState === MarathonController.STATES.PAUSED) {
-      this.pauseState = MarathonController.STATES.RUNNING;
+      GM_setValue("Marathon:paused", MarathonController.STATES.RUNNING);
       this.openPopup(msg);
     }
   }
 
   /**
    * Control the interval in response to changes to the pause state
-   * @param {string} name value name e.g. "Marathon:paused"
+   * @param {string} name value name - "Marathon:paused"
    * @param {number|undefined} oldValue
    * @param {number|undefined} newValue
    */
   async onPauseChange(name, oldValue, newValue) {
+    this._pauseState = newValue;
     if (oldValue === newValue || !options[site]) return;
     switch (newValue) {
       case MarathonController.STATES.RUNNING:
         if (oldValue === MarathonController.STATES.PAUSED) {
           this.registerCommand("Pause Marathon");
           await sleep(this.remainder);
-          this.time = new Date();
+          this.time = Date.now();
           this.onInterval();
         } else {
-          this.timer = win.setTimeout(() => this.onInterval(), this.int);
+          window.clearTimeout(this.timer);
+          this.timer = window.setTimeout(this.onInterval, this.int);
         }
         break;
       case MarathonController.STATES.PAUSED:
         this.registerCommand("Resume Marathon"); // update the menu command label
-        this.remainder = this.int - (new Date() - this.time);
-        win.clearTimeout(this.timer);
+        this.remainder = this.int - (Date.now() - this.time);
+        window.clearTimeout(this.timer);
         break;
       default:
     }
   }
 
   get pauseState() {
-    return GM_getValue("Marathon:paused", MarathonController.STATES.IDLE);
-  }
-
-  set pauseState(state) {
-    GM_setValue("Marathon:paused", state);
+    if (this._pauseState === undefined) {
+      this._pauseState = GM_getValue(
+        "Marathon:paused",
+        MarathonController.STATES.IDLE
+      );
+    }
+    return this._pauseState;
   }
 
   // toggle the interval on/off.
-  toggler() {
+  toggle() {
     if (!options[site]) return; // disable the pause/resume toggle when the site is disabled
     switch (this.pauseState) {
       case MarathonController.STATES.RUNNING:
@@ -879,7 +834,7 @@ class MarathonController {
     this.popup.textContent = `Marathon: ${msg}`;
     style.transitionDuration = "0.2s";
     style.opacity = "1";
-    win.clearTimeout(this.fading); // clear any existing fade timeout since we're about to set a new one
+    window.clearTimeout(this.fading); // clear any existing fade timeout since we're about to set a new one
 
     /** @typedef {Promise<undefined>} */
     const closedPromise = new Promise(resolve =>
@@ -895,14 +850,14 @@ class MarathonController {
     if (stayOpen) return hide;
 
     // schedule the popup to fade into oblivion
-    this.fading = win.setTimeout(hide, options.popDur);
+    this.fading = window.setTimeout(hide, options.popDur);
     return closedPromise;
   }
 
   // apply the basic popup style and place it in the body
   setupPopup() {
     if (this.isPopupSetup) return;
-    doc.body.insertBefore(this.popup, doc.body.firstElementChild);
+    document.body.insertBefore(this.popup, document.body.firstElementChild);
     this.popup.appendChild(this.text);
     this.popup.style.cssText = `position:fixed;top:50%;right:3%;transform:translateY(-50%);z-index:2147483646;background-color:hsla(0,0%,6%,.8);background-image:url("${cdnAddress}/texture/noise-512x512.png");background-repeat:repeat;background-size:auto;background-attachment:local;-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);color:hsla(0,0%,97%,.95);padding:17px 19px;line-height:1em;border-radius:5px;pointer-events:none;letter-spacing:1px;transition:opacity .2s ease-in-out;opacity:0;`;
     this.isPopupSetup = true;
@@ -939,7 +894,7 @@ class MarathonController {
   // start listening to key events
   startCapturing() {
     if (!this.capturing && (options.hotkey || options.hotkey2)) {
-      win.addEventListener("keydown", this, true);
+      window.addEventListener("keydown", this, true);
       this.capturing = true;
     }
   }
@@ -947,7 +902,7 @@ class MarathonController {
   // stop listening to key events
   stopCapturing() {
     if (this.capturing) {
-      win.removeEventListener("keydown", this, true);
+      window.removeEventListener("keydown", this, true);
       this.capturing = false;
     }
   }
@@ -957,11 +912,11 @@ class MarathonController {
 function extendGMC() {
   // support fancy animations
   GM_config.close = function close() {
-    win.clearTimeout(this.fading);
+    window.clearTimeout(this.fading);
     this.frame.setAttribute("closed", true);
     this.onClose(); //  Call the close() callback function
     this.isOpen = false;
-    this.fading = win.setTimeout(() => {
+    this.fading = window.setTimeout(() => {
       this.clearSheets("Marathon");
       // If frame is an iframe then remove it
       if (this.frame.contentDocument) {
@@ -981,7 +936,7 @@ function extendGMC() {
     }, 500);
   };
   GM_config.open = function open() {
-    win.clearTimeout(this.fading);
+    window.clearTimeout(this.fading);
     this.frame.removeAttribute("closed");
     this.isOpen = true;
     Object.getPrototypeOf(this).open.call(this);
@@ -1020,19 +975,16 @@ function extendGMC() {
    * @param {String} sel CSS selector; check each stylesheet for this string
    */
   GM_config.clearSheets = sel => {
-    for (const i of [...methods.byTag("style", doc.head)]) {
+    for (const style of [...methods.byTag("style", document.head)]) {
       try {
         if (
-          i instanceof HTMLStyleElement &&
-          i.sheet.cssRules[0].selectorText &&
-          i.sheet.cssRules[0].selectorText.includes(sel)
+          style instanceof HTMLStyleElement &&
+          style.sheet.cssRules[0].selectorText.includes(sel)
         ) {
-          i.remove();
+          style.remove();
         }
         // Amazon CSP blocks cross-origin use of method sheet.cssRules so the
-        // loop will interrupt on some unrelated stylesheet. I'd use the
-        // optional chaining operator here but it's not enabled by default in
-        // chrome. So trycatch statement instead.
+        // loop will interrupt on some unrelated stylesheet.
       } catch (e) {}
     }
   };
@@ -1044,21 +996,21 @@ function extendGMC() {
    *                     attribute for this string
    */
   GM_config.clearLinks = uri => {
-    for (const i of [...methods.byTag("link", doc.head)]) {
-      if (i instanceof HTMLLinkElement && i.href.includes(uri)) i.remove();
+    for (const link of [...methods.byTag("link", document.head)]) {
+      if (link instanceof HTMLLinkElement && link.href?.includes(uri)) {
+        link.remove();
+      }
     }
   };
-  /**
-   * return true if any of the fields passed have values that deviate from their
-   * default values. we use this to avoid performing operations that are
-   * unnecessary when aspects of the user's config are unchanged.
-   * @param {Object} fields an object whose properties are GM_config fields
-   */
-  GM_config.checkNotDefault = fields =>
-    !Object.values(fields).every(field => field.value === field.default);
-  // if webfont is enabled and any of the fields that affect webfont are non-default, (font, italic, fontWeight) then change the webfont config
+  // if webfont is enabled and any of the fields that affect webfont are
+  // non-default, (font, italic, fontWeight) then update the webfont config
   GM_config.updateWFConfig = function updateWFConfig() {
-    if (options.webfont && this.checkNotDefault(this.webFontFields)) {
+    if (
+      options.webfont &&
+      Object.values(this.webFontFields).some(
+        field => field.value !== field.default
+      )
+    ) {
       WebFontConfig.google.families[1] = `${options.font}:${
         options.italic ? "ital," : ""
       }wght@1,${options.fontWeight}`;
@@ -1070,16 +1022,16 @@ function extendGMC() {
 
 // set up the GM_config settings GUI
 async function initGMC() {
-  const frame = doc.createElement("div");
-  const sitesFieldLabel = methods.create(doc, "div", {
+  const frame = document.createElement("div");
+  const sitesFieldLabel = methods.create(document, "div", {
     class: "field_label",
     id: "Marathon_section_0_subheader_0",
   });
   sitesFieldLabel.innerHTML = "Run on:&nbsp;";
-  const resetBtn = doc.createElement("button");
-  const supportBtn = doc.createElement("button");
+  const resetBtn = document.createElement("button");
+  const supportBtn = document.createElement("button");
   frame.style.display = "none";
-  doc.body.appendChild(frame);
+  document.body.appendChild(frame);
   frame.appendChild(sitesFieldLabel);
   frame.appendChild(resetBtn);
   frame.appendChild(supportBtn);
@@ -1546,7 +1498,7 @@ async function initGMC() {
       open() {
         marathon.stopCapturing();
         // put the checkboxes in a container so we can control their layout
-        const grid = methods.create(doc, "div", {
+        const grid = methods.create(document, "div", {
           class: "grid_container",
         });
         methods.byID("Marathon_section_header_0").after(grid);
@@ -1620,7 +1572,7 @@ async function initGMC() {
           default:
             return;
         }
-        blurTo = blurTo || doc.body;
+        blurTo = blurTo || document.body;
         blurTo.focus();
         marathon.startCapturing();
       },
@@ -1830,7 +1782,7 @@ async function initGMC() {
 
 // load webfontloader and create the base config (to be changed by GM_config)
 function attachWebFont() {
-  const loader = doc.createElement("script");
+  const loader = document.createElement("script");
   WebFontConfig = {
     classes: false, // don't bother changing the DOM at all, we aren't listening for it
     events: false, // no need for events, not worth the execution
