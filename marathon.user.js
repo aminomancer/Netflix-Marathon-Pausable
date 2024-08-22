@@ -10,7 +10,7 @@
 // @name:ru            Netflix Marathon (пауза)
 // @name:hi            नेटफ्लिक्स मैराथन (रोकने योग्य)
 // @namespace          https://github.com/aminomancer
-// @version            5.7.6
+// @version            5.7.7
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, Disney+, and Hotstar. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:en     A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, Disney+, and Hotstar. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，可自动跳过重述、介绍、演职员表和广告，并点击 Netflix、Amazon Prime Video、Hulu、HBO Max、Starz、Disney+ 和 Hotstar 上的“下一集”提示。 可自定义的热键暂停/恢复自动跳过功能。 Alt + N 进行设置。
@@ -369,6 +369,8 @@ const methods = {
     // evaluate the DOM twice.
     let store;
     if (
+      options.skipCredits &&
+      !options.watchCredits &&
       (store = this.qry(".atvwebplayersdk-nextupcard-button")) &&
       // if the next up card is an episode, click it. otherwise, it's probably a
       // movie promo, in which case we only click it if the user has enabled the
@@ -406,6 +408,8 @@ const methods = {
     }
     let store;
     if (
+      options.skipCredits &&
+      !options.watchCredits &&
       (store = this.qry(
         "[data-uia='next-episode-seamless-button-draining'], [data-uia='next-episode-seamless-button']"
       ))
@@ -416,7 +420,18 @@ const methods = {
       return;
     }
     if (
+      options.watchCredits &&
+      (store = this.qry("[data-uia='watch-credits-seamless-button']"))
+    ) {
+      // watch credits button
+      this.reactFiber(store)?.memoizedProps.onClick?.();
+      this.skips = 10;
+      return;
+    }
+    if (
       options.promoted &&
+      options.skipCredits &&
+      !options.watchCredits &&
       (store = this.qry(".PromotedVideo-actions")?.firstElementChild)
     ) {
       // promoted video autoplay
@@ -446,7 +461,11 @@ const methods = {
       this.clk(store);
       return;
     }
-    if ((store = this.qry('button[data-testid="up-next-play-button"]'))) {
+    if (
+      options.skipCredits &&
+      !options.watchCredits &&
+      (store = this.qry('button[data-testid="up-next-play-button"]'))
+    ) {
       let skip = false;
       // if options.promoted is enabled, we can autoplay disneyplus'
       // recommendations after a film or the last episode in a series.
@@ -482,6 +501,8 @@ const methods = {
       return;
     }
     if (
+      options.skipCredits &&
+      !options.watchCredits &&
       (store = this.qry(
         ".binge-btn-wrapper.show-btn .binge-btn.secondary.filler"
       ))
@@ -509,15 +530,22 @@ const methods = {
       this.clk(this.qry(".SkipButton button"));
       return;
     }
-    if (controlProps.isEndCardVisible && controlProps.endCardType !== "none") {
+    if (
+      options.skipCredits &&
+      !options.watchCredits &&
+      controlProps.isEndCardVisible &&
+      controlProps.endCardType !== "none"
+    ) {
       // next episode
       this.clk(this.qry(".EndCardButton"));
       return;
     }
     if (
+      options.skipCredits &&
+      !options.watchCredits &&
+      options.promoted &&
       controlProps.isOverlayVisible &&
-      controlProps.endCardType === "legacy" &&
-      options.promoted
+      controlProps.endCardType === "legacy"
     ) {
       // autoplay promoted title
       this.clk(this.qry(".end-card__metadata-area-play-button"));
@@ -545,6 +573,8 @@ const methods = {
         return;
       }
       if (
+        options.skipCredits &&
+        !options.watchCredits &&
         this.isVisible(
           (store = this.qry('[data-testid="up_next"]', overlay))
         ) &&
@@ -583,7 +613,11 @@ const methods = {
           this.hboPress('[data-testid="SkipButton"]');
           return;
         }
-        if (uiData.activeNextEpisodeInfo) {
+        if (
+          options.skipCredits &&
+          !options.watchCredits &&
+          uiData.activeNextEpisodeInfo
+        ) {
           // next episode
           try {
             const interactionHandler =
@@ -610,7 +644,11 @@ const methods = {
       return;
     }
     let store;
-    if ((store = this.qry(".auto-roll-component.open .next-feature-image"))) {
+    if (
+      options.skipCredits &&
+      !options.watchCredits &&
+      (store = this.qry(".auto-roll-component.open .next-feature-image"))
+    ) {
       // next episode - this is the only one I know of
       this.clk(store);
       return;
@@ -1194,6 +1232,14 @@ async function initGMC() {
         min: 50,
         max: 5000,
         default: 300,
+      },
+      skipCredits: {
+        type: "hidden",
+        default: true,
+      },
+      watchCredits: {
+        type: "hidden",
+        default: false,
       },
       promoted: {
         type: "checkbox",
