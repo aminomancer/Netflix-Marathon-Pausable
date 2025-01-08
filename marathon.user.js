@@ -10,7 +10,7 @@
 // @name:ru            Netflix Marathon (пауза)
 // @name:hi            नेटफ्लिक्स मैराथन (रोकने योग्य)
 // @namespace          https://github.com/aminomancer
-// @version            5.7.7
+// @version            5.7.8
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, Disney+, and Hotstar. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:en     A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, Disney+, and Hotstar. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，可自动跳过重述、介绍、演职员表和广告，并点击 Netflix、Amazon Prime Video、Hulu、HBO Max、Starz、Disney+ 和 Hotstar 上的“下一集”提示。 可自定义的热键暂停/恢复自动跳过功能。 Alt + N 进行设置。
@@ -234,30 +234,6 @@ const methods = {
   // from this value until it reaches 0 and the callback can run again.
   skips: 0,
   /**
-   * getElementsByTagName
-   * @param {String} s tag name to search for
-   * @returns {Array} an array of elements with the given tag name
-   */
-  byTag: (s, p = document) => p.getElementsByTagName(s),
-  /**
-   * getElementById
-   * @param {String} s element id to search for
-   * @returns {Element} the element with the given id
-   */
-  byID: s => document.getElementById(s),
-  /**
-   * querySelector
-   * @param {String} s CSS selector e.g. ".class" or "#id"
-   * @returns {Element} the first element matching the given CSS selector
-   */
-  qry: (s, p = document) => p.querySelector(s),
-  /**
-   * querySelectorAll
-   * @param {String} s CSS selector e.g. ".class" or "#id"
-   * @returns {Array} an array of elements matching the given CSS selector
-   */
-  qryAll: (s, p = document) => p.querySelectorAll(s),
-  /**
    * find react instance given a DOM node
    * @param {Object} d usually a DOM node, but can be a react instance
    * @returns {Object} the react instance
@@ -309,7 +285,7 @@ const methods = {
    * @param {Element|String} s element or CSS selector string
    */
   clk(s, fn = s => s.click()) {
-    if (typeof s === "string") s = this.qry(s);
+    if (typeof s === "string") s = document.querySelector(s);
     try {
       fn(s);
       this.skips = 5;
@@ -362,7 +338,7 @@ const methods = {
       this.skips -= 1;
       return;
     }
-    if (!this.byID("dv-web-player")?.offsetParent) {
+    if (!document.getElementById("dv-web-player")?.offsetParent) {
       return;
     }
     // memoize the element when we check for its existence so we don't have to
@@ -371,32 +347,34 @@ const methods = {
     if (
       options.skipCredits &&
       !options.watchCredits &&
-      (store = this.qry(".atvwebplayersdk-nextupcard-button")) &&
+      (store = document.querySelector(".atvwebplayersdk-nextupcard-button")) &&
       // if the next up card is an episode, click it. otherwise, it's probably a
       // movie promo, in which case we only click it if the user has enabled the
       // promoted setting.
-      (this.qry(".atvwebplayersdk-nextupcard-episode", store) ||
-        options.promoted)
+      (options.promoted ||
+        store.querySelector(".atvwebplayersdk-nextupcard-episode"))
     ) {
       this.clk(store);
       return;
     }
-    if ((store = this.qry(".atvwebplayersdk-skipelement-button"))) {
+    if (
+      (store = document.querySelector(".atvwebplayersdk-skipelement-button"))
+    ) {
       // skip various things
       this.clk(store);
       return;
     }
-    if ((store = this.qry(".adSkipButton"))) {
+    if ((store = document.querySelector(".adSkipButton"))) {
       // skip ad
       this.clk(store);
       return;
     }
-    if ((store = this.qry(".skipElement"))) {
+    if ((store = document.querySelector(".skipElement"))) {
       // skip intro
       this.clk(store);
       return;
     }
-    if ((store = this.qry(".fu4rd6c"))) {
+    if ((store = document.querySelector(".fu4rd6c"))) {
       // skip ad button on some versions of amazon.
       this.clk(store);
     }
@@ -410,7 +388,7 @@ const methods = {
     if (
       options.skipCredits &&
       !options.watchCredits &&
-      (store = this.qry(
+      (store = document.querySelector(
         "[data-uia='next-episode-seamless-button-draining'], [data-uia='next-episode-seamless-button']"
       ))
     ) {
@@ -421,7 +399,9 @@ const methods = {
     }
     if (
       options.watchCredits &&
-      (store = this.qry("[data-uia='watch-credits-seamless-button']"))
+      (store = document.querySelector(
+        "[data-uia='watch-credits-seamless-button']"
+      ))
     ) {
       // watch credits button
       this.reactFiber(store)?.memoizedProps.onClick?.();
@@ -432,18 +412,20 @@ const methods = {
       options.promoted &&
       options.skipCredits &&
       !options.watchCredits &&
-      (store = this.qry(".PromotedVideo-actions")?.firstElementChild)
+      (store = document.querySelector(
+        ".PromotedVideo-actions"
+      )?.firstElementChild)
     ) {
       // promoted video autoplay
       this.clk(store);
       return;
     }
-    if ((store = this.qry(".watch-video--skip-content-button"))) {
+    if ((store = document.querySelector(".watch-video--skip-content-button"))) {
       // skip intro, recap, etc.
       this.clk(store);
       return;
     }
-    if ((store = this.qry(".watch-video--skip-preplay-button"))) {
+    if ((store = document.querySelector(".watch-video--skip-preplay-button"))) {
       // not sure what this does but I found this while trying to reverse
       // engineer the source code. please inform me if you know
       this.clk(store);
@@ -456,7 +438,7 @@ const methods = {
     }
     if (!test("/video/")) return;
     let store;
-    if ((store = this.qry(".skip__button"))) {
+    if ((store = document.querySelector(".skip__button"))) {
       // skip intro, skip recap, skip credits, etc.
       this.clk(store);
       return;
@@ -464,7 +446,9 @@ const methods = {
     if (
       options.skipCredits &&
       !options.watchCredits &&
-      (store = this.qry('button[data-testid="up-next-play-button"]'))
+      (store = document.querySelector(
+        'button[data-testid="up-next-play-button"]'
+      ))
     ) {
       let skip = false;
       // if options.promoted is enabled, we can autoplay disneyplus'
@@ -473,7 +457,7 @@ const methods = {
         skip = true;
       } else {
         const react = this.reactInstance(
-          this.qry('[data-gv2containerkey="playerUpNext"]')
+          document.querySelector('[data-gv2containerkey="playerUpNext"]')
         );
         // if we're in a TV series, skip regardless of options.promoted
         skip = react?.return?.memoizedProps?.asset?.programType === "episode";
@@ -492,7 +476,7 @@ const methods = {
     if (!test("/id/")) return;
     let store;
     if (
-      (store = this.qry(
+      (store = document.querySelector(
         ".binge-btn-wrapper.show-btn .binge-btn.primary.medium"
       ))
     ) {
@@ -503,7 +487,7 @@ const methods = {
     if (
       options.skipCredits &&
       !options.watchCredits &&
-      (store = this.qry(
+      (store = document.querySelector(
         ".binge-btn-wrapper.show-btn .binge-btn.secondary.filler"
       ))
     ) {
@@ -517,7 +501,7 @@ const methods = {
       return;
     }
     if (!test("/watch/")) return;
-    const controls = this.qry(".ControlsContainer");
+    const controls = document.querySelector(".ControlsContainer");
     if (!controls) {
       // this means the whole video interface is gone for some reason
       this.skips = 10;
@@ -527,7 +511,7 @@ const methods = {
     if (!controlProps) return; // this shouldn't happen either
     if (controlProps.isSkipButtonShown) {
       // skip intro, skip recap, skip ad, etc.
-      this.clk(this.qry(".SkipButton button"));
+      this.clk(document.querySelector(".SkipButton button"));
       return;
     }
     if (
@@ -537,7 +521,7 @@ const methods = {
       controlProps.endCardType !== "none"
     ) {
       // next episode
-      this.clk(this.qry(".EndCardButton"));
+      this.clk(document.querySelector(".EndCardButton"));
       return;
     }
     if (
@@ -548,7 +532,7 @@ const methods = {
       controlProps.endCardType === "legacy"
     ) {
       // autoplay promoted title
-      this.clk(this.qry(".end-card__metadata-area-play-button"));
+      this.clk(document.querySelector(".end-card__metadata-area-play-button"));
     }
   },
   async hbomax() {
@@ -557,7 +541,7 @@ const methods = {
       return;
     }
     if (test("play.max.com/video/watch/")) {
-      const overlay = this.qry("#overlay-root");
+      const overlay = document.getElementById("overlay-root");
       if (!overlay) {
         // this means the whole video interface is gone for some reason
         this.skips = 10;
@@ -565,8 +549,12 @@ const methods = {
       }
       let store;
       if (
-        this.isVisible((store = this.qry('[data-testid="skip"]', overlay))) &&
-        (store = this.qry('button[data-testid="player-ux-skip-button"]', store))
+        this.isVisible(
+          (store = overlay.querySelector('[data-testid="skip"]'))
+        ) &&
+        (store = store.querySelector(
+          'button[data-testid="player-ux-skip-button"]'
+        ))
       ) {
         // skip intro, skip recap, skip ad, etc.
         this.maxPress(store);
@@ -576,11 +564,10 @@ const methods = {
         options.skipCredits &&
         !options.watchCredits &&
         this.isVisible(
-          (store = this.qry('[data-testid="up_next"]', overlay))
+          (store = overlay.querySelector('[data-testid="up_next"]'))
         ) &&
-        (store = this.qry(
-          'button[data-testid="player-ux-up-next-button"]',
-          store
+        (store = store.querySelector(
+          'button[data-testid="player-ux-up-next-button"]'
         ))
       ) {
         // next episode
@@ -604,7 +591,7 @@ const methods = {
     }
     if (test("/player/")) {
       try {
-        const viewHandle = this.byID("rn-video");
+        const viewHandle = document.getElementById("rn-video");
         const fiber = this.reactFiber(viewHandle);
         const player = fiber.return.return.memoizedProps.videoPlayer;
         const uiData = player._uiManager._uiState.uiData;
@@ -640,28 +627,32 @@ const methods = {
       this.skips -= 1;
       return;
     }
-    if (!test("/play/") || !this.byTag("starz-player")[0]) {
+    if (!test("/play/") || !document.getElementsByTagName("starz-player")[0]) {
       return;
     }
     let store;
     if (
       options.skipCredits &&
       !options.watchCredits &&
-      (store = this.qry(".auto-roll-component.open .next-feature-image"))
+      (store = document.querySelector(
+        ".auto-roll-component.open .next-feature-image"
+      ))
     ) {
       // next episode - this is the only one I know of
       this.clk(store);
       return;
     }
-    if (this.qry(".preroll-prefix-container")) {
+    if (document.querySelector(".preroll-prefix-container")) {
       // skip to the end of the preroll ad
-      const video = this.qry("starz-video video");
+      const video = document.querySelector("starz-video video");
       if (video) {
         video.currentTime = video.duration;
         return;
       }
     }
-    if ((store = this.qry("starz-termsofuse-banner .close-button"))) {
+    if (
+      (store = document.querySelector("starz-termsofuse-banner .close-button"))
+    ) {
       // skip the terms of use banner since it keeps coming back
       this.clk(store);
     }
@@ -1013,7 +1004,7 @@ function extendGMC() {
    * @param {String} sel CSS selector; check each stylesheet for this string
    */
   GM_config.clearSheets = sel => {
-    for (const style of [...methods.byTag("style", document.head)]) {
+    for (const style of [...document.head.getElementsByTagName("style")]) {
       try {
         if (
           style instanceof HTMLStyleElement &&
@@ -1034,7 +1025,7 @@ function extendGMC() {
    *                     attribute for this string
    */
   GM_config.clearLinks = uri => {
-    for (const link of [...methods.byTag("link", document.head)]) {
+    for (const link of [...document.head.getElementsByTagName("link")]) {
       if (link instanceof HTMLLinkElement && link.href?.includes(uri)) {
         link.remove();
       }
@@ -1547,7 +1538,7 @@ async function initGMC() {
         const grid = methods.create(document, "div", {
           class: "grid_container",
         });
-        methods.byID("Marathon_section_header_0").after(grid);
+        document.getElementById("Marathon_section_header_0").after(grid);
         // add the subheader to the grid container
         grid.appendChild(sitesFieldLabel);
         // move each site checkbox to the grid container
@@ -1570,14 +1561,14 @@ async function initGMC() {
         if (grid.children.length % 4) grid.classList.add("stretch_header");
 
         // add a support button, make the reset link an actual button. we could do this by editing the prototype but again, it'd be a lot of duplicate code.
-        const resetLink = methods.byID("Marathon_resetLink"); // the ugly reset link that comes with GM_config
+        const resetLink = document.getElementById("Marathon_resetLink"); // the ugly reset link that comes with GM_config
         methods.maybeSetAttributes(resetBtn, {
           title: resetLink.title,
           class: resetLink.parentElement.className,
         });
         resetBtn.textContent = resetLink.textContent;
         resetLink.parentElement.replaceWith(resetBtn); // replace the link with the button
-        methods.byID("Marathon_saveBtn").after(resetBtn); // move it next to the save button
+        document.getElementById("Marathon_saveBtn").after(resetBtn); // move it next to the save button
         // give the support button a localized tooltip and label since it's the one someone's most likely to need if they don't speak english.
         methods.maybeSetAttributes(supportBtn, {
           title: l10n.title,
@@ -1585,12 +1576,11 @@ async function initGMC() {
           id: "Marathon_supportBtn",
         });
         supportBtn.textContent = l10n.text;
-        const closeBtn = methods.byID("Marathon_closeBtn");
+        const closeBtn = document.getElementById("Marathon_closeBtn");
         closeBtn.after(supportBtn); // move it to the end.
         closeBtn.textContent = "Cancel"; // change the text from "Close" to "Cancel" so it's clear that this will discard changes to settings
-        const firstField = methods.qry(
-          '.config_var [id^="Marathon_field_"]',
-          frame
+        const firstField = frame.querySelector(
+          '.config_var [id^="Marathon_field_"]'
         );
         if (firstField) firstField.focus();
       },
@@ -1598,18 +1588,18 @@ async function initGMC() {
         let blurTo;
         switch (site) {
           case "netflix": {
-            const mountPoint = methods.byID("appMountPoint");
-            blurTo = methods.qry("[tabindex]", mountPoint) || mountPoint;
+            const mountPoint = document.getElementById("appMountPoint");
+            blurTo = mountPoint.querySelector("[tabindex]") || mountPoint;
             break;
           }
           case "amazon":
-            blurTo = methods.qry(".webPlayerSDKUiContainer");
+            blurTo = document.querySelector(".webPlayerSDKUiContainer");
             break;
           case "disneyplus":
-            blurTo = methods.qry(".btm-media-client-element");
+            blurTo = document.querySelector(".btm-media-client-element");
             break;
           case "hulu":
-            blurTo = methods.qry(".addFocus");
+            blurTo = document.querySelector(".addFocus");
             break;
           case "hbomax":
           case "hotstar":
