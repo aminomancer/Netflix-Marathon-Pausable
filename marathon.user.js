@@ -10,7 +10,7 @@
 // @name:ru            Netflix Marathon (пауза)
 // @name:hi            नेटफ्लिक्स मैराथन (रोकने योग्य)
 // @namespace          https://github.com/aminomancer
-// @version            5.7.9
+// @version            5.8.0
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, Disney+, and Hotstar. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:en     A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, Disney+, and Hotstar. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，可自动跳过重述、介绍、演职员表和广告，并点击 Netflix、Amazon Prime Video、Hulu、HBO Max、Starz、Disney+ 和 Hotstar 上的“下一集”提示。 可自定义的热键暂停/恢复自动跳过功能。 Alt + N 进行设置。
@@ -345,8 +345,7 @@ const methods = {
     // evaluate the DOM twice.
     let store;
     if (
-      options.skipCredits &&
-      !options.watchCredits &&
+      options.watchCredits !== "true" &&
       (store = document.querySelector(".atvwebplayersdk-nextupcard-button")) &&
       // if the next up card is an episode, click it. otherwise, it's probably a
       // movie promo, in which case we only click it if the user has enabled the
@@ -386,8 +385,7 @@ const methods = {
     }
     let store;
     if (
-      options.skipCredits &&
-      !options.watchCredits &&
+      options.watchCredits !== "true" &&
       (store = document.querySelector(
         "[data-uia='next-episode-seamless-button-draining'], [data-uia='next-episode-seamless-button']"
       ))
@@ -398,7 +396,7 @@ const methods = {
       return;
     }
     if (
-      options.watchCredits &&
+      options.watchCredits === "true" &&
       (store = document.querySelector(
         "[data-uia='watch-credits-seamless-button']"
       ))
@@ -410,8 +408,7 @@ const methods = {
     }
     if (
       options.promoted &&
-      options.skipCredits &&
-      !options.watchCredits &&
+      options.watchCredits !== "true" &&
       (store = document.querySelector(
         ".PromotedVideo-actions"
       )?.firstElementChild)
@@ -444,8 +441,7 @@ const methods = {
       return;
     }
     if (
-      options.skipCredits &&
-      !options.watchCredits &&
+      options.watchCredits !== "true" &&
       (store = document.querySelector(
         'button[data-testid="up-next-play-button"]'
       ))
@@ -485,8 +481,7 @@ const methods = {
       return;
     }
     if (
-      options.skipCredits &&
-      !options.watchCredits &&
+      options.watchCredits !== "true" &&
       (store = document.querySelector(
         ".binge-btn-wrapper.show-btn .binge-btn.secondary.filler"
       ))
@@ -515,8 +510,7 @@ const methods = {
       return;
     }
     if (
-      options.skipCredits &&
-      !options.watchCredits &&
+      options.watchCredits !== "true" &&
       controlProps.isEndCardVisible &&
       controlProps.endCardType !== "none"
     ) {
@@ -525,8 +519,7 @@ const methods = {
       return;
     }
     if (
-      options.skipCredits &&
-      !options.watchCredits &&
+      options.watchCredits !== "true" &&
       options.promoted &&
       controlProps.isOverlayVisible &&
       controlProps.endCardType === "legacy"
@@ -561,8 +554,7 @@ const methods = {
         return;
       }
       if (
-        options.skipCredits &&
-        !options.watchCredits &&
+        options.watchCredits !== "true" &&
         this.isVisible(
           (store = overlay.querySelector('[data-testid="up_next"]'))
         ) &&
@@ -571,11 +563,13 @@ const methods = {
         ))
       ) {
         // next episode
-        const fiber = this.reactFiber(store.parentElement);
-        const nextEpisode = fiber?.return?.return?.memoizedProps?.nextEpisode;
+        const fiber = this.reactFiber(store.parentElement.parentElement);
+        const meta =
+          fiber?.return?.return?.return?.return?.memoizedProps?.value
+            ?.contentMetadata;
         if (
-          nextEpisode?.episodeNumber || // tv series
-          (options.promoted && nextEpisode?.id) // promoted film/series
+          meta?.episodeNumber != null || // tv series
+          (options.promoted && meta?.id) // promoted film/series
         ) {
           this.clk(store);
           return;
@@ -600,11 +594,7 @@ const methods = {
           this.hboPress('[data-testid="SkipButton"]');
           return;
         }
-        if (
-          options.skipCredits &&
-          !options.watchCredits &&
-          uiData.activeNextEpisodeInfo
-        ) {
+        if (options.watchCredits !== "true" && uiData.activeNextEpisodeInfo) {
           // next episode
           try {
             const interactionHandler =
@@ -632,8 +622,7 @@ const methods = {
     }
     let store;
     if (
-      options.skipCredits &&
-      !options.watchCredits &&
+      options.watchCredits !== "true" &&
       (store = document.querySelector(
         ".auto-roll-component.open .next-feature-image"
       ))
@@ -1223,10 +1212,6 @@ async function initGMC() {
         min: 50,
         max: 5000,
         default: 300,
-      },
-      skipCredits: {
-        type: "hidden",
-        default: true,
       },
       watchCredits: {
         type: "hidden",
