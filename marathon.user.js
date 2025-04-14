@@ -59,6 +59,7 @@
 // @match              http*://*.starz.com/*
 // @match              http*://*.starz.ca/*
 // @match              http*://*.starzplay.com/*
+// @match              http*://*.peacocktv.com/*
 // @require            https://greasyfork.org/scripts/420683-gm-config-sizzle/code/GM_config_sizzle.js?version=894369
 // @grant              GM_registerMenuCommand
 // @grant              GM_unregisterMenuCommand
@@ -115,6 +116,7 @@ const getHost = () => {
         case "netflix":
         case "starz":
         case "starzplay":
+        case "peacocktv":
           return true;
         default:
           return false;
@@ -131,6 +133,8 @@ const getHost = () => {
       return "hbomax";
     case "starzplay":
       return "starz";
+    case "peacocktv":
+      return "peacock";
     default:
       return host;
   }
@@ -224,6 +228,7 @@ const methods = {
     "hulu",
     "hbomax",
     "netflix",
+    "peacock",
     "starz",
   ],
   // how many times to skip the site callback before checking for elements
@@ -649,6 +654,37 @@ const methods = {
     ) {
       // skip the terms of use banner since it keeps coming back
       this.clk(store);
+    }
+  },
+  peacock() {
+    if (this.skips !== 0) {
+      this.skips -= 1;
+      return;
+    }
+    let store;
+    // next episode button
+    if (
+      options.skipCredits &&
+      !options.watchCredits &&
+      (store = this.qry("a.playback-binge__card"))
+    ) {
+      this.clk(store);
+      this.skips = 7;
+      return;
+    }
+    // watch credits button
+    if (
+      options.watchCredits &&
+      (store = this.qry("button[data-test-id='autobinge-cancel']"))
+    ) {
+      this.clk(store);
+      this.skips = 7;
+      return;
+    }
+    // skip intro
+    if ((store = this.qry("button.design-system-button__skip"))) {
+      this.clk(store);
+      return;
     }
   },
 };
@@ -1207,6 +1243,12 @@ async function initGMC() {
         type: "checkbox",
         label: "Starz",
         title: "Uncheck if you don't use Starz",
+        default: true,
+      },
+      peacock: {
+        type: "checkbox",
+        label: "Peacock",
+        title: "Uncheck if you don't use Peacock",
         default: true,
       },
       rate: {
