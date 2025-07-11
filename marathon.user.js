@@ -10,7 +10,7 @@
 // @name:ru            Netflix Marathon (пауза)
 // @name:hi            नेटफ्लिक्स मैराथन (रोकने योग्य)
 // @namespace          https://github.com/aminomancer
-// @version            5.8.1
+// @version            5.8.2
 // @description        A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, Disney+, and Hotstar. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:en     A configurable script that automatically skips recaps, intros, credits, and ads, and clicks "next episode" prompts on Netflix, Amazon Prime Video, Hulu, HBO Max, Starz, Disney+, and Hotstar. Customizable hotkey to pause/resume the auto-skipping functionality. Alt + N for settings.
 // @description:zh-CN  一个可配置的脚本，可自动跳过重述、介绍、演职员表和广告，并点击 Netflix、Amazon Prime Video、Hulu、HBO Max、Starz、Disney+ 和 Hotstar 上的“下一集”提示。 可自定义的热键暂停/恢复自动跳过功能。 Alt + N 进行设置。
@@ -294,19 +294,6 @@ const methods = {
     }
   },
   /**
-   * pass a CSS selector string to locate a react component and invoke its
-   * onPress method. a trick to get around the fact that HBO tries to stop
-   * adblockers and other extensions from invoking Element.click(), etc.
-   * @param {Element|String} s element or CSS selector string
-   */
-  hboPress(s) {
-    this.clk(s, s => this.reactFiber(s).return.return.memoizedProps.onPress());
-  },
-  /** Same as above but for play.max.com */
-  maxPress(s) {
-    this.clk(s, s => this.reactFiber(s).return.memoizedProps.onClick());
-  },
-  /**
    * set a bunch of attributes on an element
    * @param {Element} element the element to set attributes on
    * @param {{[key: string]: string|void}} attrs key/value pairs for attributes.
@@ -533,7 +520,7 @@ const methods = {
       this.skips -= 1;
       return;
     }
-    if (test("play.max.com/video/watch/")) {
+    if (test(".com/video/watch/")) {
       const overlay = document.getElementById("overlay-root");
       if (!overlay) {
         // this means the whole video interface is gone for some reason
@@ -572,43 +559,7 @@ const methods = {
           (options.promoted && meta?.id) // promoted film/series
         ) {
           this.clk(store);
-          return;
         }
-      }
-      // TODO - see if you can reproduce actual ads, where skip/seek controls
-      // are disabled. account has ads disabled so can't test. if you check the
-      // source code in the debugger, there's a requestSkip() method that's
-      // disabled for ads, but it should be possible to call the underlying
-      // mediator.skip() method instead, assuming we can get a reference to any
-      // of this stuff.
-      return;
-    }
-    if (test("/player/")) {
-      try {
-        const viewHandle = document.getElementById("rn-video");
-        const fiber = this.reactFiber(viewHandle);
-        const player = fiber.return.return.memoizedProps.videoPlayer;
-        const uiData = player._uiManager._uiState.uiData;
-        if (uiData.activeSkipAnnotation) {
-          // skip intro, skip recap, skip ad, etc.
-          this.hboPress('[data-testid="SkipButton"]');
-          return;
-        }
-        if (options.watchCredits !== "true" && uiData.activeNextEpisodeInfo) {
-          // next episode
-          try {
-            const interactionHandler =
-              viewHandle.parentElement.lastElementChild;
-            this.reactFiber(
-              interactionHandler
-            ).return.return.memoizedProps.onMouseMove();
-            await sleep(400);
-          } finally {
-            if (this.isReady) this.hboPress('[data-testid="UpNextButton"]');
-          }
-        }
-      } catch (e) {
-        this.skips = 10;
       }
     }
   },
@@ -635,14 +586,6 @@ const methods = {
       // next episode
       this.clk(store);
       return;
-    }
-    if (document.querySelector(".preroll-prefix-container")) {
-      // skip to the end of the preroll ad
-      const video = document.querySelector("starz-video video");
-      if (video) {
-        video.currentTime = video.duration;
-        return;
-      }
     }
     if (
       (store = document.querySelector("starz-termsofuse-banner .close-button"))
