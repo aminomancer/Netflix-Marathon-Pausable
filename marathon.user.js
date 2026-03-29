@@ -133,8 +133,6 @@ const getHost = () => {
       return "hbomax";
     case "starzplay":
       return "starz";
-    case "peacocktv":
-      return "peacock";
     default:
       return host;
   }
@@ -228,7 +226,7 @@ const methods = {
     "hulu",
     "hbomax",
     "netflix",
-    "peacock",
+    "peacocktv",
     "starz",
   ],
   // how many times to skip the site callback before checking for elements
@@ -602,7 +600,7 @@ const methods = {
       this.clk(store);
     }
   },
-  peacock() {
+  peacocktv() {
     if (this.skips !== 0) {
       this.skips -= 1;
       return;
@@ -610,9 +608,8 @@ const methods = {
     let store;
     // next episode button
     if (
-      options.skipCredits &&
       !options.watchCredits &&
-      (store = this.qry("a.playback-binge__card"))
+      (store = document.querySelector("button#vod-binge"))
     ) {
       this.clk(store);
       this.skips = 7;
@@ -621,14 +618,14 @@ const methods = {
     // watch credits button
     if (
       options.watchCredits &&
-      (store = this.qry("button[data-test-id='autobinge-cancel']"))
+      (store = document.querySelector("button[data-testid='binge-dismiss-button']"))
     ) {
       this.clk(store);
       this.skips = 7;
       return;
     }
     // skip intro
-    if ((store = this.qry("button.design-system-button__skip"))) {
+    if ((store = document.querySelector("button[data-testid='skip-button']"))) {
       this.clk(store);
       return;
     }
@@ -1191,10 +1188,10 @@ async function initGMC() {
         title: "Uncheck if you don't use Starz",
         default: true,
       },
-      peacock: {
+      peacocktv: {
         type: "checkbox",
-        label: "Peacock",
-        title: "Uncheck if you don't use Peacock",
+        label: "PeacockTV",
+        title: "Uncheck if you don't use PeacockTV",
         default: true,
       },
       rate: {
@@ -1207,7 +1204,9 @@ async function initGMC() {
         default: 300,
       },
       watchCredits: {
-        type: "hidden",
+        type: "checkbox",
+        label: "Watch Credits",
+        title: "Check if you want to watch credits",
         default: false,
       },
       promoted: {
