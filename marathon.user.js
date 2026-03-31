@@ -1204,9 +1204,7 @@ async function initGMC() {
         default: 300,
       },
       watchCredits: {
-        type: "checkbox",
-        label: "Watch Credits",
-        title: "Check if you want to watch credits",
+        type: "hidden",
         default: false,
       },
       promoted: {
